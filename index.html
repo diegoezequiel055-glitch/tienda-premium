@@ -66,6 +66,9 @@
     </div>
     <div class="carrito-body" id="carrito-body"></div>
     <div class="carrito-foot">
+      <div class="pago-label">Envío</div>
+      <select id="envio-select" onchange="setEnvio(this.value)"><option value="">Elegí tu localidad...</option></select>
+      <p class="modo-nota" id="envio-nota"></p>
       <div class="pago-label">Forma de pago</div>
       <div class="modo-selector pago-selector" id="pago-selector"></div>
       <p class="modo-nota" id="pago-nota"></p>

@@ -15,11 +15,15 @@ const NOTAS_PAGO = {
   tarjeta: 'El precio con tarjeta puede variar — te confirmamos el total por WhatsApp.',
 };
 
+const ENVIO_RETIRO = 'retiro';
+
 let productos = [];
+let envios = [];
 let busqueda = '';
 let categoria = '';
 let modo = localStorage.getItem('modoPrecio') || 'menor';
 let formaPago = null;
+let envioId = null; // id de envios_publico, o ENVIO_RETIRO, o null (sin elegir)
 let detalleId = null;
 let detalleFotoIdx = 0;
 let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, modo, cantidad}]
@@ -53,6 +57,24 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
 }, () => {
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
+
+// ── envíos (motomensajería) en vivo ──
+onSnapshot(collection(db, 'envios_publico'), (snap) => {
+  envios = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  pintarSelectEnvio();
+}, () => {});
+
+function pintarSelectEnvio() {
+  const sel = $('envio-select'); if (!sel) return;
+  if (sel.dataset.n == envios.length) return;
+  sel.dataset.n = envios.length;
+  const valorPrevio = sel.value;
+  const ordenadas = [...envios].sort((a, b) => a.localidad.localeCompare(b.localidad, 'es'));
+  sel.innerHTML = '<option value="">Elegí tu localidad...</option>' +
+    `<option value="${ENVIO_RETIRO}">🏍️ Retiro en persona / fuera de zona</option>` +
+    ordenadas.map((e) => `<option value="${esc(e.id)}">${esc(e.localidad)} — ${e.estimado ? '≈' : ''}$${fmt(e.precio)}</option>`).join('');
+  if (valorPrevio) sel.value = valorPrevio;
+}
 
 // ── selector de precio (menor / mayorista / curva) ──
 function pintarSelectoresModo() {
@@ -165,6 +187,9 @@ function actualizarContador() {
   $('cart-count').textContent = carrito.reduce((a, c) => a + c.cantidad, 0);
 }
 function totalCarrito() { return carrito.reduce((a, c) => a + c.precio * c.cantidad, 0); }
+function envioElegido() { return envioId && envioId !== ENVIO_RETIRO ? envios.find((e) => e.id === envioId) : null; }
+function costoEnvio() { return envioElegido()?.precio || 0; }
+window.setEnvio = function (v) { envioId = v || null; actualizarBotonPedir(); renderCarrito(); };
 
 window.abrirCarrito = function () { renderCarrito(); $('carrito-overlay').classList.add('open'); };
 window.cerrarCarrito = function () { $('carrito-overlay').classList.remove('open'); };
@@ -176,7 +201,7 @@ function pintarSelectorPago() {
 window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actualizarBotonPedir(); };
 
 function actualizarBotonPedir() {
-  $('btn-pedir').disabled = !carrito.length || !formaPago;
+  $('btn-pedir').disabled = !carrito.length || !formaPago || !envioId;
 }
 
 function renderCarrito() {
@@ -194,17 +219,26 @@ function renderCarrito() {
       </div>
     </div>`).join('');
   }
-  $('carrito-total').textContent = 'Total: $' + fmt(totalCarrito());
+  pintarSelectEnvio();
+  const env = envioElegido();
+  $('envio-nota').textContent = envioId === ENVIO_RETIRO ? 'Coordinamos el envío o retiro por WhatsApp.' : env?.estimado ? 'Precio estimado — tarifa por horario, se confirma por WhatsApp.' : '';
+  const totalConEnvio = totalCarrito() + costoEnvio();
+  $('carrito-total').innerHTML = costoEnvio()
+    ? `Productos: $${fmt(totalCarrito())} + Envío: $${fmt(costoEnvio())}<br><strong>Total: $${fmt(totalConEnvio)}</strong>`
+    : 'Total: $' + fmt(totalConEnvio);
   pintarSelectorPago();
   actualizarBotonPedir();
 }
 
 window.hacerPedido = function () {
   if (!carrito.length) return;
+  if (!envioId) { toast('Elegí tu localidad o "Retiro en persona" para continuar.'); return; }
   if (!formaPago) { toast('Elegí una forma de pago para continuar.'); return; }
   const lineas = carrito.map((c) => `• ${c.categoria} — ${c.nombre} (Talle ${c.talle}${c.modo !== 'menor' ? ' · ' + MODOS[c.modo] : ''}) x${c.cantidad} = $${fmt(c.precio * c.cantidad)}`).join('\n');
+  const env = envioElegido();
+  const envioTxt = envioId === ENVIO_RETIRO ? 'Retiro en persona / fuera de zona — a coordinar por WhatsApp' : `${env.localidad}: ${env.estimado ? '≈' : ''}$${fmt(env.precio)}${env.estimado ? ' (estimado, tarifa por horario)' : ''}`;
   const pagoTxt = `${FORMAS_PAGO[formaPago]}${NOTAS_PAGO[formaPago] ? ' (' + NOTAS_PAGO[formaPago] + ')' : ''}`;
-  const msg = `¡Hola! Quiero hacer este pedido:\n${lineas}\n\nTotal: $${fmt(totalCarrito())}\nForma de pago: ${pagoTxt}`;
+  const msg = `¡Hola! Quiero hacer este pedido:\n${lineas}\n\nTotal productos: $${fmt(totalCarrito())}\nEnvío (${envioTxt})\nTotal: $${fmt(totalCarrito() + costoEnvio())}\nForma de pago: ${pagoTxt}`;
   window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
