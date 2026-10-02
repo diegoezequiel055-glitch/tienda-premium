@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tienda Premium</title>
+<meta name="description" content="Catálogo de indumentaria — hacé tu pedido por WhatsApp.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo">TIENDA <span>PREMIUM</span></div>
+  <button class="btn-cart" id="btn-cart" onclick="abrirCarrito()">
+    🛒 <span id="cart-count">0</span>
+  </button>
+</header>
+
+<div class="filtros">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="buscar" placeholder="Buscar producto..." oninput="setBusqueda(this.value)">
+  </div>
+  <select id="sel-cat" onchange="setCategoria(this.value)"><option value="">Todas las categorías</option></select>
+</div>
+
+<main id="grid" class="grid">
+  <div class="empty"><p>Cargando catálogo…</p></div>
+</main>
+
+<footer class="pie">
+  <p>Para consultas, escribinos por WhatsApp.</p>
+</footer>
+
+<!-- CARRITO -->
+<div class="overlay" id="carrito-overlay" onclick="if(event.target===this)cerrarCarrito()">
+  <div class="carrito-panel">
+    <div class="carrito-head">
+      <h2>Tu pedido</h2>
+      <button class="cerrar" onclick="cerrarCarrito()">✕</button>
+    </div>
+    <div class="carrito-body" id="carrito-body"></div>
+    <div class="carrito-foot">
+      <div class="carrito-total" id="carrito-total">Total: $0</div>
+      <button class="btn-whatsapp" id="btn-pedir" onclick="hacerPedido()">📲 Hacer pedido por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
