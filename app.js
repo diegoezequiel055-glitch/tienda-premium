@@ -14,6 +14,7 @@ let busqueda = '';
 let categoria = '';
 let modo = localStorage.getItem('modoPrecio') || 'menor';
 let detalleId = null;
+let detalleFotoIdx = 0;
 let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, modo, cantidad}]
 
 const $ = (id) => document.getElementById(id);
@@ -89,8 +90,9 @@ function renderGrid() {
   if (!filtrados.length) { grid.innerHTML = `<div class="empty"><p>No encontramos productos con esa búsqueda.</p></div>`; return; }
   grid.innerHTML = filtrados.map((p) => {
     const precio = precioDe(p, modo);
+    const foto = (p.fotos || [])[0];
     return `<div class="card" onclick="abrirDetalle('${esc(p.id)}')">
-      <div class="card-foto">${p.foto ? `<img src="${esc(p.foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
+      <div class="card-foto">${foto ? `<img src="${esc(foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
       <div class="card-precio">${precio ? '$' + fmt(precio) : '<small>Consultar precio ' + MODOS[modo].toLowerCase() + '</small>'}</div>
@@ -102,15 +104,20 @@ function renderGrid() {
 // ── ficha de producto ──
 window.abrirDetalle = function (id) {
   detalleId = id;
+  detalleFotoIdx = 0;
   pintarDetalle();
   $('detalle-overlay').classList.add('open');
 };
 window.cerrarDetalle = function () { $('detalle-overlay').classList.remove('open'); detalleId = null; };
+window.elegirFotoDetalle = function (i) { detalleFotoIdx = i; pintarDetalle(); };
 
 function pintarDetalle() {
   const p = productos.find((x) => x.id === detalleId); if (!p) return;
   pintarSelectoresModo();
-  $('detalle-foto').innerHTML = p.foto ? `<img src="${esc(p.foto)}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>';
+  const fotos = p.fotos || [];
+  const foto = fotos[detalleFotoIdx];
+  $('detalle-foto').innerHTML = foto ? `<img src="${esc(foto)}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>';
+  $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(f)}"></button>`).join('') : '';
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
   const precio = precioDe(p, modo);
