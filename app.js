@@ -8,11 +8,18 @@ const NOTAS_MODO = {
   mayorista: 'Precio por mayor sujeto a cantidad mínima — lo confirmamos al recibir tu pedido por WhatsApp.',
   curva: 'Precio por curva (comprando el surtido de talles) sujeto a cantidad mínima — lo confirmamos por WhatsApp.',
 };
+const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
+const NOTAS_PAGO = {
+  efectivo: 'Solo para entregas en CABA o zona AMBA.',
+  transferencia: '',
+  tarjeta: 'El precio con tarjeta puede variar — te confirmamos el total por WhatsApp.',
+};
 
 let productos = [];
 let busqueda = '';
 let categoria = '';
 let modo = localStorage.getItem('modoPrecio') || 'menor';
+let formaPago = null;
 let detalleId = null;
 let detalleFotoIdx = 0;
 let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, modo, cantidad}]
@@ -162,6 +169,16 @@ function totalCarrito() { return carrito.reduce((a, c) => a + c.precio * c.canti
 window.abrirCarrito = function () { renderCarrito(); $('carrito-overlay').classList.add('open'); };
 window.cerrarCarrito = function () { $('carrito-overlay').classList.remove('open'); };
 
+function pintarSelectorPago() {
+  $('pago-selector').innerHTML = Object.entries(FORMAS_PAGO).map(([k, l]) => `<button class="modo-btn${formaPago === k ? ' active' : ''}" onclick="setFormaPago('${k}')">${l}</button>`).join('');
+  $('pago-nota').textContent = formaPago ? NOTAS_PAGO[formaPago] : 'Elegí cómo preferís pagar.';
+}
+window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actualizarBotonPedir(); };
+
+function actualizarBotonPedir() {
+  $('btn-pedir').disabled = !carrito.length || !formaPago;
+}
+
 function renderCarrito() {
   const body = $('carrito-body');
   if (!carrito.length) {
@@ -178,13 +195,16 @@ function renderCarrito() {
     </div>`).join('');
   }
   $('carrito-total').textContent = 'Total: $' + fmt(totalCarrito());
-  $('btn-pedir').disabled = !carrito.length;
+  pintarSelectorPago();
+  actualizarBotonPedir();
 }
 
 window.hacerPedido = function () {
   if (!carrito.length) return;
+  if (!formaPago) { toast('Elegí una forma de pago para continuar.'); return; }
   const lineas = carrito.map((c) => `• ${c.categoria} — ${c.nombre} (Talle ${c.talle}${c.modo !== 'menor' ? ' · ' + MODOS[c.modo] : ''}) x${c.cantidad} = $${fmt(c.precio * c.cantidad)}`).join('\n');
-  const msg = `¡Hola! Quiero hacer este pedido:\n${lineas}\n\nTotal: $${fmt(totalCarrito())}`;
+  const pagoTxt = `${FORMAS_PAGO[formaPago]}${NOTAS_PAGO[formaPago] ? ' (' + NOTAS_PAGO[formaPago] + ')' : ''}`;
+  const msg = `¡Hola! Quiero hacer este pedido:\n${lineas}\n\nTotal: $${fmt(totalCarrito())}\nForma de pago: ${pagoTxt}`;
   window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
