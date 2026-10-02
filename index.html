@@ -12,17 +12,25 @@
 
 <header class="hdr">
   <div class="hdr-logo">TIENDA <span>PREMIUM</span></div>
-  <button class="btn-cart" id="btn-cart" onclick="abrirCarrito()">
-    🛒 <span id="cart-count">0</span>
-  </button>
+  <button class="btn-cart" id="btn-cart" onclick="abrirCarrito()">🛒 <span id="cart-count">0</span></button>
 </header>
+
+<section class="hero">
+  <h1>Tienda Premium</h1>
+  <p>Indumentaria deportiva — por menor, por mayor y por curva</p>
+</section>
+
+<div class="modo-barra">
+  <div class="modo-selector" id="modo-selector-top"></div>
+  <p class="modo-nota" id="modo-nota"></p>
+</div>
 
 <div class="filtros">
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input type="text" id="buscar" placeholder="Buscar producto..." oninput="setBusqueda(this.value)">
   </div>
-  <select id="sel-cat" onchange="setCategoria(this.value)"><option value="">Todas las categorías</option></select>
+  <div class="cat-pills" id="cat-pills"></div>
 </div>
 
 <main id="grid" class="grid">
@@ -32,6 +40,21 @@
 <footer class="pie">
   <p>Para consultas, escribinos por WhatsApp.</p>
 </footer>
+
+<!-- FICHA DE PRODUCTO -->
+<div class="overlay" id="detalle-overlay" onclick="if(event.target===this)cerrarDetalle()">
+  <div class="detalle-panel">
+    <button class="cerrar cerrar-flot" onclick="cerrarDetalle()">✕</button>
+    <div class="detalle-foto" id="detalle-foto"></div>
+    <div class="detalle-body">
+      <div class="detalle-cat" id="detalle-cat"></div>
+      <h2 class="detalle-nombre" id="detalle-nombre"></h2>
+      <div class="modo-selector" id="modo-selector-detalle"></div>
+      <div class="detalle-precio" id="detalle-precio"></div>
+      <div class="detalle-talles" id="detalle-talles"></div>
+    </div>
+  </div>
+</div>
 
 <!-- CARRITO -->
 <div class="overlay" id="carrito-overlay" onclick="if(event.target===this)cerrarCarrito()">
