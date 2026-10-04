@@ -11,12 +11,12 @@
 </head>
 <body>
 
-<div class="promo-bar">Envío a todo el país · Pedís y coordinás por WhatsApp</div>
+<div class="promo-bar" id="promo-bar-texto">Envío a todo el país · Pedís y coordinás por WhatsApp</div>
 
 <header class="hdr">
   <div class="hdr-logo">TIENDA <span>PREMIUM</span></div>
   <nav class="hdr-nav">
-    <a href="#grid">Destacados</a>
+    <a href="#" onclick="irADestacados(event)">Destacados</a>
     <a href="#" onclick="irAMayorista(event)">Mayorista / Curva</a>
   </nav>
   <button class="btn-cart" id="btn-cart" onclick="abrirCarrito()">
@@ -32,10 +32,10 @@
 </div>
 
 <section class="hero">
-  <h1>Indumentaria deportiva, al mejor precio</h1>
-  <p>Encontrá lo que buscás y elegí tu talle. Coordinamos pago y envío por WhatsApp.</p>
+  <h1 id="hero-titulo">Indumentaria deportiva, al mejor precio</h1>
+  <p id="hero-subtitulo">Encontrá lo que buscás y elegí tu talle. Coordinamos pago y envío por WhatsApp.</p>
   <div class="hero-ctas">
-    <a href="#grid" class="btn-solid">Ver destacados</a>
+    <a href="#" class="btn-solid" onclick="irADestacados(event)">Ver destacados</a>
     <a href="#" class="btn-outline" onclick="irAMayorista(event)">Comprar por mayor / curva</a>
   </div>
 </section>
@@ -55,10 +55,17 @@
   </div>
 </section>
 
+<section class="destacados" id="destacados-section" style="display:none">
+  <h2 class="section-title">Destacados</h2>
+  <div class="destacados-strip" id="destacados-strip"></div>
+</section>
+
 <div class="modo-barra">
   <div class="modo-selector" id="modo-selector-top"></div>
   <p class="modo-nota" id="modo-nota"></p>
 </div>
+
+<h2 class="section-title section-title-grid" id="grid-titulo">Catálogo completo</h2>
 
 <div class="filtros">
   <div class="search-wrap">
@@ -75,7 +82,7 @@
 </main>
 
 <section class="banda-negra">
-  <p>Elegís tu talle, coordinamos por WhatsApp y te llega a la puerta de tu casa</p>
+  <p id="banda-negra-texto">Elegís tu talle, coordinamos por WhatsApp y te llega a la puerta de tu casa</p>
 </section>
 
 <footer class="pie">

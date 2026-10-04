@@ -1,6 +1,7 @@
-import { db, collection, onSnapshot } from './firebase-config.js';
+import { db, collection, doc, onSnapshot } from './firebase-config.js';
 
 const WHATSAPP_NUMERO = '5491156253612'; // número de Diego, con código de país y área, sin + ni espacios
+const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
 const MODOS = { menor: 'Por menor', mayorista: 'Por mayor', curva: 'Curva' };
 const CAMPO_PRECIO = { menor: 'precio', mayorista: 'precioMayorista', curva: 'precioCurva' };
 const NOTAS_MODO = {
@@ -55,9 +56,25 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   renderCatPills();
   renderGrid();
   pintarHeroTriptico();
+  renderDestacados();
 }, () => {
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
+
+// ── configuración del sitio en vivo (textos editables desde el panel) ──
+onSnapshot(doc(db, 'config_sitio', 'config'), (snap) => {
+  aplicarConfigSitio(snap.exists() ? snap.data() : {});
+}, () => {});
+
+function aplicarConfigSitio(cfg) {
+  if (cfg.heroTitulo) $('hero-titulo').textContent = cfg.heroTitulo;
+  if (cfg.heroSubtitulo) $('hero-subtitulo').textContent = cfg.heroSubtitulo;
+  if (cfg.promoBarra) $('promo-bar-texto').textContent = cfg.promoBarra;
+  if (cfg.bandaNegra) $('banda-negra-texto').textContent = cfg.bandaNegra;
+  const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
+  const flotante = $('whatsapp-float');
+  if (flotante) flotante.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
+}
 
 // ── envíos (motomensajería) en vivo ──
 onSnapshot(collection(db, 'envios_publico'), (snap) => {
@@ -77,13 +94,15 @@ function pintarSelectEnvio() {
   if (valorPrevio) sel.value = valorPrevio;
 }
 
-// ── hero: tríptico con fotos reales (si hay) ──
+// ── hero: tríptico con fotos reales (prioriza los productos ⭐ destacados) ──
 function pintarHeroTriptico() {
   const cont = $('hero-triptych'); if (!cont || cont.dataset.pintado) return;
+  const destacadosConFoto = destacadosList().filter((p) => (p.fotos || [])[0]);
   const conFoto = productos.filter((p) => (p.fotos || [])[0]);
   if (!conFoto.length) return;
   cont.dataset.pintado = '1';
-  const elegidos = [conFoto[0], conFoto[Math.floor(conFoto.length / 2)], conFoto[conFoto.length - 1]];
+  const base = destacadosConFoto.length >= 3 ? destacadosConFoto : conFoto;
+  const elegidos = [base[0], base[Math.floor(base.length / 2)], base[base.length - 1]];
   cont.querySelectorAll('.htr-ph').forEach((div, i) => {
     const p = elegidos[i]; if (!p) return;
     const img = document.createElement('img');
@@ -114,6 +133,7 @@ window.setModo = function (m) {
   modo = m;
   pintarSelectoresModo();
   renderGrid();
+  renderDestacados();
   if (detalleId) pintarDetalle();
 };
 
@@ -133,6 +153,19 @@ window.setCategoria = function (v) {
   renderGrid();
 };
 
+// ── tarjeta de producto (la usan la grilla y Destacados) ──
+function tarjetaHtml(p) {
+  const precio = precioDe(p, modo);
+  const foto = (p.fotos || [])[0];
+  return `<div class="card" onclick="abrirDetalle('${esc(p.id)}')">
+      <div class="card-foto">${foto ? `<img src="${esc(foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
+      <div class="card-cat">${esc(p.categoria)}</div>
+      <div class="card-nombre">${esc(p.nombre)}</div>
+      <div class="card-precio">${precio ? '$' + fmt(precio) : '<small>Consultar precio ' + MODOS[modo].toLowerCase() + '</small>'}</div>
+      <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
+    </div>`;
+}
+
 // ── grilla ──
 function renderGrid() {
   pintarSelectoresModo();
@@ -142,18 +175,24 @@ function renderGrid() {
   const filtrados = productos.filter((p) => (!q || p.nombre.toLowerCase().includes(q)) && (!categoria || p.categoria === categoria))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
   if (!filtrados.length) { grid.innerHTML = `<div class="empty"><p>No encontramos productos con esa búsqueda.</p></div>`; return; }
-  grid.innerHTML = filtrados.map((p) => {
-    const precio = precioDe(p, modo);
-    const foto = (p.fotos || [])[0];
-    return `<div class="card" onclick="abrirDetalle('${esc(p.id)}')">
-      <div class="card-foto">${foto ? `<img src="${esc(foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
-      <div class="card-cat">${esc(p.categoria)}</div>
-      <div class="card-nombre">${esc(p.nombre)}</div>
-      <div class="card-precio">${precio ? '$' + fmt(precio) : '<small>Consultar precio ' + MODOS[modo].toLowerCase() + '</small>'}</div>
-      <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
-    </div>`;
-  }).join('');
+  grid.innerHTML = filtrados.map(tarjetaHtml).join('');
 }
+
+// ── destacados (productos tildados ⭐ desde el panel) ──
+function destacadosList() {
+  return productos.filter((p) => p.destacado).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+}
+function renderDestacados() {
+  const sec = $('destacados-section'), strip = $('destacados-strip'); if (!sec || !strip) return;
+  const lista = destacadosList();
+  sec.style.display = lista.length ? '' : 'none';
+  if (lista.length) strip.innerHTML = lista.map(tarjetaHtml).join('');
+}
+window.irADestacados = function (ev) {
+  if (ev) ev.preventDefault();
+  const sec = $('destacados-section');
+  (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 // ── ficha de producto ──
 window.abrirDetalle = function (id) {

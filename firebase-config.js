@@ -1,7 +1,7 @@
 // Mismo proyecto de Firebase que el panel interno. Esta clave es pública (de cliente),
 // no es secreta — lo que protege los datos son las reglas de Firestore, no esta clave.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyBdw_kkoaFUKGl2HX4FfUEV-I-0SR0n1go",
@@ -13,4 +13,4 @@ const app = initializeApp({
 });
 
 export const db = getFirestore(app);
-export { collection, onSnapshot };
+export { collection, doc, onSnapshot };

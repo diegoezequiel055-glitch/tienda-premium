@@ -43,6 +43,18 @@ button{font-family:inherit}
 .trust-item b{font-size:.82rem;color:var(--ink);font-weight:600}
 .trust-item span{font-size:.74rem;color:var(--muted);line-height:1.5}
 
+/* TÍTULOS DE SECCIÓN */
+.section-title{font-family:'Anton',sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:.5px;color:var(--ink);text-transform:uppercase;padding:0 20px;margin:0}
+.section-title-grid{padding-top:10px}
+@media(min-width:700px){.section-title{padding:0 32px}}
+
+/* DESTACADOS */
+.destacados{padding:34px 0 10px;display:flex;flex-direction:column;gap:14px}
+.destacados-strip{display:flex;gap:16px;overflow-x:auto;padding:2px 20px 10px}
+.destacados-strip::-webkit-scrollbar{display:none}
+.destacados-strip .card{flex:0 0 180px}
+@media(min-width:700px){.destacados-strip{padding:2px 32px 10px}.destacados-strip .card{flex-basis:230px}}
+
 /* SELECTOR DE PRECIO */
 .modo-barra{padding:28px 20px 14px;text-align:center}
 .modo-selector{display:inline-flex;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;padding:4px;gap:2px}
