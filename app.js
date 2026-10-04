@@ -61,7 +61,8 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
 
-// ── configuración del sitio en vivo (textos editables desde el panel) ──
+// ── configuración del sitio en vivo (textos y fotos editables desde el panel) ──
+let heroFotosManual = null; // [url|null, url|null, url|null] elegidas a mano, o null si Diego no configuró ninguna
 onSnapshot(doc(db, 'config_sitio', 'config'), (snap) => {
   aplicarConfigSitio(snap.exists() ? snap.data() : {});
 }, () => {});
@@ -74,6 +75,8 @@ function aplicarConfigSitio(cfg) {
   const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
   const flotante = $('whatsapp-float');
   if (flotante) flotante.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
+  heroFotosManual = cfg.heroFotos || null;
+  pintarHeroTriptico();
 }
 
 // ── envíos (motomensajería) en vivo ──
@@ -94,23 +97,29 @@ function pintarSelectEnvio() {
   if (valorPrevio) sel.value = valorPrevio;
 }
 
-// ── hero: tríptico con fotos reales (prioriza los productos ⭐ destacados) ──
+// ── hero: tríptico. Si Diego eligió fotos a mano, esas ganan siempre.
+// Si no, se arma solo con fotos de productos ⭐ destacados (una vez, al cargar).
+const HTR_PLACEHOLDER = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg>';
 function pintarHeroTriptico() {
-  const cont = $('hero-triptych'); if (!cont || cont.dataset.pintado) return;
+  const cont = $('hero-triptych'); if (!cont) return;
+  const divs = [...cont.querySelectorAll('.htr-ph')];
+  if (heroFotosManual && heroFotosManual.some(Boolean)) {
+    divs.forEach((div, i) => {
+      const url = heroFotosManual[i];
+      div.innerHTML = url ? `<img src="${esc(url)}" alt="" loading="lazy">` : HTR_PLACEHOLDER;
+    });
+    return;
+  }
+  if (cont.dataset.pintado) return;
   const destacadosConFoto = destacadosList().filter((p) => (p.fotos || [])[0]);
   const conFoto = productos.filter((p) => (p.fotos || [])[0]);
   if (!conFoto.length) return;
   cont.dataset.pintado = '1';
   const base = destacadosConFoto.length >= 3 ? destacadosConFoto : conFoto;
   const elegidos = [base[0], base[Math.floor(base.length / 2)], base[base.length - 1]];
-  cont.querySelectorAll('.htr-ph').forEach((div, i) => {
+  divs.forEach((div, i) => {
     const p = elegidos[i]; if (!p) return;
-    const img = document.createElement('img');
-    img.src = p.fotos[0];
-    img.alt = p.nombre;
-    img.loading = 'lazy';
-    div.innerHTML = '';
-    div.appendChild(img);
+    div.innerHTML = `<img src="${esc(p.fotos[0])}" alt="${esc(p.nombre)}" loading="lazy">`;
   });
 }
 
