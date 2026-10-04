@@ -5,8 +5,8 @@ const MODOS = { menor: 'Por menor', mayorista: 'Por mayor', curva: 'Curva' };
 const CAMPO_PRECIO = { menor: 'precio', mayorista: 'precioMayorista', curva: 'precioCurva' };
 const NOTAS_MODO = {
   menor: '',
-  mayorista: 'Precio por mayor sujeto a cantidad mínima — lo confirmamos al recibir tu pedido por WhatsApp.',
-  curva: 'Precio por curva (comprando el surtido de talles) sujeto a cantidad mínima — lo confirmamos por WhatsApp.',
+  mayorista: 'Precio por mayor: pedido mínimo de 3 unidades de un mismo producto (en talles distintos) o 4 unidades surtidas. Lo confirmamos por WhatsApp.',
+  curva: 'Precio por curva: llevando todos los talles disponibles de un mismo producto (uno de cada talle). Lo confirmamos por WhatsApp.',
 };
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
 const NOTAS_PAGO = {
@@ -21,7 +21,7 @@ let productos = [];
 let envios = [];
 let busqueda = '';
 let categoria = '';
-let modo = localStorage.getItem('modoPrecio') || 'menor';
+let modo = 'menor'; // siempre arranca por menor — no se guarda entre visitas
 let formaPago = null;
 let envioId = null; // id de envios_publico, o ENVIO_RETIRO, o null (sin elegir)
 let detalleId = null;
@@ -112,7 +112,6 @@ function pintarSelectoresModo() {
 }
 window.setModo = function (m) {
   modo = m;
-  try { localStorage.setItem('modoPrecio', m); } catch {}
   pintarSelectoresModo();
   renderGrid();
   if (detalleId) pintarDetalle();
