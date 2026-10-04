@@ -57,6 +57,7 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   renderGrid();
   pintarHeroTriptico();
   renderDestacados();
+  renderNuevos();
 }, () => {
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
@@ -143,6 +144,7 @@ window.setModo = function (m) {
   pintarSelectoresModo();
   renderGrid();
   renderDestacados();
+  renderNuevos();
   if (detalleId) pintarDetalle();
 };
 
@@ -200,6 +202,23 @@ function renderDestacados() {
 window.irADestacados = function (ev) {
   if (ev) ev.preventDefault();
   const sec = $('destacados-section');
+  (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// ── nuevos ingresos (automático, por fecha real de alta — no hace falta tildar nada) ──
+const MAX_NUEVOS = 10;
+function nuevosList() {
+  return [...productos].filter((p) => p.creadoEn).sort((a, b) => b.creadoEn - a.creadoEn).slice(0, MAX_NUEVOS);
+}
+function renderNuevos() {
+  const sec = $('nuevos-section'), strip = $('nuevos-strip'); if (!sec || !strip) return;
+  const lista = nuevosList();
+  sec.style.display = lista.length ? '' : 'none';
+  if (lista.length) strip.innerHTML = lista.map(tarjetaHtml).join('');
+}
+window.irANuevos = function (ev) {
+  if (ev) ev.preventDefault();
+  const sec = $('nuevos-section');
   (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 

@@ -50,10 +50,10 @@ button{font-family:inherit}
 
 /* DESTACADOS */
 .destacados{padding:34px 0 10px;display:flex;flex-direction:column;gap:14px}
-.destacados-strip{display:flex;gap:16px;overflow-x:auto;padding:2px 20px 10px}
+.destacados-strip{display:flex;gap:16px;overflow-x:auto;padding:2px 20px 10px;scroll-snap-type:x mandatory;scroll-padding-left:20px}
 .destacados-strip::-webkit-scrollbar{display:none}
-.destacados-strip .card{flex:0 0 180px}
-@media(min-width:700px){.destacados-strip{padding:2px 32px 10px}.destacados-strip .card{flex-basis:230px}}
+.destacados-strip .card{flex:0 0 180px;scroll-snap-align:start}
+@media(min-width:700px){.destacados-strip{padding:2px 32px 10px;scroll-padding-left:32px}.destacados-strip .card{flex-basis:230px}}
 
 /* SELECTOR DE PRECIO */
 .modo-barra{padding:28px 20px 14px;text-align:center}

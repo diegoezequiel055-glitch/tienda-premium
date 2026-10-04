@@ -16,6 +16,7 @@
 <header class="hdr">
   <div class="hdr-logo">TIENDA <span>PREMIUM</span></div>
   <nav class="hdr-nav">
+    <a href="#" onclick="irANuevos(event)">Nuevos ingresos</a>
     <a href="#" onclick="irADestacados(event)">Destacados</a>
     <a href="#" onclick="irAMayorista(event)">Mayorista / Curva</a>
   </nav>
@@ -35,9 +36,14 @@
   <h1 id="hero-titulo">Indumentaria deportiva, al mejor precio</h1>
   <p id="hero-subtitulo">Encontrá lo que buscás y elegí tu talle. Coordinamos pago y envío por WhatsApp.</p>
   <div class="hero-ctas">
-    <a href="#" class="btn-solid" onclick="irADestacados(event)">Ver destacados</a>
+    <a href="#" class="btn-solid" onclick="irANuevos(event)">Ver novedades</a>
     <a href="#" class="btn-outline" onclick="irAMayorista(event)">Comprar por mayor / curva</a>
   </div>
+</section>
+
+<section class="destacados" id="nuevos-section" style="display:none">
+  <h2 class="section-title">Nuevos ingresos</h2>
+  <div class="destacados-strip" id="nuevos-strip"></div>
 </section>
 
 <section class="trust-strip">
