@@ -54,6 +54,7 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   renderCatPills();
   renderGrid();
+  pintarHeroTriptico();
 }, () => {
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
@@ -75,6 +76,31 @@ function pintarSelectEnvio() {
     ordenadas.map((e) => `<option value="${esc(e.id)}">${esc(e.localidad)} — ${e.estimado ? '≈' : ''}$${fmt(e.precio)}</option>`).join('');
   if (valorPrevio) sel.value = valorPrevio;
 }
+
+// ── hero: tríptico con fotos reales (si hay) ──
+function pintarHeroTriptico() {
+  const cont = $('hero-triptych'); if (!cont || cont.dataset.pintado) return;
+  const conFoto = productos.filter((p) => (p.fotos || [])[0]);
+  if (!conFoto.length) return;
+  cont.dataset.pintado = '1';
+  const elegidos = [conFoto[0], conFoto[Math.floor(conFoto.length / 2)], conFoto[conFoto.length - 1]];
+  cont.querySelectorAll('.htr-ph').forEach((div, i) => {
+    const p = elegidos[i]; if (!p) return;
+    const img = document.createElement('img');
+    img.src = p.fotos[0];
+    img.alt = p.nombre;
+    img.loading = 'lazy';
+    div.innerHTML = '';
+    div.appendChild(img);
+  });
+}
+
+// ── link "Mayorista / Curva": cambia el modo y lleva a la grilla ──
+window.irAMayorista = function (ev) {
+  if (ev) ev.preventDefault();
+  setModo('mayorista');
+  $('grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 // ── selector de precio (menor / mayorista / curva) ──
 function pintarSelectoresModo() {
