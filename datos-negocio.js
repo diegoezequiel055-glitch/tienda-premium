@@ -21,5 +21,5 @@ export const datosNegocio = {
   tiktok: 'https://www.tiktok.com/@tiendapremium.ok',
 
   // Mayorista: botón que abre el canal de WhatsApp. Mientras esté vacío, el botón no se muestra.
-  canalMayoristaWhatsApp: '',
+  canalMayoristaWhatsApp: 'https://whatsapp.com/channel/0029VbEBUxK6RGJ9kyCEqK0d',
 };

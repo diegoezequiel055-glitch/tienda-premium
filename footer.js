@@ -37,7 +37,7 @@ function renderFooter() {
         </div>
         <div class="pie-col">
           <b>Ayuda</b>
-          <ul class="pie-nav">${NAV_AYUDA.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul>
+          <ul class="pie-nav">${NAV_AYUDA.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}${datosNegocio.canalMayoristaWhatsApp ? `<li><a href="${datosNegocio.canalMayoristaWhatsApp}" target="_blank" rel="noopener">Mayorista</a></li>` : ''}</ul>
         </div>
         <div class="pie-col">
           <b>Medios de pago</b>
