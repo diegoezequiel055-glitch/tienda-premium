@@ -49,7 +49,7 @@ function renderFooter() {
         </div>
       </div>
       <div class="pie-legal-row">
-        <a href="https://www.argentina.gob.ar/iniciar-un-reclamo-ante-defensa-de-las-y-los-consumidores" target="_blank" rel="noopener">Defensa de las y los Consumidores. Para reclamos ingresá acá</a>
+        <a href="${datosNegocio.linkDefensaConsumidor}" target="_blank" rel="noopener noreferrer">Defensa de las y los Consumidores. Para reclamos ingresá acá</a>
         <span class="pie-sep">/</span>
         <a href="contacto.html?arrepentimiento=1">Botón de arrepentimiento</a>
       </div>

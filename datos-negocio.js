@@ -30,4 +30,7 @@ export const datosNegocio = {
 
   // Mayorista: botón que abre el canal de WhatsApp. Mientras esté vacío, el botón no se muestra.
   canalMayoristaWhatsApp: 'https://whatsapp.com/channel/0029VbEBUxK6RGJ9kyCEqK0d',
+
+  // Link "Defensa de las y los Consumidores" del footer (todas las páginas).
+  linkDefensaConsumidor: 'https://autogestion.produccion.gob.ar/consumidores',
 };
