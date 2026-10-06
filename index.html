@@ -33,14 +33,13 @@
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
   <div class="htr-ph htr-ph-mid"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
-  <a href="#" class="btn-comprar-ahora" onclick="irACatalogo(event)">Comprar ahora</a>
 </div>
 
 <section class="hero">
   <h1 id="hero-titulo">Indumentaria deportiva, al mejor precio</h1>
   <p id="hero-subtitulo">Encontrá lo que buscás y elegí tu talle. Coordinamos pago y envío por WhatsApp.</p>
   <div class="hero-ctas">
-    <a href="#" class="btn-solid" onclick="irANuevos(event)">Ver novedades</a>
+    <a href="#" class="btn-solid" onclick="irACatalogo(event)">Comprar ahora</a>
     <a href="#" class="btn-outline btn-mayorista" target="_blank" rel="noopener" style="display:none">Mayorista</a>
   </div>
 </section>
@@ -138,20 +137,24 @@
       <h2>Tu pedido</h2>
       <button class="cerrar" onclick="cerrarCarrito()">✕</button>
     </div>
-    <div class="carrito-body" id="carrito-body"></div>
+    <div class="carrito-scroll">
+      <div class="carrito-body" id="carrito-body"></div>
+      <div class="carrito-form">
+        <div class="pago-label">Tu nombre</div>
+        <input type="text" id="cliente-nombre" placeholder="Nombre y apellido" oninput="setClienteNombre(this.value)">
+
+        <div class="pago-label">Entrega</div>
+        <div class="modo-selector entrega-selector" id="entrega-selector"></div>
+        <div id="entrega-detalle"></div>
+
+        <div class="pago-label">Forma de pago</div>
+        <div class="modo-selector pago-selector" id="pago-selector"></div>
+        <p class="modo-nota" id="pago-nota"></p>
+
+        <div class="carrito-total" id="carrito-total">Total: $0</div>
+      </div>
+    </div>
     <div class="carrito-foot">
-      <div class="pago-label">Tu nombre</div>
-      <input type="text" id="cliente-nombre" placeholder="Nombre y apellido" oninput="setClienteNombre(this.value)">
-
-      <div class="pago-label">Entrega</div>
-      <div class="modo-selector entrega-selector" id="entrega-selector"></div>
-      <div id="entrega-detalle"></div>
-
-      <div class="pago-label">Forma de pago</div>
-      <div class="modo-selector pago-selector" id="pago-selector"></div>
-      <p class="modo-nota" id="pago-nota"></p>
-
-      <div class="carrito-total" id="carrito-total">Total: $0</div>
       <button class="btn-whatsapp" id="btn-pedir" onclick="hacerPedido()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20Zm4.4-5.9c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.3.2-.4.1-.2 0-.3 0-.4 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
         Hacer pedido por WhatsApp

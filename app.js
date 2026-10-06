@@ -247,14 +247,70 @@ window.abrirDetalle = function (id) {
   $('detalle-overlay').classList.add('open');
 };
 window.cerrarDetalle = function () { $('detalle-overlay').classList.remove('open'); detalleId = null; };
-window.elegirFotoDetalle = function (i) { detalleFotoIdx = i; pintarDetalle(); };
+
+// Varias fotos: carril deslizable (scroll-snap, igual que en las tarjetas) +
+// flechas de escritorio + contador, sincronizado con la miniatura activa.
+// Una sola foto (o ninguna): sin carril, sin flechas, sin contador.
+function detalleFotoHtml(p, fotos) {
+  if (!fotos.length) return '<span class="sin-foto">Sin foto</span>';
+  if (fotos.length === 1) {
+    return `<img src="${esc(fotos[0])}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">`;
+  }
+  return `
+    <div class="detalle-foto-scroll" id="detalle-foto-scroll" onscroll="onScrollDetalleFoto(this)">
+      ${fotos.map((f) => `<img src="${esc(f)}" alt="${esc(p.nombre)}">`).join('')}
+    </div>
+    <button class="detalle-foto-flecha detalle-foto-prev" onclick="moverFotoDetalle(-1)" aria-label="Foto anterior">‹</button>
+    <button class="detalle-foto-flecha detalle-foto-next" onclick="moverFotoDetalle(1)" aria-label="Foto siguiente">›</button>
+    <span class="detalle-foto-contador" id="detalle-foto-contador">${detalleFotoIdx + 1}/${fotos.length}</span>`;
+}
+function irAFotoDetalle(i, smooth) {
+  detalleFotoIdx = i;
+  const el = $('detalle-foto-scroll');
+  if (el) el.scrollTo({ left: i * el.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+  actualizarUIFotoDetalle();
+}
+function actualizarUIFotoDetalle() {
+  const p = productos.find((x) => x.id === detalleId); if (!p) return;
+  const total = (p.fotos || []).length;
+  const contador = $('detalle-foto-contador');
+  if (contador) contador.textContent = `${detalleFotoIdx + 1}/${total}`;
+  const prev = document.querySelector('.detalle-foto-prev');
+  const next = document.querySelector('.detalle-foto-next');
+  if (prev) prev.classList.toggle('oculta', detalleFotoIdx === 0);
+  if (next) next.classList.toggle('oculta', detalleFotoIdx === total - 1);
+  document.querySelectorAll('#detalle-miniaturas .mini-foto').forEach((el, i) => el.classList.toggle('active', i === detalleFotoIdx));
+}
+window.elegirFotoDetalle = function (i) { irAFotoDetalle(i, true); };
+window.moverFotoDetalle = function (delta) {
+  const p = productos.find((x) => x.id === detalleId); if (!p) return;
+  const total = (p.fotos || []).length;
+  const nuevo = detalleFotoIdx + delta;
+  if (nuevo < 0 || nuevo >= total) return;
+  irAFotoDetalle(nuevo, true);
+};
+window.onScrollDetalleFoto = function (el) {
+  const idx = Math.round(el.scrollLeft / (el.clientWidth || 1));
+  const clamped = Math.max(0, Math.min(idx, el.children.length - 1));
+  if (clamped !== detalleFotoIdx) { detalleFotoIdx = clamped; actualizarUIFotoDetalle(); }
+};
+document.addEventListener('keydown', (e) => {
+  if (!detalleId || !$('detalle-overlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') moverFotoDetalle(-1);
+  else if (e.key === 'ArrowRight') moverFotoDetalle(1);
+});
 
 function pintarDetalle() {
   const p = productos.find((x) => x.id === detalleId); if (!p) return;
   const fotos = p.fotos || [];
-  const foto = fotos[detalleFotoIdx];
-  $('detalle-foto').innerHTML = foto ? `<img src="${esc(foto)}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>';
+  if (detalleFotoIdx >= fotos.length) detalleFotoIdx = 0;
+  $('detalle-foto').innerHTML = detalleFotoHtml(p, fotos);
+  if (fotos.length > 1) {
+    const el = $('detalle-foto-scroll');
+    if (el) el.scrollTo({ left: detalleFotoIdx * el.clientWidth, behavior: 'auto' });
+  }
   $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(f)}"></button>`).join('') : '';
+  actualizarUIFotoDetalle();
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
   $('detalle-precio').textContent = '$' + fmt(p.precio);
@@ -276,7 +332,7 @@ window.agregarAlCarrito = function (id, talle) {
   const enCarrito = existente ? existente.cantidad : 0;
   if (enCarrito >= fila.stock) { toast(`No hay más stock de ${p.nombre} talle ${talle}.`); return; }
   if (existente) existente.cantidad++;
-  else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, precio: p.precio, cantidad: 1 });
+  else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, precio: p.precio, cantidad: 1, foto: (p.fotos || [])[0] || null });
   guardarCarrito(); actualizarContador();
   toast(`${p.nombre} (${talle}) agregado al pedido ✓`);
 };
@@ -388,6 +444,7 @@ function renderCarrito() {
     body.innerHTML = `<div class="carrito-vacio">Todavía no agregaste nada.<br>Elegí un producto para empezar.</div>`;
   } else {
     body.innerHTML = carrito.map((c, i) => `<div class="carrito-item">
+      <div class="carrito-item-foto">${c.foto ? `<img src="${esc(c.foto)}" alt="" loading="lazy">` : ''}</div>
       <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(c.precio)} c/u</div>
       <div class="carrito-item-ctrl">
         <button class="qty-btn" onclick="cambiarCantidad(${i},-1)">−</button>
