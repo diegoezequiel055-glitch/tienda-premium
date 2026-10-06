@@ -7,11 +7,11 @@ export const datosNegocio = {
   // Identidad del vendedor (para el footer legal / términos)
   nombreVendedor: 'Diego Ezequiel Zapata',
   condicionFiscal: 'Monotributista',
-  cuit: '', // se muestra en el footer y en términos solo cuando tenga valor
+  cuit: '20-46183728-0', // se muestra en el footer y en términos solo cuando tenga valor
 
   // Showroom
   showroomDireccion: 'Diagonal 152 (Belgrano) 5453, Loma Hermosa, San Martín',
-  showroomHorarios: '', // ej: "Lun a vie 10 a 18 hs, sáb 10 a 13 hs"
+  showroomHorarios: 'Lunes a viernes con cita previa, sábados de 15 a 20 hs',
   showroomMapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Diagonal 152 (Belgrano) 5453, Loma Hermosa, San Martín'),
 
   // Contacto
