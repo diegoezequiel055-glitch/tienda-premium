@@ -4,6 +4,14 @@
 // ══════════════════════════════════════════
 
 export const datosNegocio = {
+  // Nombre de marca — se usa en el header, el título de cada página, el
+  // footer y los mensajes de WhatsApp. Cambialo acá, no a mano en cada archivo.
+  // (Excepción inevitable: la meta description y las etiquetas og:* de cada
+  // página quedan fijas en el HTML, porque los robots de WhatsApp/Facebook que
+  // arman la vista previa al compartir un link no ejecutan JavaScript — si
+  // volvés a cambiar el nombre, esas pocas líneas hay que tocarlas a mano.)
+  nombreMarca: 'TIENDAPREMIUM.OK',
+
   // Identidad del vendedor (para el footer legal / términos)
   nombreVendedor: 'Diego Ezequiel Zapata',
   condicionFiscal: 'Monotributista',

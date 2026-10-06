@@ -10,6 +10,8 @@ const NOTAS_PAGO = {
 };
 const TIPOS_ENTREGA = { retiro: 'Retiro en showroom', motomensajeria: 'Motomensajería (CABA/GBA)', correo: 'Correo Argentino' };
 const PROVINCIAS = ['Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'];
+// Código postal argentino: 4 dígitos (viejo formato) o CPA (1 letra + 4 dígitos + 3 letras, ej. B1657ABC).
+const validarCP = (cp) => { const v = cp.trim().toUpperCase(); return /^\d{4}$/.test(v) || /^[A-Z]\d{4}[A-Z]{3}$/.test(v); };
 
 let productos = [];
 let envios = [];
@@ -20,6 +22,7 @@ let tipoEntrega = null; // 'retiro' | 'motomensajeria' | 'correo'
 let envioId = null; // id de envios_publico (solo aplica si tipoEntrega === 'motomensajeria')
 let correoProvincia = '';
 let correoLocalidad = '';
+let correoCP = '';
 let clienteNombre = '';
 let detalleId = null;
 let detalleFotoIdx = 0;
@@ -129,6 +132,12 @@ function pintarHeroTriptico() {
   });
 }
 
+// ── botón "Comprar ahora" sobre el tríptico: baja hasta el catálogo completo ──
+window.irACatalogo = function (ev) {
+  if (ev) ev.preventDefault();
+  $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 // ── categorías (pills) ──
 function renderCatPills() {
   const cats = [...new Set(productos.map((p) => p.categoria))].sort();
@@ -151,14 +160,36 @@ function textoStockBajo(p) {
   return p.stockBajo === 1 ? '¡Última unidad!' : `¡Solo quedan ${p.stockBajo} en stock!`;
 }
 
+// Si hay más de una foto, arma un mini-carril deslizable con contador (1/3);
+// con una sola foto (o ninguna) queda igual que antes, sin el overhead del carril.
+window.actualizarContadorCard = function (scrollEl) {
+  const total = scrollEl.children.length;
+  const idx = Math.round(scrollEl.scrollLeft / (scrollEl.clientWidth || 1));
+  const contador = scrollEl.nextElementSibling;
+  if (contador) contador.textContent = `${Math.min(idx + 1, total)}/${total}`;
+};
+function cardFotoHtml(p) {
+  const fotos = p.fotos || [];
+  if (!fotos.length) return '<div class="card-foto"><span class="sin-foto">Sin foto</span></div>';
+  if (fotos.length === 1) {
+    return `<div class="card-foto"><img src="${esc(fotos[0])}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'"></div>`;
+  }
+  return `<div class="card-foto">
+      <div class="card-foto-scroll" onscroll="actualizarContadorCard(this)">
+        ${fotos.map((f) => `<img src="${esc(f)}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
+      </div>
+      <span class="card-foto-contador">1/${fotos.length}</span>
+    </div>`;
+}
+
 function tarjetaHtml(p) {
-  const foto = (p.fotos || [])[0];
   const avisoStock = textoStockBajo(p);
   return `<div class="card" onclick="abrirDetalle('${esc(p.id)}')">
-      <div class="card-foto">${foto ? `<img src="${esc(foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
+      ${cardFotoHtml(p)}
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
       <div class="card-precio">$${fmt(p.precio)}</div>
+      <div class="card-precio-nota">Abonando en efectivo o transferencia</div>
       <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
       ${avisoStock ? `<div class="aviso-stock-bajo">${avisoStock}</div>` : ''}
     </div>`;
@@ -227,6 +258,7 @@ function pintarDetalle() {
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
   $('detalle-precio').textContent = '$' + fmt(p.precio);
+  $('detalle-precio-nota').textContent = 'Abonando en efectivo o transferencia';
   const talles = p.talles || [];
   $('detalle-talles').innerHTML = talles.length
     ? talles.map((t) => `<button class="talle-btn" onclick="agregarAlCarrito('${esc(p.id)}','${esc(t.talle)}')">${esc(t.talle)}</button>`).join('')
@@ -282,6 +314,15 @@ window.setTipoEntrega = function (t) {
 window.setEnvio = function (v) { envioId = v || null; actualizarTotales(); };
 window.setCorreoProvincia = function (v) { correoProvincia = v; actualizarTotales(); };
 window.setCorreoLocalidad = function (v) { correoLocalidad = v; actualizarBotonPedir(); };
+window.setCorreoCP = function (v) {
+  correoCP = v;
+  const err = $('correo-cp-error');
+  if (err) {
+    const vacio = !v.trim();
+    err.style.display = !vacio && !validarCP(v) ? '' : 'none';
+  }
+  actualizarBotonPedir();
+};
 
 function pintarSelectorEntrega() {
   const cont = $('entrega-selector'); if (!cont) return;
@@ -302,6 +343,8 @@ function renderEntregaDetalle() {
         ${PROVINCIAS.map((p) => `<option value="${esc(p)}"${p === correoProvincia ? ' selected' : ''}>${esc(p)}</option>`).join('')}
       </select>
       <input type="text" id="correo-localidad" placeholder="Tu localidad" value="${esc(correoLocalidad)}" oninput="setCorreoLocalidad(this.value)" style="margin-top:8px">
+      <input type="text" id="correo-cp" placeholder="Código postal (ej: 1657 o B1657ABC)" value="${esc(correoCP)}" oninput="setCorreoCP(this.value)" style="margin-top:8px" maxlength="8">
+      <p class="modo-nota" id="correo-cp-error" style="display:none;color:var(--danger);text-align:left;margin-top:4px">El código postal no es válido (ej: 1657 o B1657ABC).</p>
       <p class="modo-nota" style="margin-top:6px">Te cotizamos el envío por WhatsApp.</p>`;
   } else {
     cont.innerHTML = '';
@@ -317,7 +360,7 @@ window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actual
 function entregaCompleta() {
   if (tipoEntrega === 'retiro') return true;
   if (tipoEntrega === 'motomensajeria') return !!envioId;
-  if (tipoEntrega === 'correo') return !!(correoProvincia && correoLocalidad.trim());
+  if (tipoEntrega === 'correo') return !!(correoProvincia && correoLocalidad.trim() && correoCP.trim() && validarCP(correoCP));
   return false;
 }
 function actualizarBotonPedir() {
@@ -329,7 +372,7 @@ function actualizarTotales() {
   if (notaEl) notaEl.textContent = tipoEntrega === 'motomensajeria' && env?.estimado ? 'Precio estimado — tarifa por horario, se confirma por WhatsApp.' : '';
   const totalEl = $('carrito-total');
   if (tipoEntrega === 'correo') {
-    totalEl.innerHTML = `Productos: $${fmt(totalCarrito())}<br><span style="font-size:.76rem;color:var(--muted)">+ envío a cotizar por WhatsApp</span><br><strong>Total: $${fmt(totalCarrito())}</strong>`;
+    totalEl.innerHTML = `Subtotal: $${fmt(totalCarrito())}<br><span style="font-size:.76rem;color:var(--muted)">Envío a cotizar por WhatsApp</span>`;
   } else {
     const totalConEnvio = totalCarrito() + costoEnvio();
     totalEl.innerHTML = costoEnvio()
@@ -364,7 +407,7 @@ window.hacerPedido = function () {
   if (!carrito.length) return;
   if (!clienteNombre.trim()) { toast('Ingresá tu nombre para continuar.'); return; }
   if (!tipoEntrega) { toast('Elegí cómo querés recibir tu pedido.'); return; }
-  if (!entregaCompleta()) { toast(tipoEntrega === 'correo' ? 'Completá provincia y localidad.' : 'Elegí tu localidad.'); return; }
+  if (!entregaCompleta()) { toast(tipoEntrega === 'correo' ? 'Completá provincia, localidad y un código postal válido.' : 'Elegí tu localidad.'); return; }
   if (!formaPago) { toast('Elegí una forma de pago para continuar.'); return; }
 
   const lineas = carrito.map((c) => `• ${c.categoria} — ${c.nombre} (Talle ${c.talle}) x${c.cantidad} = $${fmt(c.precio * c.cantidad)}`).join('\n');
@@ -379,14 +422,14 @@ window.hacerPedido = function () {
     entregaTxt = `Motomensajería — ${env.localidad}`;
     envioTxt = `${env.estimado ? '≈' : ''}$${fmt(env.precio)}${env.estimado ? ' (estimado, se confirma por WhatsApp)' : ''}`;
   } else {
-    entregaTxt = `Correo Argentino — ${correoLocalidad.trim()}, ${correoProvincia}`;
+    entregaTxt = `Correo Argentino — ${correoLocalidad.trim()}, ${correoProvincia} (CP ${correoCP.trim().toUpperCase()})`;
     envioTxt = 'A cotizar por WhatsApp';
   }
 
   const pagoTxt = `${FORMAS_PAGO[formaPago]}${NOTAS_PAGO[formaPago] ? ' (' + NOTAS_PAGO[formaPago] + ')' : ''}`;
   const totalTxt = tipoEntrega === 'correo' ? `$${fmt(subtotal)} + envío a cotizar` : `$${fmt(subtotal + costoEnvio())}`;
 
-  const msg = `¡Hola! Quiero hacer este pedido:
+  const msg = `¡Hola! Quiero hacer este pedido en ${datosNegocio.nombreMarca}:
 Nombre: ${clienteNombre.trim()}
 ${lineas}
 

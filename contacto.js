@@ -41,7 +41,7 @@ $('contacto-form').addEventListener('submit', (ev) => {
   if (!nombre || !telefono) return;
   if (modoArrepentimiento && (!$('f-producto').value.trim() || !$('f-fecha').value)) return;
 
-  const lineas = [modoArrepentimiento ? 'ARREPENTIMIENTO' : 'CONSULTA', `Nombre: ${nombre}`, `Teléfono: ${telefono}`];
+  const lineas = [`${modoArrepentimiento ? 'ARREPENTIMIENTO' : 'CONSULTA'} — ${datosNegocio.nombreMarca}`, `Nombre: ${nombre}`, `Teléfono: ${telefono}`];
   if (email) lineas.push(`Email: ${email}`);
   if (modoArrepentimiento) {
     lineas.push(`Producto: ${$('f-producto').value.trim()}`);

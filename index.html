@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tienda Premium</title>
-<meta name="description" content="Catálogo de indumentaria — hacé tu pedido por WhatsApp.">
+<title>TIENDAPREMIUM.OK</title>
+<meta name="description" content="TIENDAPREMIUM.OK — Camisetas, conjuntos y ropa urbana. Catálogo completo, hacé tu pedido por WhatsApp.">
+<meta property="og:title" content="TIENDAPREMIUM.OK">
+<meta property="og:description" content="Camisetas, conjuntos y ropa urbana. Catálogo completo, hacé tu pedido por WhatsApp.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -14,7 +17,7 @@
 <div class="promo-bar" id="promo-bar-texto">Envío a todo el país · Pedís y coordinás por WhatsApp</div>
 
 <header class="hdr">
-  <div class="hdr-logo">TIENDA <span>PREMIUM</span></div>
+  <div class="hdr-logo" id="hdr-logo">TIENDAPREMIUM.OK</div>
   <nav class="hdr-nav">
     <a href="#" onclick="irANuevos(event)">Nuevos ingresos</a>
     <a href="#" onclick="irADestacados(event)">Destacados</a>
@@ -30,6 +33,7 @@
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
   <div class="htr-ph htr-ph-mid"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
+  <a href="#" class="btn-comprar-ahora" onclick="irACatalogo(event)">Comprar ahora</a>
 </div>
 
 <section class="hero">
@@ -61,7 +65,7 @@
     </div>
     <div class="confianza-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-8.4 8.4 8.3 8.3 0 0 1-4-1L3 20l1.2-5.4a8.3 8.3 0 0 1-1-4A8.4 8.4 0 0 1 11.6 2.2 8.4 8.4 0 0 1 21 11.5Z"/></svg>
-      <div><b>Atención</b><span>Por WhatsApp, directo.</span><a href="contacto.html?arrepentimiento=1" class="confianza-link">Botón de arrepentimiento →</a></div>
+      <div><b>Atención</b><span>Por WhatsApp, directo.</span></div>
     </div>
   </div>
 
@@ -120,6 +124,7 @@
       <div class="detalle-cat" id="detalle-cat"></div>
       <h2 class="detalle-nombre" id="detalle-nombre"></h2>
       <div class="detalle-precio" id="detalle-precio"></div>
+      <div class="detalle-precio-nota" id="detalle-precio-nota"></div>
       <div class="detalle-talles" id="detalle-talles"></div>
       <div class="detalle-stock-bajo aviso-stock-bajo" id="detalle-stock-bajo" style="display:none"></div>
     </div>
@@ -165,5 +170,6 @@
 
 <script type="module" src="app.js"></script>
 <script type="module" src="footer.js"></script>
+<script type="module" src="marca.js"></script>
 </body>
 </html>

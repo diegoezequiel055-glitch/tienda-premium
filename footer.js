@@ -31,7 +31,7 @@ function renderFooter() {
     <footer class="pie">
       <div class="pie-grid">
         <div class="pie-col pie-col-marca">
-          <span class="pie-logo">TIENDAPREMIUM.Ok</span>
+          <span class="pie-logo">${datosNegocio.nombreMarca}</span>
           ${redes ? `<div class="pie-redes">${redes}</div>` : ''}
           <p class="pie-desc">Camisetas, conjuntos y ropa urbana. Showroom en Loma Hermosa y envíos a todo el país.</p>
         </div>
@@ -53,7 +53,7 @@ function renderFooter() {
         <span class="pie-sep">/</span>
         <a href="contacto.html?arrepentimiento=1">Botón de arrepentimiento</a>
       </div>
-      <p class="pie-copy">© 2026 TIENDAPREMIUM.Ok.${datosNegocio.cuit ? ` CUIT: ${datosNegocio.cuit}.` : ''} Todos los derechos reservados.</p>
+      <p class="pie-copy">© 2026 ${datosNegocio.nombreMarca}.${datosNegocio.cuit ? ` CUIT: ${datosNegocio.cuit}.` : ''} Todos los derechos reservados.</p>
     </footer>`;
 }
 
