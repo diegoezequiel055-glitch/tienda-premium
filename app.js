@@ -146,14 +146,21 @@ window.setCategoria = function (v) {
 };
 
 // ── tarjeta de producto (la usan la grilla, Destacados y Nuevos ingresos) ──
+function textoStockBajo(p) {
+  if (!p.stockBajo) return '';
+  return p.stockBajo === 1 ? '¡Última unidad!' : `¡Solo quedan ${p.stockBajo} en stock!`;
+}
+
 function tarjetaHtml(p) {
   const foto = (p.fotos || [])[0];
+  const avisoStock = textoStockBajo(p);
   return `<div class="card" onclick="abrirDetalle('${esc(p.id)}')">
       <div class="card-foto">${foto ? `<img src="${esc(foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
       <div class="card-precio">$${fmt(p.precio)}</div>
       <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
+      ${avisoStock ? `<div class="aviso-stock-bajo">${avisoStock}</div>` : ''}
     </div>`;
 }
 
@@ -224,6 +231,9 @@ function pintarDetalle() {
   $('detalle-talles').innerHTML = talles.length
     ? talles.map((t) => `<button class="talle-btn" onclick="agregarAlCarrito('${esc(p.id)}','${esc(t.talle)}')">${esc(t.talle)}</button>`).join('')
     : '<span class="sin-stock">Sin stock disponible</span>';
+  const avisoStock = textoStockBajo(p);
+  $('detalle-stock-bajo').textContent = avisoStock;
+  $('detalle-stock-bajo').style.display = avisoStock ? '' : 'none';
 }
 
 // ── carrito ──
