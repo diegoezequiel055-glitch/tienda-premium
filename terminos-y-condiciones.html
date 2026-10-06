@@ -27,7 +27,7 @@
   <p>Los precios publicados son por menor, en pesos argentinos, y pueden cambiar sin aviso. El stock puede variar hasta la confirmación del pedido.</p>
 
   <h2>Formas de pago</h2>
-  <p>Efectivo, transferencia o tarjeta. El pago con tarjeta puede tener un recargo, que te informamos antes de cerrar.</p>
+  <p>Efectivo, transferencia o tarjeta. El pago con tarjeta puede variar. Te informamos el total antes de cerrar.</p>
 
   <h2>Envíos</h2>
   <p>Motomensajería en CABA y GBA (costo por localidad, informado en el pedido). Correo Argentino al resto del país (costo a cotizar por WhatsApp). También podés retirar en el showroom.</p>
@@ -36,24 +36,19 @@
   <p>Según la página <a href="cambios-y-devoluciones.html">Cambios y devoluciones</a> (compras por menor).</p>
 
   <h2>Arrepentimiento</h2>
-  <p id="txt-arrepentimiento"></p>
+  <p>Podés hacerlo desde el botón de arrepentimiento de la web o escribiéndonos por WhatsApp o Instagram.</p>
 
   <h2>Datos personales</h2>
   <p>Usamos tu nombre y localidad solo para gestionar tu pedido. No los compartimos con terceros ajenos a la entrega.</p>
 </main>
 
-<footer class="pie">
-  <span class="pie-logo">TIENDA PREMIUM</span>
-  <p id="footer-contacto" class="pie-linea"></p>
-</footer>
+<div id="pie-root"></div>
 
 <script type="module">
   import { datosNegocio } from './datos-negocio.js';
   document.getElementById('txt-vendedor').textContent =
     `${datosNegocio.nombreVendedor}, ${datosNegocio.condicionFiscal}. Domicilio: ${datosNegocio.showroomDireccion}. Contacto: ${datosNegocio.email} y WhatsApp ${datosNegocio.whatsappNumero}.`;
-  document.getElementById('txt-arrepentimiento').textContent =
-    `Tenés 10 días corridos desde que recibís tu compra, sin dar explicaciones. Escribinos a ${datosNegocio.email} o por WhatsApp.`;
-  document.getElementById('footer-contacto').textContent = `${datosNegocio.email} · WhatsApp ${datosNegocio.whatsappNumero}`;
 </script>
+<script type="module" src="footer.js"></script>
 </body>
 </html>

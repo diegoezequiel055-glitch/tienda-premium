@@ -98,16 +98,39 @@ button{font-family:inherit}
 .banda-negra{background:var(--ink);padding:52px 20px;display:flex;align-items:center;justify-content:center;margin-top:10px}
 .banda-negra p{max-width:620px;text-align:center;margin:0;font-family:'Anton',sans-serif;font-size:clamp(20px,4vw,32px);line-height:1.2;color:#fff;text-transform:uppercase}
 
-.pie{padding:40px 20px 80px;color:var(--muted);display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;max-width:640px;margin:0 auto}
-.pie-top{display:flex;flex-direction:column;align-items:center;gap:10px}
-.pie-logo{font-family:'Anton',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:var(--ink)}
-.pie-redes{display:flex;gap:14px}
+.pie{padding:48px 20px 90px;border-top:1px solid var(--border)}
+.pie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:30px;max-width:980px;margin:0 auto}
+.pie-col-marca{display:flex;flex-direction:column;gap:10px}
+.pie-logo{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:1px;color:var(--ink)}
+.pie-redes{display:flex;gap:12px}
 .pie-redes a{color:var(--ink)}
-.pie-linea{font-size:.78rem;line-height:1.6;max-width:520px}
-.pie-legal{display:flex;flex-direction:column;gap:10px;align-items:center;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;width:100%}
-.pie-links a{text-decoration:underline;color:var(--text2)}
-.arca-qr{width:88px;height:88px;border:1px dashed var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-top:4px}
-.arca-qr span{font-size:.6rem;color:var(--muted);text-align:center;padding:4px}
+.pie-desc{font-size:.76rem;color:var(--muted);line-height:1.6;max-width:260px}
+.pie-col b{display:block;font-size:.72rem;color:var(--ink);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.pie-nav{list-style:none;display:flex;flex-direction:column;gap:7px}
+.pie-nav a{font-size:.8rem;color:var(--text2)}
+.pie-col p{font-size:.78rem;color:var(--text2);line-height:1.6}
+.pie-legal-row{max-width:980px;margin:34px auto 0;text-align:center;font-size:.74rem;color:var(--text2);display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.pie-legal-row a{text-decoration:underline}
+.pie-sep{color:var(--border2)}
+.pie-copy{max-width:980px;margin:14px auto 0;text-align:center;font-size:.72rem;color:var(--muted)}
+
+/* PÁGINA CONTACTO */
+.arrep-banner{background:var(--surface2);border-bottom:1px solid var(--border);padding:16px 20px}
+.arrep-banner p{max-width:720px;margin:0 auto;font-size:.82rem;line-height:1.6;color:var(--text2)}
+.contacto-grid{display:grid;grid-template-columns:1fr;gap:36px;max-width:900px;margin:0 auto;padding:36px 20px 60px}
+@media(min-width:760px){.contacto-grid{grid-template-columns:1fr 1.2fr;padding:44px 32px 70px}}
+.contacto-info h1{font-family:'Anton',sans-serif;font-weight:400;font-size:1.6rem;color:var(--ink);text-transform:uppercase;margin-bottom:20px}
+.contacto-info-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:20px}
+.contacto-info-item svg{flex-shrink:0;color:var(--ink);margin-top:2px}
+.contacto-info-item b{display:block;font-size:.84rem;color:var(--ink)}
+.contacto-info-item span{font-size:.8rem;color:var(--text2);line-height:1.5}
+.contacto-info-item div>*:first-child{margin-top:0!important}
+.contacto-form{display:flex;flex-direction:column;gap:14px}
+.contacto-form .field{display:flex;flex-direction:column;gap:6px}
+.contacto-form label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.contacto-form input,.contacto-form textarea{width:100%;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:.85rem}
+.contacto-form textarea{min-height:90px;resize:vertical}
+.contacto-estado{font-size:.8rem;color:var(--success);font-weight:600}
 
 /* OVERLAYS (ficha + carrito) */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}

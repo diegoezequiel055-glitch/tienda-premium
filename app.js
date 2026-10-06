@@ -6,7 +6,7 @@ const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarj
 const NOTAS_PAGO = {
   efectivo: 'Solo para entregas en CABA o zona AMBA.',
   transferencia: '',
-  tarjeta: 'El precio con tarjeta puede variar — te confirmamos el total por WhatsApp.',
+  tarjeta: 'El pago con tarjeta puede variar. Te informamos el total antes de cerrar.',
 };
 const TIPOS_ENTREGA = { retiro: 'Retiro en showroom', motomensajeria: 'Motomensajería (CABA/GBA)', correo: 'Correo Argentino' };
 const PROVINCIAS = ['Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'];
@@ -84,17 +84,6 @@ function aplicarDatosNegocio() {
   const maps = $('showroom-maps'); if (maps) maps.href = datosNegocio.showroomMapsUrl;
   const dir = $('showroom-direccion'); if (dir) dir.textContent = datosNegocio.showroomDireccion;
   const hor = $('showroom-horarios'); if (hor) hor.textContent = datosNegocio.showroomHorarios ? ' · ' + datosNegocio.showroomHorarios : '';
-
-  const ig = $('link-instagram'); if (ig && datosNegocio.instagram) { ig.href = datosNegocio.instagram; ig.style.display = ''; }
-  const tk = $('link-tiktok'); if (tk && datosNegocio.tiktok) { tk.href = datosNegocio.tiktok; tk.style.display = ''; }
-
-  const contacto = $('footer-contacto'); if (contacto) contacto.textContent = `${datosNegocio.email} · WhatsApp ${datosNegocio.whatsappNumero}`;
-  const showroomFooter = $('footer-showroom'); if (showroomFooter) showroomFooter.textContent = `Showroom: ${datosNegocio.showroomDireccion}${datosNegocio.showroomHorarios ? ' · ' + datosNegocio.showroomHorarios : ''}`;
-
-  const vendedor = $('footer-vendedor'); if (vendedor) vendedor.textContent = `${datosNegocio.nombreVendedor} — ${datosNegocio.condicionFiscal} — ${datosNegocio.showroomDireccion}`;
-  const cuit = $('footer-cuit'); if (cuit && datosNegocio.cuit) { cuit.textContent = `CUIT: ${datosNegocio.cuit}`; cuit.style.display = ''; }
-
-  const arrepEmail = $('footer-email-arrep'); if (arrepEmail) arrepEmail.textContent = datosNegocio.email;
 }
 
 // ── envíos (motomensajería) en vivo ──

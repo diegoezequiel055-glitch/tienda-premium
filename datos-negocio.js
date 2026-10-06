@@ -17,8 +17,8 @@ export const datosNegocio = {
   // Contacto
   whatsappNumero: '5491156253612', // con código de país y área, sin + ni espacios
   email: 'indpremium55@gmail.com',
-  instagram: '', // ej: "https://instagram.com/tiendapremium"
-  tiktok: '', // ej: "https://tiktok.com/@tiendapremium"
+  instagram: 'https://www.instagram.com/tiendapremium.ok',
+  tiktok: 'https://www.tiktok.com/@tiendapremium.ok',
 
   // Mayorista: botón que abre el canal de WhatsApp. Mientras esté vacío, el botón no se muestra.
   canalMayoristaWhatsApp: '',

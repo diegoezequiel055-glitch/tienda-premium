@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacto — Tienda Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="legal-hdr">
+  <a class="legal-back" href="index.html">← Volver a la tienda</a>
+</header>
+
+<div id="arrep-banner" class="arrep-banner" style="display:none">
+  <p>Si te arrepentiste de una compra, podés pedir la cancelación enviando este formulario. Tenés hasta 10 días corridos desde que recibiste el producto, sin dar explicaciones. El producto debe volver sin uso y con todas sus etiquetas. Los gastos de la devolución corren por nuestra cuenta y te devolvemos lo abonado.</p>
+</div>
+
+<div class="contacto-grid">
+  <div class="contacto-info">
+    <h1 id="contacto-titulo">Contacto</h1>
+
+    <div class="contacto-info-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20Zm4.4-5.9c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.3.2-.4.1-.2 0-.3 0-.4 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+      <div><b>WhatsApp</b><a id="contacto-whatsapp" href="#" target="_blank" rel="noopener" class="confianza-link"></a></div>
+    </div>
+
+    <div class="contacto-info-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
+      <div><b>Email</b><a id="contacto-email" href="#" class="confianza-link"></a></div>
+    </div>
+
+    <div class="contacto-info-item">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s7-7.5 7-12.5a7 7 0 0 0-14 0C5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      <div>
+        <b>Showroom</b>
+        <span id="contacto-direccion"></span>
+        <a id="contacto-maps" href="#" target="_blank" rel="noopener" class="confianza-link">Cómo llegar →</a>
+      </div>
+    </div>
+
+    <div class="contacto-info-item" id="contacto-horarios-item" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div><b>Horarios</b><span id="contacto-horarios"></span></div>
+    </div>
+
+    <div class="contacto-info-item" id="contacto-instagram-item" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+      <div><b>Instagram</b><a id="contacto-instagram" href="#" target="_blank" rel="noopener" class="confianza-link">@tiendapremium.ok</a></div>
+    </div>
+  </div>
+
+  <form class="contacto-form" id="contacto-form">
+    <div class="field">
+      <label>Nombre y apellido *</label>
+      <input type="text" id="f-nombre" required>
+    </div>
+    <div class="field">
+      <label>Teléfono *</label>
+      <input type="tel" id="f-telefono" required>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="f-email">
+    </div>
+    <div class="field" id="f-producto-wrap" style="display:none">
+      <label>Producto *</label>
+      <input type="text" id="f-producto">
+    </div>
+    <div class="field" id="f-fecha-wrap" style="display:none">
+      <label>Fecha de compra o recepción *</label>
+      <input type="date" id="f-fecha">
+    </div>
+    <div class="field">
+      <label>Mensaje</label>
+      <textarea id="f-mensaje"></textarea>
+    </div>
+    <button type="submit" class="btn-whatsapp">Enviar</button>
+    <p class="contacto-estado" id="contacto-estado" style="display:none">Te respondemos por WhatsApp</p>
+  </form>
+</div>
+
+<div id="pie-root"></div>
+
+<script type="module" src="contacto.js"></script>
+<script type="module" src="footer.js"></script>
+</body>
+</html>

@@ -43,14 +43,8 @@
   <p>Esta política no afecta los derechos del consumidor establecidos por la ley.</p>
 </main>
 
-<footer class="pie">
-  <span class="pie-logo">TIENDA PREMIUM</span>
-  <p id="footer-contacto" class="pie-linea"></p>
-</footer>
+<div id="pie-root"></div>
 
-<script type="module">
-  import { datosNegocio } from './datos-negocio.js';
-  document.getElementById('footer-contacto').textContent = `${datosNegocio.email} · WhatsApp ${datosNegocio.whatsappNumero}`;
-</script>
+<script type="module" src="footer.js"></script>
 </body>
 </html>

@@ -61,17 +61,19 @@
     </div>
     <div class="confianza-item">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-8.4 8.4 8.3 8.3 0 0 1-4-1L3 20l1.2-5.4a8.3 8.3 0 0 1-1-4A8.4 8.4 0 0 1 11.6 2.2 8.4 8.4 0 0 1 21 11.5Z"/></svg>
-      <div><b>Atención</b><span>Por WhatsApp, directo.</span></div>
+      <div><b>Atención</b><span>Por WhatsApp, directo.</span><a href="contacto.html?arrepentimiento=1" class="confianza-link">Botón de arrepentimiento →</a></div>
     </div>
   </div>
 
   <div class="como-comprar">
     <h2 class="section-title">Cómo comprar</h2>
     <div class="como-comprar-steps">
-      <div class="paso"><span class="paso-n">1</span><p>Elegís tus productos y los sumás al carrito.</p></div>
-      <div class="paso"><span class="paso-n">2</span><p>Completás tu nombre, cómo lo recibís y cómo pagás.</p></div>
-      <div class="paso"><span class="paso-n">3</span><p>Nos escribís por WhatsApp con el pedido ya armado.</p></div>
-      <div class="paso"><span class="paso-n">4</span><p>Confirmamos stock, envío y coordinamos todo.</p></div>
+      <div class="paso"><span class="paso-n">1</span><p>Entrá a Productos y elegí la prenda que te guste.</p></div>
+      <div class="paso"><span class="paso-n">2</span><p>Elegí tu talle y agregala a tu pedido.</p></div>
+      <div class="paso"><span class="paso-n">3</span><p>Abrí tu pedido y elegí cómo recibirlo (retiro en showroom, moto en CABA/GBA o Correo Argentino) y la forma de pago.</p></div>
+      <div class="paso"><span class="paso-n">4</span><p>Tocá "Hacer pedido por WhatsApp": se arma el mensaje con todo tu pedido.</p></div>
+      <div class="paso"><span class="paso-n">5</span><p>Te confirmamos stock, total y envío por WhatsApp.</p></div>
+      <div class="paso"><span class="paso-n">6</span><p>Pagás y coordinamos la entrega.</p></div>
     </div>
   </div>
 </section>
@@ -106,26 +108,7 @@
   <p id="banda-negra-texto">Elegís tu talle, coordinamos por WhatsApp y te llega a la puerta de tu casa</p>
 </section>
 
-<footer class="pie">
-  <div class="pie-top">
-    <span class="pie-logo">TIENDA PREMIUM</span>
-    <div class="pie-redes">
-      <a id="link-instagram" href="#" target="_blank" rel="noopener" style="display:none" aria-label="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
-      <a id="link-tiktok" href="#" target="_blank" rel="noopener" style="display:none" aria-label="TikTok"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 2h-3.2v13.9a3 3 0 1 1-2.5-3v-3.3a6.3 6.3 0 1 0 5.7 6.3V8.6a7.7 7.7 0 0 0 4.4 1.4V6.8A4.4 4.4 0 0 1 16.6 2Z"/></svg></a>
-    </div>
-  </div>
-
-  <p id="footer-contacto" class="pie-linea"></p>
-  <p id="footer-showroom" class="pie-linea"></p>
-
-  <div class="pie-legal">
-    <p id="footer-vendedor" class="pie-linea"></p>
-    <p id="footer-cuit" class="pie-linea" style="display:none"></p>
-    <p class="pie-linea">Arrepentimiento: tenés 10 días corridos desde que recibís tu compra para arrepentirte, sin dar explicaciones. Escribinos a <span id="footer-email-arrep"></span> o por WhatsApp. El producto debe volver sin uso y con todas sus etiquetas, y te devolvemos lo abonado.</p>
-    <p class="pie-linea pie-links"><a href="cambios-y-devoluciones.html">Cambios y devoluciones</a> · <a href="terminos-y-condiciones.html">Términos y condiciones</a></p>
-    <div class="arca-qr"><span>Código QR ARCA</span></div>
-  </div>
-</footer>
+<div id="pie-root"></div>
 
 <!-- FICHA DE PRODUCTO -->
 <div class="overlay" id="detalle-overlay" onclick="if(event.target===this)cerrarDetalle()">
@@ -180,5 +163,6 @@
 <div class="toast" id="toast"></div>
 
 <script type="module" src="app.js"></script>
+<script type="module" src="footer.js"></script>
 </body>
 </html>
