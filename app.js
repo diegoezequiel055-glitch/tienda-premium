@@ -1,38 +1,33 @@
 import { db, collection, doc, onSnapshot } from './firebase-config.js';
+import { datosNegocio } from './datos-negocio.js';
 
-const WHATSAPP_NUMERO = '5491156253612'; // número de Diego, con código de país y área, sin + ni espacios
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
-const MODOS = { menor: 'Por menor', mayorista: 'Por mayor', curva: 'Curva' };
-const CAMPO_PRECIO = { menor: 'precio', mayorista: 'precioMayorista', curva: 'precioCurva' };
-const NOTAS_MODO = {
-  menor: '',
-  mayorista: 'Precio por mayor: pedido mínimo de 3 unidades de un mismo producto (en talles distintos) o 4 unidades surtidas. Lo confirmamos por WhatsApp.',
-  curva: 'Precio por curva: llevando todos los talles disponibles de un mismo producto (uno de cada talle). Lo confirmamos por WhatsApp.',
-};
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
 const NOTAS_PAGO = {
   efectivo: 'Solo para entregas en CABA o zona AMBA.',
   transferencia: '',
   tarjeta: 'El precio con tarjeta puede variar — te confirmamos el total por WhatsApp.',
 };
-
-const ENVIO_RETIRO = 'retiro';
+const TIPOS_ENTREGA = { retiro: 'Retiro en showroom', motomensajeria: 'Motomensajería (CABA/GBA)', correo: 'Correo Argentino' };
+const PROVINCIAS = ['Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'];
 
 let productos = [];
 let envios = [];
 let busqueda = '';
 let categoria = '';
-let modo = 'menor'; // siempre arranca por menor — no se guarda entre visitas
 let formaPago = null;
-let envioId = null; // id de envios_publico, o ENVIO_RETIRO, o null (sin elegir)
+let tipoEntrega = null; // 'retiro' | 'motomensajeria' | 'correo'
+let envioId = null; // id de envios_publico (solo aplica si tipoEntrega === 'motomensajeria')
+let correoProvincia = '';
+let correoLocalidad = '';
+let clienteNombre = '';
 let detalleId = null;
 let detalleFotoIdx = 0;
-let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, modo, cantidad}]
+let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, cantidad}]
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
-const precioDe = (p, m) => p[CAMPO_PRECIO[m]] || null;
 
 function cargarCarrito() {
   try { return JSON.parse(localStorage.getItem('carrito') || '[]'); } catch { return []; }
@@ -50,7 +45,7 @@ window.toast = function (msg) {
   window.__toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 };
 
-// ── catálogo en vivo ──
+// ── catálogo en vivo (ya viene filtrado: solo lo publicable con foto, precio y stock) ──
 onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   renderCatPills();
@@ -75,9 +70,31 @@ function aplicarConfigSitio(cfg) {
   if (cfg.bandaNegra) $('banda-negra-texto').textContent = cfg.bandaNegra;
   const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
   const flotante = $('whatsapp-float');
-  if (flotante) flotante.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
+  if (flotante) flotante.href = `https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`;
   heroFotosManual = cfg.heroFotos || null;
   pintarHeroTriptico();
+}
+
+// ── datos del negocio (showroom, redes, mayorista) — estáticos, no dependen de Firestore ──
+function aplicarDatosNegocio() {
+  document.querySelectorAll('.btn-mayorista').forEach((el) => {
+    if (datosNegocio.canalMayoristaWhatsApp) { el.href = datosNegocio.canalMayoristaWhatsApp; el.style.display = ''; }
+  });
+
+  const maps = $('showroom-maps'); if (maps) maps.href = datosNegocio.showroomMapsUrl;
+  const dir = $('showroom-direccion'); if (dir) dir.textContent = datosNegocio.showroomDireccion;
+  const hor = $('showroom-horarios'); if (hor) hor.textContent = datosNegocio.showroomHorarios ? ' · ' + datosNegocio.showroomHorarios : '';
+
+  const ig = $('link-instagram'); if (ig && datosNegocio.instagram) { ig.href = datosNegocio.instagram; ig.style.display = ''; }
+  const tk = $('link-tiktok'); if (tk && datosNegocio.tiktok) { tk.href = datosNegocio.tiktok; tk.style.display = ''; }
+
+  const contacto = $('footer-contacto'); if (contacto) contacto.textContent = `${datosNegocio.email} · WhatsApp ${datosNegocio.whatsappNumero}`;
+  const showroomFooter = $('footer-showroom'); if (showroomFooter) showroomFooter.textContent = `Showroom: ${datosNegocio.showroomDireccion}${datosNegocio.showroomHorarios ? ' · ' + datosNegocio.showroomHorarios : ''}`;
+
+  const vendedor = $('footer-vendedor'); if (vendedor) vendedor.textContent = `${datosNegocio.nombreVendedor} — ${datosNegocio.condicionFiscal} — ${datosNegocio.showroomDireccion}`;
+  const cuit = $('footer-cuit'); if (cuit && datosNegocio.cuit) { cuit.textContent = `CUIT: ${datosNegocio.cuit}`; cuit.style.display = ''; }
+
+  const arrepEmail = $('footer-email-arrep'); if (arrepEmail) arrepEmail.textContent = datosNegocio.email;
 }
 
 // ── envíos (motomensajería) en vivo ──
@@ -93,7 +110,6 @@ function pintarSelectEnvio() {
   const valorPrevio = sel.value;
   const ordenadas = [...envios].sort((a, b) => a.localidad.localeCompare(b.localidad, 'es'));
   sel.innerHTML = '<option value="">Elegí tu localidad...</option>' +
-    `<option value="${ENVIO_RETIRO}">🏍️ Retiro en persona / fuera de zona</option>` +
     ordenadas.map((e) => `<option value="${esc(e.id)}">${esc(e.localidad)} — ${e.estimado ? '≈' : ''}$${fmt(e.precio)}</option>`).join('');
   if (valorPrevio) sel.value = valorPrevio;
 }
@@ -116,37 +132,13 @@ function pintarHeroTriptico() {
   const conFoto = productos.filter((p) => (p.fotos || [])[0]);
   if (!conFoto.length) return;
   cont.dataset.pintado = '1';
-  const base = destacadosConFoto.length >= 3 ? destacadosConFoto : conFoto;
+  const base = destacadosConFoto.length >= 2 ? destacadosConFoto : conFoto;
   const elegidos = [base[0], base[Math.floor(base.length / 2)], base[base.length - 1]];
   divs.forEach((div, i) => {
     const p = elegidos[i]; if (!p) return;
     div.innerHTML = `<img src="${esc(p.fotos[0])}" alt="${esc(p.nombre)}" loading="lazy">`;
   });
 }
-
-// ── link "Mayorista / Curva": cambia el modo y lleva a la grilla ──
-window.irAMayorista = function (ev) {
-  if (ev) ev.preventDefault();
-  setModo('mayorista');
-  $('grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
-// ── selector de precio (menor / mayorista / curva) ──
-function pintarSelectoresModo() {
-  const html = Object.entries(MODOS).map(([k, l]) => `<button class="modo-btn${modo === k ? ' active' : ''}" onclick="setModo('${k}')">${l}</button>`).join('');
-  $('modo-selector-top').innerHTML = html;
-  const sel2 = $('modo-selector-detalle');
-  if (sel2) sel2.innerHTML = html;
-  $('modo-nota').textContent = NOTAS_MODO[modo];
-}
-window.setModo = function (m) {
-  modo = m;
-  pintarSelectoresModo();
-  renderGrid();
-  renderDestacados();
-  renderNuevos();
-  if (detalleId) pintarDetalle();
-};
 
 // ── categorías (pills) ──
 function renderCatPills() {
@@ -164,22 +156,20 @@ window.setCategoria = function (v) {
   renderGrid();
 };
 
-// ── tarjeta de producto (la usan la grilla y Destacados) ──
+// ── tarjeta de producto (la usan la grilla, Destacados y Nuevos ingresos) ──
 function tarjetaHtml(p) {
-  const precio = precioDe(p, modo);
   const foto = (p.fotos || [])[0];
   return `<div class="card" onclick="abrirDetalle('${esc(p.id)}')">
       <div class="card-foto">${foto ? `<img src="${esc(foto)}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>'}</div>
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
-      <div class="card-precio">${precio ? '$' + fmt(precio) : '<small>Consultar precio ' + MODOS[modo].toLowerCase() + '</small>'}</div>
+      <div class="card-precio">$${fmt(p.precio)}</div>
       <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
     </div>`;
 }
 
 // ── grilla ──
 function renderGrid() {
-  pintarSelectoresModo();
   const grid = $('grid');
   if (!productos.length) { grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
   const q = busqueda.toLowerCase().trim();
@@ -189,15 +179,15 @@ function renderGrid() {
   grid.innerHTML = filtrados.map(tarjetaHtml).join('');
 }
 
-// ── destacados (productos tildados ⭐ desde el panel) ──
+// ── destacados (productos tildados ⭐ desde el panel) — se oculta con menos de 2 ──
 function destacadosList() {
   return productos.filter((p) => p.destacado).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 }
 function renderDestacados() {
   const sec = $('destacados-section'), strip = $('destacados-strip'); if (!sec || !strip) return;
   const lista = destacadosList();
-  sec.style.display = lista.length ? '' : 'none';
-  if (lista.length) strip.innerHTML = lista.map(tarjetaHtml).join('');
+  sec.style.display = lista.length >= 2 ? '' : 'none';
+  if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
 window.irADestacados = function (ev) {
   if (ev) ev.preventDefault();
@@ -205,7 +195,7 @@ window.irADestacados = function (ev) {
   (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-// ── nuevos ingresos (automático, por fecha real de alta — no hace falta tildar nada) ──
+// ── nuevos ingresos (automático, por fecha real de alta) — se oculta con menos de 2 ──
 const MAX_NUEVOS = 10;
 function nuevosList() {
   return [...productos].filter((p) => p.creadoEn).sort((a, b) => b.creadoEn - a.creadoEn).slice(0, MAX_NUEVOS);
@@ -213,8 +203,8 @@ function nuevosList() {
 function renderNuevos() {
   const sec = $('nuevos-section'), strip = $('nuevos-strip'); if (!sec || !strip) return;
   const lista = nuevosList();
-  sec.style.display = lista.length ? '' : 'none';
-  if (lista.length) strip.innerHTML = lista.map(tarjetaHtml).join('');
+  sec.style.display = lista.length >= 2 ? '' : 'none';
+  if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
 window.irANuevos = function (ev) {
   if (ev) ev.preventDefault();
@@ -234,32 +224,28 @@ window.elegirFotoDetalle = function (i) { detalleFotoIdx = i; pintarDetalle(); }
 
 function pintarDetalle() {
   const p = productos.find((x) => x.id === detalleId); if (!p) return;
-  pintarSelectoresModo();
   const fotos = p.fotos || [];
   const foto = fotos[detalleFotoIdx];
   $('detalle-foto').innerHTML = foto ? `<img src="${esc(foto)}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">` : '<span class="sin-foto">Sin foto</span>';
   $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(f)}"></button>`).join('') : '';
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
-  const precio = precioDe(p, modo);
-  $('detalle-precio').innerHTML = precio ? '$' + fmt(precio) : `<span style="font-size:1rem;color:var(--muted)">Sin precio ${MODOS[modo].toLowerCase()} cargado — consultanos</span>`;
+  $('detalle-precio').textContent = '$' + fmt(p.precio);
   const talles = p.talles || [];
   $('detalle-talles').innerHTML = talles.length
-    ? talles.map((t) => `<button class="talle-btn" ${precio ? '' : 'disabled'} onclick="agregarAlCarrito('${esc(p.id)}','${esc(t.talle)}')">${esc(t.talle)}</button>`).join('')
+    ? talles.map((t) => `<button class="talle-btn" onclick="agregarAlCarrito('${esc(p.id)}','${esc(t.talle)}')">${esc(t.talle)}</button>`).join('')
     : '<span class="sin-stock">Sin stock disponible</span>';
 }
 
 // ── carrito ──
 window.agregarAlCarrito = function (id, talle) {
   const p = productos.find((x) => x.id === id); if (!p) return;
-  const precio = precioDe(p, modo);
-  if (!precio) { toast(`Todavía no hay precio ${MODOS[modo].toLowerCase()} para este producto.`); return; }
   const fila = (p.talles || []).find((t) => t.talle === talle); if (!fila) return;
-  const existente = carrito.find((c) => c.id === id && c.talle === talle && c.modo === modo);
+  const existente = carrito.find((c) => c.id === id && c.talle === talle);
   const enCarrito = existente ? existente.cantidad : 0;
   if (enCarrito >= fila.stock) { toast(`No hay más stock de ${p.nombre} talle ${talle}.`); return; }
   if (existente) existente.cantidad++;
-  else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, precio, modo, cantidad: 1 });
+  else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, precio: p.precio, cantidad: 1 });
   guardarCarrito(); actualizarContador();
   toast(`${p.nombre} (${talle}) agregado al pedido ✓`);
 };
@@ -279,12 +265,49 @@ function actualizarContador() {
   $('cart-count').textContent = carrito.reduce((a, c) => a + c.cantidad, 0);
 }
 function totalCarrito() { return carrito.reduce((a, c) => a + c.precio * c.cantidad, 0); }
-function envioElegido() { return envioId && envioId !== ENVIO_RETIRO ? envios.find((e) => e.id === envioId) : null; }
-function costoEnvio() { return envioElegido()?.precio || 0; }
-window.setEnvio = function (v) { envioId = v || null; actualizarBotonPedir(); renderCarrito(); };
+function envioElegido() { return envios.find((e) => e.id === envioId) || null; }
+function costoEnvio() { return tipoEntrega === 'motomensajeria' ? (envioElegido()?.precio || 0) : 0; }
 
 window.abrirCarrito = function () { renderCarrito(); $('carrito-overlay').classList.add('open'); };
 window.cerrarCarrito = function () { $('carrito-overlay').classList.remove('open'); };
+
+window.setClienteNombre = function (v) { clienteNombre = v; actualizarBotonPedir(); };
+
+// ── entrega: Retiro en showroom / Motomensajería / Correo Argentino ──
+window.setTipoEntrega = function (t) {
+  tipoEntrega = t;
+  if (t !== 'motomensajeria') envioId = null;
+  pintarSelectorEntrega();
+  actualizarTotales();
+};
+window.setEnvio = function (v) { envioId = v || null; actualizarTotales(); };
+window.setCorreoProvincia = function (v) { correoProvincia = v; actualizarTotales(); };
+window.setCorreoLocalidad = function (v) { correoLocalidad = v; actualizarBotonPedir(); };
+
+function pintarSelectorEntrega() {
+  const cont = $('entrega-selector'); if (!cont) return;
+  cont.innerHTML = Object.entries(TIPOS_ENTREGA).map(([k, l]) => `<button class="modo-btn${tipoEntrega === k ? ' active' : ''}" onclick="setTipoEntrega('${k}')">${l}</button>`).join('');
+  renderEntregaDetalle();
+}
+function renderEntregaDetalle() {
+  const cont = $('entrega-detalle'); if (!cont) return;
+  if (tipoEntrega === 'retiro') {
+    cont.innerHTML = `<p class="modo-nota" style="margin:8px 0 0;text-align:left">${esc(datosNegocio.showroomDireccion)}${datosNegocio.showroomHorarios ? ' · ' + esc(datosNegocio.showroomHorarios) : ''}. Sin costo.</p>`;
+  } else if (tipoEntrega === 'motomensajeria') {
+    cont.innerHTML = `<select id="envio-select" onchange="setEnvio(this.value)" style="margin-top:8px"><option value="">Elegí tu localidad...</option></select><p class="modo-nota" id="envio-nota" style="margin-top:6px"></p>`;
+    pintarSelectEnvio();
+  } else if (tipoEntrega === 'correo') {
+    cont.innerHTML = `
+      <select id="correo-provincia" onchange="setCorreoProvincia(this.value)" style="margin-top:8px">
+        <option value="">Elegí tu provincia...</option>
+        ${PROVINCIAS.map((p) => `<option value="${esc(p)}"${p === correoProvincia ? ' selected' : ''}>${esc(p)}</option>`).join('')}
+      </select>
+      <input type="text" id="correo-localidad" placeholder="Tu localidad" value="${esc(correoLocalidad)}" oninput="setCorreoLocalidad(this.value)" style="margin-top:8px">
+      <p class="modo-nota" style="margin-top:6px">Te cotizamos el envío por WhatsApp.</p>`;
+  } else {
+    cont.innerHTML = '';
+  }
+}
 
 function pintarSelectorPago() {
   $('pago-selector').innerHTML = Object.entries(FORMAS_PAGO).map(([k, l]) => `<button class="modo-btn${formaPago === k ? ' active' : ''}" onclick="setFormaPago('${k}')">${l}</button>`).join('');
@@ -292,8 +315,29 @@ function pintarSelectorPago() {
 }
 window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actualizarBotonPedir(); };
 
+function entregaCompleta() {
+  if (tipoEntrega === 'retiro') return true;
+  if (tipoEntrega === 'motomensajeria') return !!envioId;
+  if (tipoEntrega === 'correo') return !!(correoProvincia && correoLocalidad.trim());
+  return false;
+}
 function actualizarBotonPedir() {
-  $('btn-pedir').disabled = !carrito.length || !formaPago || !envioId;
+  $('btn-pedir').disabled = !carrito.length || !formaPago || !clienteNombre.trim() || !entregaCompleta();
+}
+function actualizarTotales() {
+  const env = envioElegido();
+  const notaEl = $('envio-nota');
+  if (notaEl) notaEl.textContent = tipoEntrega === 'motomensajeria' && env?.estimado ? 'Precio estimado — tarifa por horario, se confirma por WhatsApp.' : '';
+  const totalEl = $('carrito-total');
+  if (tipoEntrega === 'correo') {
+    totalEl.innerHTML = `Productos: $${fmt(totalCarrito())}<br><span style="font-size:.76rem;color:var(--muted)">+ envío a cotizar por WhatsApp</span><br><strong>Total: $${fmt(totalCarrito())}</strong>`;
+  } else {
+    const totalConEnvio = totalCarrito() + costoEnvio();
+    totalEl.innerHTML = costoEnvio()
+      ? `Productos: $${fmt(totalCarrito())} + Envío: $${fmt(costoEnvio())}<br><strong>Total: $${fmt(totalConEnvio)}</strong>`
+      : 'Total: $' + fmt(totalConEnvio);
+  }
+  actualizarBotonPedir();
 }
 
 function renderCarrito() {
@@ -302,7 +346,7 @@ function renderCarrito() {
     body.innerHTML = `<div class="carrito-vacio">Todavía no agregaste nada.<br>Elegí un producto para empezar.</div>`;
   } else {
     body.innerHTML = carrito.map((c, i) => `<div class="carrito-item">
-      <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(c.precio)} c/u ${c.modo !== 'menor' ? `<em>${esc(MODOS[c.modo])}</em>` : ''}</div>
+      <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(c.precio)} c/u</div>
       <div class="carrito-item-ctrl">
         <button class="qty-btn" onclick="cambiarCantidad(${i},-1)">−</button>
         <span>${c.cantidad}</span>
@@ -311,28 +355,52 @@ function renderCarrito() {
       </div>
     </div>`).join('');
   }
-  pintarSelectEnvio();
-  const env = envioElegido();
-  $('envio-nota').textContent = envioId === ENVIO_RETIRO ? 'Coordinamos el envío o retiro por WhatsApp.' : env?.estimado ? 'Precio estimado — tarifa por horario, se confirma por WhatsApp.' : '';
-  const totalConEnvio = totalCarrito() + costoEnvio();
-  $('carrito-total').innerHTML = costoEnvio()
-    ? `Productos: $${fmt(totalCarrito())} + Envío: $${fmt(costoEnvio())}<br><strong>Total: $${fmt(totalConEnvio)}</strong>`
-    : 'Total: $' + fmt(totalConEnvio);
+  const nombreInput = $('cliente-nombre'); if (nombreInput && document.activeElement !== nombreInput) nombreInput.value = clienteNombre;
+  pintarSelectorEntrega();
   pintarSelectorPago();
-  actualizarBotonPedir();
+  actualizarTotales();
 }
 
 window.hacerPedido = function () {
   if (!carrito.length) return;
-  if (!envioId) { toast('Elegí tu localidad o "Retiro en persona" para continuar.'); return; }
+  if (!clienteNombre.trim()) { toast('Ingresá tu nombre para continuar.'); return; }
+  if (!tipoEntrega) { toast('Elegí cómo querés recibir tu pedido.'); return; }
+  if (!entregaCompleta()) { toast(tipoEntrega === 'correo' ? 'Completá provincia y localidad.' : 'Elegí tu localidad.'); return; }
   if (!formaPago) { toast('Elegí una forma de pago para continuar.'); return; }
-  const lineas = carrito.map((c) => `• ${c.categoria} — ${c.nombre} (Talle ${c.talle}${c.modo !== 'menor' ? ' · ' + MODOS[c.modo] : ''}) x${c.cantidad} = $${fmt(c.precio * c.cantidad)}`).join('\n');
-  const env = envioElegido();
-  const envioTxt = envioId === ENVIO_RETIRO ? 'Retiro en persona / fuera de zona — a coordinar por WhatsApp' : `${env.localidad}: ${env.estimado ? '≈' : ''}$${fmt(env.precio)}${env.estimado ? ' (estimado, tarifa por horario)' : ''}`;
+
+  const lineas = carrito.map((c) => `• ${c.categoria} — ${c.nombre} (Talle ${c.talle}) x${c.cantidad} = $${fmt(c.precio * c.cantidad)}`).join('\n');
+  const subtotal = totalCarrito();
+
+  let entregaTxt, envioTxt;
+  if (tipoEntrega === 'retiro') {
+    entregaTxt = 'Retiro en showroom';
+    envioTxt = 'Sin costo (retiro)';
+  } else if (tipoEntrega === 'motomensajeria') {
+    const env = envioElegido();
+    entregaTxt = `Motomensajería — ${env.localidad}`;
+    envioTxt = `${env.estimado ? '≈' : ''}$${fmt(env.precio)}${env.estimado ? ' (estimado, se confirma por WhatsApp)' : ''}`;
+  } else {
+    entregaTxt = `Correo Argentino — ${correoLocalidad.trim()}, ${correoProvincia}`;
+    envioTxt = 'A cotizar por WhatsApp';
+  }
+
   const pagoTxt = `${FORMAS_PAGO[formaPago]}${NOTAS_PAGO[formaPago] ? ' (' + NOTAS_PAGO[formaPago] + ')' : ''}`;
-  const msg = `¡Hola! Quiero hacer este pedido:\n${lineas}\n\nTotal productos: $${fmt(totalCarrito())}\nEnvío (${envioTxt})\nTotal: $${fmt(totalCarrito() + costoEnvio())}\nForma de pago: ${pagoTxt}`;
-  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`, '_blank');
+  const totalTxt = tipoEntrega === 'correo' ? `$${fmt(subtotal)} + envío a cotizar` : `$${fmt(subtotal + costoEnvio())}`;
+
+  const msg = `¡Hola! Quiero hacer este pedido:
+Nombre: ${clienteNombre.trim()}
+${lineas}
+
+Subtotal: $${fmt(subtotal)}
+Entrega: ${entregaTxt}
+Envío: ${envioTxt}
+Forma de pago: ${pagoTxt}
+Total: ${totalTxt}
+
+Pedido a confirmar, sujeto a stock y costo de envío.`;
+
+  window.open(`https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
 actualizarContador();
-pintarSelectoresModo();
+aplicarDatosNegocio();

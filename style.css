@@ -34,14 +34,22 @@ button{font-family:inherit}
 .btn-solid{background:var(--ink);color:#fff}
 .btn-outline{border:1px solid var(--ink);color:var(--ink)}
 
-/* TRUST STRIP */
-.trust-strip{display:flex;flex-wrap:wrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.trust-item{flex:1 1 220px;padding:18px 20px;display:flex;gap:12px;align-items:flex-start;border-right:1px solid var(--border)}
-.trust-item:last-child{border-right:none}
-.trust-item svg{flex-shrink:0;margin-top:2px;color:var(--ink)}
-.trust-item div{display:flex;flex-direction:column;gap:2px}
-.trust-item b{font-size:.82rem;color:var(--ink);font-weight:600}
-.trust-item span{font-size:.74rem;color:var(--muted);line-height:1.5}
+/* CONFIANZA Y CONTACTO */
+.confianza{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px 0 36px}
+.confianza-grid{display:flex;flex-wrap:wrap}
+.confianza-item{flex:1 1 220px;padding:18px 20px;display:flex;gap:12px;align-items:flex-start;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.confianza-item svg{flex-shrink:0;margin-top:2px;color:var(--ink)}
+.confianza-item div{display:flex;flex-direction:column;gap:2px}
+.confianza-item b{font-size:.82rem;color:var(--ink);font-weight:600}
+.confianza-item span{font-size:.74rem;color:var(--muted);line-height:1.5}
+.confianza-link{font-size:.74rem;color:var(--ink);font-weight:600;text-decoration:underline;margin-top:4px}
+
+.como-comprar{padding:30px 20px 0}
+@media(min-width:700px){.como-comprar{padding:34px 32px 0}}
+.como-comprar-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;margin-top:16px}
+.paso{display:flex;flex-direction:column;gap:6px}
+.paso-n{font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--ink)}
+.paso p{font-size:.78rem;color:var(--text2);line-height:1.5}
 
 /* TÍTULOS DE SECCIÓN */
 .section-title{font-family:'Anton',sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:.5px;color:var(--ink);text-transform:uppercase;padding:0 20px;margin:0}
@@ -55,8 +63,6 @@ button{font-family:inherit}
 .destacados-strip .card{flex:0 0 180px;scroll-snap-align:start}
 @media(min-width:700px){.destacados-strip{padding:2px 32px 10px;scroll-padding-left:32px}.destacados-strip .card{flex-basis:230px}}
 
-/* SELECTOR DE PRECIO */
-.modo-barra{padding:28px 20px 14px;text-align:center}
 .modo-selector{display:inline-flex;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;padding:4px;gap:2px}
 .modo-btn{background:none;border:none;color:var(--text2);padding:8px 16px;border-radius:999px;font-family:inherit;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap}
 .modo-btn.active{background:var(--ink);color:#fff;font-weight:600}
@@ -92,9 +98,16 @@ button{font-family:inherit}
 .banda-negra{background:var(--ink);padding:52px 20px;display:flex;align-items:center;justify-content:center;margin-top:10px}
 .banda-negra p{max-width:620px;text-align:center;margin:0;font-family:'Anton',sans-serif;font-size:clamp(20px,4vw,32px);line-height:1.2;color:#fff;text-transform:uppercase}
 
-.pie{text-align:center;padding:36px 20px 80px;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
+.pie{padding:40px 20px 80px;color:var(--muted);display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;max-width:640px;margin:0 auto}
+.pie-top{display:flex;flex-direction:column;align-items:center;gap:10px}
 .pie-logo{font-family:'Anton',sans-serif;font-size:.95rem;letter-spacing:1.5px;color:var(--ink)}
-.pie p{font-size:.78rem}
+.pie-redes{display:flex;gap:14px}
+.pie-redes a{color:var(--ink)}
+.pie-linea{font-size:.78rem;line-height:1.6;max-width:520px}
+.pie-legal{display:flex;flex-direction:column;gap:10px;align-items:center;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;width:100%}
+.pie-links a{text-decoration:underline;color:var(--text2)}
+.arca-qr{width:88px;height:88px;border:1px dashed var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-top:4px}
+.arca-qr span{font-size:.6rem;color:var(--muted);text-align:center;padding:4px}
 
 /* OVERLAYS (ficha + carrito) */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
@@ -141,9 +154,10 @@ button{font-family:inherit}
 .carrito-vacio{text-align:center;padding:30px 10px;color:var(--muted);font-size:.85rem}
 .carrito-foot{padding:16px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
 .pago-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
-#envio-select{width:100%;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:.85rem;margin-bottom:2px}
-.pago-selector{display:flex;width:100%}
+#cliente-nombre,#envio-select,#correo-provincia,#correo-localidad{width:100%;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:.85rem}
+.pago-selector,.entrega-selector{display:flex;width:100%;flex-wrap:wrap}
 .pago-selector .modo-btn{flex:1}
+.entrega-selector .modo-btn{flex:1 1 30%;white-space:normal;line-height:1.2;padding:8px 6px}
 .carrito-total{font-family:'Anton',sans-serif;font-size:1.3rem;text-align:right;color:var(--ink)}
 .btn-whatsapp{background:var(--success);color:#06210f;border:none;border-radius:999px;padding:13px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-whatsapp:disabled{opacity:.5;cursor:default}
@@ -153,3 +167,13 @@ button{font-family:inherit}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);border-left:3px solid #fff;color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:.82rem;z-index:300;opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);max-width:90vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* PÁGINAS LEGALES (Cambios y devoluciones / Términos y condiciones) */
+.legal-hdr{padding:16px 20px;border-bottom:1px solid var(--border)}
+.legal-back{font-size:.8rem;color:var(--text2);text-decoration:underline}
+.legal-page{max-width:640px;margin:0 auto;padding:36px 20px 60px}
+.legal-page h1{font-family:'Anton',sans-serif;font-weight:400;font-size:1.7rem;color:var(--ink);text-transform:uppercase;margin-bottom:18px}
+.legal-page h2{font-family:'Anton',sans-serif;font-weight:400;font-size:1.05rem;color:var(--ink);text-transform:uppercase;margin:26px 0 8px}
+.legal-page p{font-size:.86rem;line-height:1.7;color:var(--text2);margin-bottom:10px}
+.legal-page ul{margin:0 0 10px 18px}
+.legal-page li{font-size:.86rem;line-height:1.7;color:var(--text2);margin-bottom:5px}

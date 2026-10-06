@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cambios y devoluciones — Tienda Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="legal-hdr">
+  <a class="legal-back" href="index.html">← Volver a la tienda</a>
+</header>
+
+<main class="legal-page">
+  <h1>Cambios y devoluciones</h1>
+
+  <h2>Cambios por talle o modelo</h2>
+  <ul>
+    <li>Tenés 5 días corridos desde que recibís o retirás tu pedido.</li>
+    <li>La prenda debe estar sin uso, sin lavar, con todas sus etiquetas y en su empaque original, tal como la recibiste.</li>
+    <li>Si falta la etiqueta, está usada o tiene daños, no podemos hacer el cambio.</li>
+    <li>Está sujeto al stock y a los talles que tengamos disponibles en ese momento. Elegís entre lo que haya.</li>
+    <li>El envío de ida y de vuelta lo paga el comprador.</li>
+    <li>Para pedir el cambio escribinos por WhatsApp y lo coordinamos.</li>
+  </ul>
+
+  <h2>Prendas con falla</h2>
+  <p>Si recibís una prenda con una falla que no estaba informada, o distinta a lo que pediste, avisanos por WhatsApp y gestionamos el cambio o la devolución, sin costo de envío para vos.</p>
+</main>
+
+<footer class="pie">
+  <span class="pie-logo">TIENDA PREMIUM</span>
+  <p id="footer-contacto" class="pie-linea"></p>
+</footer>
+
+<script type="module">
+  import { datosNegocio } from './datos-negocio.js';
+  document.getElementById('footer-contacto').textContent = `${datosNegocio.email} · WhatsApp ${datosNegocio.whatsappNumero}`;
+</script>
+</body>
+</html>

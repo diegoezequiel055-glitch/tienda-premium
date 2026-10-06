@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Términos y condiciones — Tienda Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="legal-hdr">
+  <a class="legal-back" href="index.html">← Volver a la tienda</a>
+</header>
+
+<main class="legal-page">
+  <h1>Términos y condiciones</h1>
+
+  <h2>Vendedor</h2>
+  <p id="txt-vendedor"></p>
+
+  <h2>Pedidos</h2>
+  <p>Esta web es un catálogo. El pedido que armás se envía por WhatsApp y queda a confirmar. La compra se concreta cuando te confirmamos stock, forma de pago y envío.</p>
+
+  <h2>Precios y stock</h2>
+  <p>Los precios publicados son por menor, en pesos argentinos, y pueden cambiar sin aviso. El stock puede variar hasta la confirmación del pedido.</p>
+
+  <h2>Formas de pago</h2>
+  <p>Efectivo, transferencia o tarjeta. El pago con tarjeta puede tener un recargo, que te informamos antes de cerrar.</p>
+
+  <h2>Envíos</h2>
+  <p>Motomensajería en CABA y GBA (costo por localidad, informado en el pedido). Correo Argentino al resto del país (costo a cotizar por WhatsApp). También podés retirar en el showroom.</p>
+
+  <h2>Cambios y devoluciones</h2>
+  <p>Según la página <a href="cambios-y-devoluciones.html">Cambios y devoluciones</a>. Las compras por mayor y por curva no tienen cambios ni devoluciones.</p>
+
+  <h2>Arrepentimiento</h2>
+  <p id="txt-arrepentimiento"></p>
+
+  <h2>Datos personales</h2>
+  <p>Usamos tu nombre y localidad solo para gestionar tu pedido. No los compartimos con terceros ajenos a la entrega.</p>
+</main>
+
+<footer class="pie">
+  <span class="pie-logo">TIENDA PREMIUM</span>
+  <p id="footer-contacto" class="pie-linea"></p>
+</footer>
+
+<script type="module">
+  import { datosNegocio } from './datos-negocio.js';
+  document.getElementById('txt-vendedor').textContent =
+    `${datosNegocio.nombreVendedor}, ${datosNegocio.condicionFiscal}. Domicilio: ${datosNegocio.showroomDireccion}. Contacto: ${datosNegocio.email} y WhatsApp ${datosNegocio.whatsappNumero}.`;
+  document.getElementById('txt-arrepentimiento').textContent =
+    `Tenés 10 días corridos desde que recibís tu compra, sin dar explicaciones. Escribinos a ${datosNegocio.email} o por WhatsApp.`;
+  document.getElementById('footer-contacto').textContent = `${datosNegocio.email} · WhatsApp ${datosNegocio.whatsappNumero}`;
+</script>
+</body>
+</html>
