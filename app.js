@@ -1,5 +1,6 @@
 import { db, collection, doc, onSnapshot } from './firebase-config.js';
 import { datosNegocio } from './datos-negocio.js';
+import { categoriasDisponibles, claveDe, normalizar } from './categorias-config.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
@@ -51,7 +52,9 @@ window.toast = function (msg) {
 // ── catálogo en vivo (ya viene filtrado: solo lo publicable con foto, precio y stock) ──
 onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  if (categoria && !categoriasDisponibles(productos).some((c) => c.clave === categoria)) window.setCategoria('');
   renderCatPills();
+  document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
   renderGrid();
   pintarHeroTriptico();
   renderDestacados();
@@ -140,18 +143,24 @@ window.irACatalogo = function (ev) {
 
 // ── categorías (pills) ──
 function renderCatPills() {
-  const cats = [...new Set(productos.map((p) => p.categoria))].sort();
+  const cats = categoriasDisponibles(productos);
   const cont = $('cat-pills');
-  if (cont.dataset.n == cats.length) return;
-  cont.dataset.n = cats.length;
-  cont.innerHTML = `<button class="cat-pill active" onclick="setCategoria('')">Todas</button>` +
-    cats.map((c) => `<button class="cat-pill" onclick="setCategoria('${esc(c)}')" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  const firma = cats.map((c) => c.clave).join('|');
+  if (cont.dataset.firma === firma) return;
+  cont.dataset.firma = firma;
+  cont.innerHTML = `<button class="cat-pill" onclick="setCategoria('')" data-cat="">Todas</button>` +
+    cats.map((c) => `<button class="cat-pill" onclick="setCategoria('${esc(c.clave)}')" data-cat="${esc(c.clave)}">${esc(c.nombre)}</button>`).join('');
+  marcarPill();
+}
+function marcarPill() {
+  document.querySelectorAll('.cat-pill').forEach((b) => b.classList.toggle('active', (b.dataset.cat || '') === categoria));
 }
 window.setBusqueda = function (v) { busqueda = v; renderGrid(); };
 window.setCategoria = function (v) {
   categoria = v;
-  document.querySelectorAll('.cat-pill').forEach((b) => b.classList.toggle('active', (b.dataset.cat || '') === v));
+  marcarPill();
   renderGrid();
+  document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: v }));
 };
 
 // ── tarjeta de producto (la usan la grilla, Destacados y Nuevos ingresos) ──
@@ -199,10 +208,10 @@ function tarjetaHtml(p) {
 function renderGrid() {
   const grid = $('grid');
   if (!productos.length) { grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
-  const q = busqueda.toLowerCase().trim();
-  const filtrados = productos.filter((p) => (!q || p.nombre.toLowerCase().includes(q)) && (!categoria || p.categoria === categoria))
+  const q = normalizar(busqueda);
+  const filtrados = productos.filter((p) => (!q || normalizar(p.nombre).includes(q)) && (!categoria || claveDe(p.categoria) === categoria))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
-  if (!filtrados.length) { grid.innerHTML = `<div class="empty"><p>No encontramos productos con esa búsqueda.</p></div>`; return; }
+  if (!filtrados.length) { grid.innerHTML = `<div class="empty"><p>${q ? 'No encontramos productos con ese nombre' : 'No hay productos en esta categoría.'}</p></div>`; return; }
   grid.innerHTML = filtrados.map(tarjetaHtml).join('');
 }
 
