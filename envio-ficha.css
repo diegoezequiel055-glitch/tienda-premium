@@ -1,0 +1,10 @@
+/* Calcular envío en la ficha del producto */
+#detalle-envio{margin-top:6px;border-top:1px solid var(--border);padding-top:6px}
+.envio-toggle{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;background:none;border:none;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--ink);cursor:pointer;padding:0}
+.envio-panel{padding:2px 0 6px}
+.envio-opciones{display:flex;flex-direction:column;gap:6px}
+.envio-op{text-align:left;min-height:42px;padding:0 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;font-family:inherit;font-size:.82rem;color:var(--text);cursor:pointer}
+.envio-op.active{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+#ficha-envio-select{width:100%;margin-top:8px;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:16px}
+.envio-res{font-size:.82rem;line-height:1.5;color:var(--text);margin-top:8px}
+.envio-nota{font-size:.74rem;line-height:1.5;color:var(--muted);margin-top:4px}

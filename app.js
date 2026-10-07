@@ -96,13 +96,14 @@ function aplicarDatosNegocio() {
 onSnapshot(collection(db, 'envios_publico'), (snap) => {
   envios = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   pintarSelectEnvio();
+  avisarEntrega();
 }, () => {});
 
 function pintarSelectEnvio() {
   const sel = $('envio-select'); if (!sel) return;
   if (sel.dataset.n == envios.length) return;
   sel.dataset.n = envios.length;
-  const valorPrevio = sel.value;
+  const valorPrevio = sel.value || envioId || '';
   const ordenadas = [...envios].sort((a, b) => a.localidad.localeCompare(b.localidad, 'es'));
   sel.innerHTML = '<option value="">Elegí tu localidad...</option>' +
     ordenadas.map((e) => `<option value="${esc(e.id)}">${esc(e.localidad)} — ${e.estimado ? '≈' : ''}$${fmt(e.precio)}</option>`).join('');
@@ -331,6 +332,7 @@ function pintarDetalle() {
   const avisoStock = textoStockBajo(p);
   $('detalle-stock-bajo').textContent = avisoStock;
   $('detalle-stock-bajo').style.display = avisoStock ? '' : 'none';
+  document.dispatchEvent(new CustomEvent('detalle-pintado', { detail: p }));
 }
 
 // ── carrito ──
@@ -375,8 +377,19 @@ window.setTipoEntrega = function (t) {
   if (t !== 'motomensajeria') envioId = null;
   pintarSelectorEntrega();
   actualizarTotales();
+  avisarEntrega();
 };
-window.setEnvio = function (v) { envioId = v || null; actualizarTotales(); };
+window.setEnvio = function (v) { envioId = v || null; actualizarTotales(); avisarEntrega(); };
+
+// Puente con envio-ficha.js: la ficha lee y escribe la misma elección de entrega que el carrito.
+function avisarEntrega() { document.dispatchEvent(new CustomEvent('entrega-cambiada')); }
+window.getEntrega = function () { return { tipoEntrega, envioId, envios }; };
+window.setEntregaDesdeFicha = function (t, id) {
+  tipoEntrega = t || null;
+  envioId = t === 'motomensajeria' ? (id || null) : null;
+  pintarSelectorEntrega();
+  actualizarTotales();
+};
 window.setCorreoProvincia = function (v) { correoProvincia = v; actualizarTotales(); };
 window.setCorreoLocalidad = function (v) { correoLocalidad = v; actualizarBotonPedir(); };
 window.setCorreoCP = function (v) {
