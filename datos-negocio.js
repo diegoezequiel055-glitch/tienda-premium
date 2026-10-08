@@ -33,4 +33,12 @@ export const datosNegocio = {
 
   // Link "Defensa de las y los Consumidores" del footer (todas las páginas).
   linkDefensaConsumidor: 'https://autogestion.produccion.gob.ar/consumidores',
+
+  // Mini-eslogan rotativo de la barra negra de arriba (promo-bar.js). Un texto
+  // por línea, rota cada 4 segundos. Con un solo texto queda fijo, sin animar.
+  // Tienen que entrar en una línea en celular: máximo ~50 caracteres.
+  mensajesPromo: [
+    'Pedí hoy, te llega mañana · Exclusivo CABA y GBA',
+    'Envío a todo el país · Pedís y coordinás por WhatsApp',
+  ],
 };

@@ -37,7 +37,7 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 
 ## Envíos en la ficha del producto
 - Sección "Calcular envío" (`envio-ficha.js` + `envio-ficha.css`) con Retiro en showroom, Motomensajería (misma tabla y misma elección que el carrito — comparten estado) y Otra provincia (Correo Argentino, "te cotizamos por WhatsApp"). Sin precio aproximado de Correo, sin Vía Cargo ni Andreani, sin código postal automático (pendientes). Solo aparece si el producto tiene stock.
-- Cuando se elige una localidad de motomensajería ahí aparece "Pedí hoy, te llega mañana (lunes a viernes)" — es el único lugar donde existe ese texto hoy; **no** es todavía el mini-eslogan rotativo global que pide la lista de pendientes (ver abajo).
+- Cuando se elige una localidad de motomensajería ahí aparece "Pedí hoy, te llega mañana (lunes a viernes)" — ese texto de la ficha es independiente de la barra rotativa de arriba (`promo-bar.js`) y no se toca.
 
 ## Páginas y footer
 - Footer en todas las páginas: marca + íconos Instagram/TikTok + eslogan, Ayuda (Inicio, Productos, Contacto, Cambios y devoluciones, Cómo comprar, Términos y condiciones, + Mayorista si hay link), medios de pago y envío en texto (sin logos de terceros), link Defensa de las y los Consumidores (`https://autogestion.produccion.gob.ar/consumidores`, pestaña nueva, `rel="noopener noreferrer"`) y "Botón de arrepentimiento" (lleva a Contacto con `?arrepentimiento=1`), copyright "© 2026 TIENDAPREMIUM.OK. CUIT: 20-46183728-0".
@@ -52,7 +52,6 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - Pendientes (anotados, no hacer sin que Diego lo pida):
   - Rediseño del inicio con bloques grandes con foto y botón "Comprar" por categoría.
   - Pestaña lateral "Destacados" con 3 categorías.
-  - Mini-eslogan rotativo "Pedí hoy, te llega mañana · Exclusivo CABA y GBA" como banner global (hoy ese texto solo existe, sin rotar y sin la segunda parte, dentro de "Calcular envío" al elegir motomensajería).
   - Envío gratis desde cierto monto.
   - Previsualización al compartir el link — **el inicio ya tiene `og:title`/`og:description`/`og:type`**, así que compartir la home ya arma una vista previa básica; lo que falta es la preview por producto (ver siguiente punto).
   - Link propio por producto y botón Compartir.
@@ -81,6 +80,7 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 `envio-ficha.js` / `envio-ficha.css` — "Calcular envío" en la ficha.
 `footer.js` — footer compartido.
 `marca.js` — nombre de marca en logo y `<title>`.
+`promo-bar.js` / `promo-bar.css` — barra negra de arriba como mini-eslogan rotativo. Textos en `datosNegocio.mensajesPromo` (`datos-negocio.js`, un texto por línea). Rota cada 4 s con fade de 0,4 s; alto fijo de 34 px y una sola línea (si un texto es largo se corta con "…", mantenerlos ≤ ~50 caracteres); con un solo texto queda fijo; con "reducir movimiento" cambia sin fade; no rota si la pestaña está oculta. La barra (`<div class="promo-bar" id="promo-bar-texto">`) está en las 5 páginas y cada una carga `promo-bar.css` y `promo-bar.js`. Ya **no** se lee `promoBarra` de Firestore (`config_sitio`): se sacó esa línea de `app.js` para que no pise la rotación (el campo, si existe en Firestore, queda sin uso, no se borró).
 `contacto.js` — formulario de contacto/arrepentimiento.
 `firebase-config.js` — conexión a Firestore.
 `style.css` — estilos generales.
