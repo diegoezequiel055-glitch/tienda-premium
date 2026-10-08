@@ -35,6 +35,10 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - El mensaje de WhatsApp tiene formato fijo (nombre, líneas de ítems, Subtotal, Entrega, Envío, Forma de pago, Total), porque Diego lo pega después en "Carga rápida" (el cargador por IA de StockMGR, `carga-rapida.js`) para cargar la venta. **No cambiar ese formato sin avisar.**
 - El carrito en celular: productos primero y completos (con foto), el formulario después, todo en un solo scroll (`.carrito-scroll`); el botón "Hacer pedido por WhatsApp" queda fijo abajo.
 
+## Fotos de la ficha (carga diferida)
+- La ficha con varias fotos tiene todas las `<img>` en el carril pero con `data-src` (sin `src`); `app.js` (`cargarFotoDetalle` / `cargarFotosDetalle`) pone el `src` de a una. Al abrir se descarga solo la foto actual; cuando esa termina de cargar se precargan la siguiente y la anterior. Al frenar el scroll (150 ms sin moverse) se cargan la actual y sus vecinas, así un salto por miniatura descarga solo la foto elegida y no las intermedias. Una foto con `src` ya puesto no se vuelve a pedir. El hueco mientras carga es el fondo neutro (`--surface2`, en `style.css`), sin cambiar el alto. Las miniaturas cargan todas de entrada. Swipe, flechas, teclado y contador no se tocaron. Tamaños y calidades siguen siendo los de `fotos-cloudinary.js`.
+- Peso de abrir una ficha de 5 fotos (w_900): antes ≈ 770 KB (las 5 juntas); ahora ≈ 330 KB al abrir (foto 1 + la siguiente precargada), el resto a medida que se desliza.
+
 ## Envíos en la ficha del producto
 - Sección "Calcular envío" (`envio-ficha.js` + `envio-ficha.css`) con Retiro en showroom, Motomensajería (misma tabla y misma elección que el carrito — comparten estado) y Otra provincia (Correo Argentino, "te cotizamos por WhatsApp"). Sin precio aproximado de Correo, sin Vía Cargo ni Andreani, sin código postal automático (pendientes). Solo aparece si el producto tiene stock.
 - Cuando se elige una localidad de motomensajería ahí aparece "Pedí hoy, te llega mañana (lunes a viernes)" — ese texto de la ficha es independiente de la barra rotativa de arriba (`promo-bar.js`) y no se toca.
