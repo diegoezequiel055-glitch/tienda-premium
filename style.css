@@ -152,7 +152,7 @@ button{font-family:inherit}
 .detalle-foto img{width:100%;height:100%;object-fit:cover}
 .detalle-foto-scroll{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory}
 .detalle-foto-scroll::-webkit-scrollbar{display:none}
-.detalle-foto-scroll img{flex:0 0 100%;scroll-snap-align:start;width:100%;height:100%;object-fit:cover}
+.detalle-foto-scroll img{flex:0 0 100%;scroll-snap-align:start;width:100%;height:100%;object-fit:cover;background:var(--surface2)}
 .detalle-foto-contador{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.68rem;padding:3px 9px;border-radius:999px;pointer-events:none}
 .detalle-foto-flecha{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.88);border:1px solid var(--border);color:var(--ink);font-size:1.15rem;line-height:1;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
 .detalle-foto:hover .detalle-foto-flecha{opacity:1}

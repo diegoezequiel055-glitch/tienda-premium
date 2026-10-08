@@ -268,14 +268,39 @@ function detalleFotoHtml(p, fotos) {
   }
   return `
     <div class="detalle-foto-scroll" id="detalle-foto-scroll" onscroll="onScrollDetalleFoto(this)">
-      ${fotos.map((f) => `<img src="${esc(fotoCloudinary(f, 'ficha'))}" alt="${esc(p.nombre)}">`).join('')}
+      ${fotos.map((f) => `<img data-src="${esc(fotoCloudinary(f, 'ficha'))}" data-alt="${esc(p.nombre)}" alt="">`).join('')}
     </div>
     <button class="detalle-foto-flecha detalle-foto-prev" onclick="moverFotoDetalle(-1)" aria-label="Foto anterior">‹</button>
     <button class="detalle-foto-flecha detalle-foto-next" onclick="moverFotoDetalle(1)" aria-label="Foto siguiente">›</button>
     <span class="detalle-foto-contador" id="detalle-foto-contador">${detalleFotoIdx + 1}/${fotos.length}</span>`;
 }
+// Fotos grandes de la ficha: se descargan de a una. Al abrir, solo la actual;
+// cuando esa carga, se precargan la siguiente y la anterior. Una foto con
+// src ya puesto no se vuelve a pedir. Las miniaturas cargan todas de entrada.
+function cargarFotoDetalle(i, alCargar) {
+  const scroll = $('detalle-foto-scroll');
+  const img = scroll && scroll.children[i];
+  if (!img || !img.dataset.src) { if (alCargar) alCargar(); return; }
+  if (!img.getAttribute('src')) {
+    if (alCargar) img.addEventListener('load', alCargar, { once: true });
+    img.alt = img.dataset.alt || '';
+    img.src = img.dataset.src;
+  } else if (alCargar) {
+    if (img.complete) alCargar(); else img.addEventListener('load', alCargar, { once: true });
+  }
+}
+function cargarFotosDetalle(i) {
+  const scroll = $('detalle-foto-scroll');
+  cargarFotoDetalle(i, () => {
+    if ($('detalle-foto-scroll') !== scroll) return; // se cerró o cambió de producto
+    cargarFotoDetalle(i + 1);
+    cargarFotoDetalle(i - 1);
+  });
+}
+let detalleScrollTimer = null;
 function irAFotoDetalle(i, smooth) {
   detalleFotoIdx = i;
+  cargarFotoDetalle(i); // si saltó a una foto sin cargar (miniatura), se pide ya
   const el = $('detalle-foto-scroll');
   if (el) el.scrollTo({ left: i * el.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
   actualizarUIFotoDetalle();
@@ -303,6 +328,10 @@ window.onScrollDetalleFoto = function (el) {
   const idx = Math.round(el.scrollLeft / (el.clientWidth || 1));
   const clamped = Math.max(0, Math.min(idx, el.children.length - 1));
   if (clamped !== detalleFotoIdx) { detalleFotoIdx = clamped; actualizarUIFotoDetalle(); }
+  // Recién cuando el scroll se frena se cargan la actual y sus vecinas, así un salto
+  // por miniatura no descarga las fotos intermedias.
+  clearTimeout(detalleScrollTimer);
+  detalleScrollTimer = setTimeout(() => cargarFotosDetalle(detalleFotoIdx), 150);
 };
 document.addEventListener('keydown', (e) => {
   if (!detalleId || !$('detalle-overlay').classList.contains('open')) return;
@@ -318,6 +347,7 @@ function pintarDetalle() {
   if (fotos.length > 1) {
     const el = $('detalle-foto-scroll');
     if (el) el.scrollTo({ left: detalleFotoIdx * el.clientWidth, behavior: 'auto' });
+    cargarFotosDetalle(detalleFotoIdx);
   }
   $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(fotoCloudinary(f, 'carrito'))}"></button>`).join('') : '';
   actualizarUIFotoDetalle();
