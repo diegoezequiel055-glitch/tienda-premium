@@ -72,7 +72,6 @@ onSnapshot(doc(db, 'config_sitio', 'config'), (snap) => {
 function aplicarConfigSitio(cfg) {
   if (cfg.heroTitulo) $('hero-titulo').textContent = cfg.heroTitulo;
   if (cfg.heroSubtitulo) $('hero-subtitulo').textContent = cfg.heroSubtitulo;
-  if (cfg.promoBarra) $('promo-bar-texto').textContent = cfg.promoBarra;
   if (cfg.bandaNegra) $('banda-negra-texto').textContent = cfg.bandaNegra;
   const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
   const flotante = $('whatsapp-float');

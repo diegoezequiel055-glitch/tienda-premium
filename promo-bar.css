@@ -1,0 +1,6 @@
+/* Barra negra de arriba: mini-eslogan rotativo (promo-bar.js). Alto fijo para
+   que al rotar no se mueva nada, y cada texto en una sola línea. */
+.promo-bar{background:var(--ink);color:#fff;text-align:center;font-size:.78rem;letter-spacing:.3px;height:34px;line-height:34px;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .4s ease}
+.promo-bar.promo-oculta{opacity:0}
+@media (max-width:400px){.promo-bar{font-size:.74rem;letter-spacing:.2px}}
+@media (prefers-reduced-motion:reduce){.promo-bar{transition:none}}
