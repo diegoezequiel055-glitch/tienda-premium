@@ -61,7 +61,6 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
   - Guía de talles.
   - "Completá tu look".
   - Pantalla de confirmación tras el pedido (hoy "Hacer pedido" abre WhatsApp directo, sin pantalla intermedia).
-  - Optimizar fotos (hoy se suben a Cloudinary sin transformación de tamaño/calidad).
   - Ícono para pantalla de inicio (favicon / apple-touch-icon) — tienda-premium no tiene ninguno hoy; Stock Ropa sí.
   - Filtrar y Ordenar por — el filtro por categoría y la búsqueda por nombre ya existen (pills, menú ☰, lupa); lo que falta es "Ordenar por" (precio, novedad, etc.).
   - Página de Productos — hoy "Productos" en el footer lleva a `index.html#grid` (la misma portada), no es una página aparte.
@@ -79,6 +78,7 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 `header-menu.js` / `header-menu.css` — buscador y menú ☰.
 `envio-ficha.js` / `envio-ficha.css` — "Calcular envío" en la ficha.
 `footer.js` — footer compartido.
+`fotos-cloudinary.js` — `fotoCloudinary(url, tamaño)` inserta `f_auto,q_auto:<calidad>,c_limit,w_<ancho>` después de `/image/upload/` (la original no se toca ni se vuelve a subir). Tamaños fijos en `TAMANOS_FOTO`: `carrito` 160 px (miniaturas del carrito y de la ficha, calidad eco), `tarjeta` 400 px (tarjetas, tira del inicio; eco), `ficha` 900 px (foto grande de la ficha; calidad good). Si la URL no es de Cloudinary o ya trae transformación, la devuelve igual. Usado en `app.js`. La tira de 3 fotos del inicio NO es lazy (primera pantalla); tarjetas y carrito sí. No agregar tamaños nuevos sin necesidad (cada combinación nueva gasta cuota de Cloudinary).
 `marca.js` — nombre de marca en logo y `<title>`.
 `promo-bar.js` / `promo-bar.css` — barra negra de arriba como mini-eslogan rotativo. Textos en `datosNegocio.mensajesPromo` (`datos-negocio.js`, un texto por línea). Rota cada 4 s con fade de 0,4 s; alto fijo de 34 px y una sola línea (si un texto es largo se corta con "…", mantenerlos ≤ ~50 caracteres); con un solo texto queda fijo; con "reducir movimiento" cambia sin fade; no rota si la pestaña está oculta. La barra (`<div class="promo-bar" id="promo-bar-texto">`) está en las 5 páginas y cada una carga `promo-bar.css` y `promo-bar.js`. Ya **no** se lee `promoBarra` de Firestore (`config_sitio`): se sacó esa línea de `app.js` para que no pise la rotación (el campo, si existe en Firestore, queda sin uso, no se borró).
 `contacto.js` — formulario de contacto/arrepentimiento.

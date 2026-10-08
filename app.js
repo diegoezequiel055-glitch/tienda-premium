@@ -1,5 +1,6 @@
 import { db, collection, doc, onSnapshot } from './firebase-config.js';
 import { datosNegocio } from './datos-negocio.js';
+import { fotoCloudinary } from './fotos-cloudinary.js';
 import { categoriasDisponibles, claveDe, normalizar } from './categorias-config.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
@@ -118,7 +119,7 @@ function pintarHeroTriptico() {
   if (heroFotosManual && heroFotosManual.some(Boolean)) {
     divs.forEach((div, i) => {
       const url = heroFotosManual[i];
-      div.innerHTML = url ? `<img src="${esc(url)}" alt="" loading="lazy">` : HTR_PLACEHOLDER;
+      div.innerHTML = url ? `<img src="${esc(fotoCloudinary(url, 'tarjeta'))}" alt="">` : HTR_PLACEHOLDER;
     });
     return;
   }
@@ -131,7 +132,7 @@ function pintarHeroTriptico() {
   const elegidos = [base[0], base[Math.floor(base.length / 2)], base[base.length - 1]];
   divs.forEach((div, i) => {
     const p = elegidos[i]; if (!p) return;
-    div.innerHTML = `<img src="${esc(p.fotos[0])}" alt="${esc(p.nombre)}" loading="lazy">`;
+    div.innerHTML = `<img src="${esc(fotoCloudinary(p.fotos[0], 'tarjeta'))}" alt="${esc(p.nombre)}">`;
   });
 }
 
@@ -181,11 +182,11 @@ function cardFotoHtml(p) {
   const fotos = p.fotos || [];
   if (!fotos.length) return '<div class="card-foto"><span class="sin-foto">Sin foto</span></div>';
   if (fotos.length === 1) {
-    return `<div class="card-foto"><img src="${esc(fotos[0])}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'"></div>`;
+    return `<div class="card-foto"><img src="${esc(fotoCloudinary(fotos[0], 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'"></div>`;
   }
   return `<div class="card-foto">
       <div class="card-foto-scroll" onscroll="actualizarContadorCard(this)">
-        ${fotos.map((f) => `<img src="${esc(f)}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
+        ${fotos.map((f) => `<img src="${esc(fotoCloudinary(f, 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
       </div>
       <span class="card-foto-contador">1/${fotos.length}</span>
     </div>`;
@@ -263,11 +264,11 @@ window.cerrarDetalle = function () { $('detalle-overlay').classList.remove('open
 function detalleFotoHtml(p, fotos) {
   if (!fotos.length) return '<span class="sin-foto">Sin foto</span>';
   if (fotos.length === 1) {
-    return `<img src="${esc(fotos[0])}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">`;
+    return `<img src="${esc(fotoCloudinary(fotos[0], 'ficha'))}" alt="${esc(p.nombre)}" onerror="this.parentElement.innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">`;
   }
   return `
     <div class="detalle-foto-scroll" id="detalle-foto-scroll" onscroll="onScrollDetalleFoto(this)">
-      ${fotos.map((f) => `<img src="${esc(f)}" alt="${esc(p.nombre)}">`).join('')}
+      ${fotos.map((f) => `<img src="${esc(fotoCloudinary(f, 'ficha'))}" alt="${esc(p.nombre)}">`).join('')}
     </div>
     <button class="detalle-foto-flecha detalle-foto-prev" onclick="moverFotoDetalle(-1)" aria-label="Foto anterior">‹</button>
     <button class="detalle-foto-flecha detalle-foto-next" onclick="moverFotoDetalle(1)" aria-label="Foto siguiente">›</button>
@@ -318,7 +319,7 @@ function pintarDetalle() {
     const el = $('detalle-foto-scroll');
     if (el) el.scrollTo({ left: detalleFotoIdx * el.clientWidth, behavior: 'auto' });
   }
-  $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(f)}"></button>`).join('') : '';
+  $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(fotoCloudinary(f, 'carrito'))}"></button>`).join('') : '';
   actualizarUIFotoDetalle();
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
@@ -465,7 +466,7 @@ function renderCarrito() {
     body.innerHTML = `<div class="carrito-vacio">Todavía no agregaste nada.<br>Elegí un producto para empezar.</div>`;
   } else {
     body.innerHTML = carrito.map((c, i) => `<div class="carrito-item">
-      <div class="carrito-item-foto">${c.foto ? `<img src="${esc(c.foto)}" alt="" loading="lazy">` : ''}</div>
+      <div class="carrito-item-foto">${c.foto ? `<img src="${esc(fotoCloudinary(c.foto, 'carrito'))}" alt="" loading="lazy">` : ''}</div>
       <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(c.precio)} c/u</div>
       <div class="carrito-item-ctrl">
         <button class="qty-btn" onclick="cambiarCantidad(${i},-1)">−</button>
