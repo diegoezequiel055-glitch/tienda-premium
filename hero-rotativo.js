@@ -8,6 +8,10 @@ import { fotoCloudinary } from './fotos-cloudinary.js';
 // es la misma URL que la ficha, así al abrirla esa foto ya está en caché.
 // app.js solo llama a pintarHeroRotativo() y a idsHero() (para que "Nuevos
 // ingresos" no repita estos productos).
+// Rapidez: index.html carga este módulo directo (sin esperar a Firestore) y, si
+// el cliente ya nos visitó, dibuja de inmediato el hero de la última vez
+// (guardado en localStorage). Cuando llega el catálogo real se confirma: si es
+// igual no se toca nada, si cambió se redibuja.
 // ══════════════════════════════════════════
 
 const CANTIDAD = 4;
@@ -30,7 +34,10 @@ export function idsHero(productos) {
   return new Set(listaHero(productos).map((p) => p.id));
 }
 
+const CLAVE_CACHE = 'heroCache';
 let firma = '';
+let catalogoListo = false; // true cuando ya llegó el catálogo real de Firestore
+let pendienteAbrir = null; // tocó un producto del hero guardado antes de que llegue el catálogo
 let timer = null;
 let timerSinDatos = null;
 let pausado = false;
@@ -89,17 +96,40 @@ function programar(raiz) {
   }, INTERVALO_MS);
 }
 
+function leerCache() {
+  try {
+    const l = JSON.parse(localStorage.getItem(CLAVE_CACHE) || '[]');
+    return Array.isArray(l) ? l.filter((p) => p && p.id && p.creadoEn > 0 && p.fotos && p.fotos[0] && p.precio > 0).slice(0, CANTIDAD) : [];
+  } catch { return []; }
+}
+function guardarCache(lista) {
+  try {
+    if (!lista.length) { localStorage.removeItem(CLAVE_CACHE); return; }
+    localStorage.setItem(CLAVE_CACHE, JSON.stringify(lista.map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio, creadoEn: p.creadoEn, fotos: [p.fotos[0]] }))));
+  } catch {}
+}
+
 export function pintarHeroRotativo(productos, { alFallback } = {}) {
   const raiz = document.getElementById('hero-rot');
   if (!raiz) { if (alFallback) alFallback(); return; }
   const lista = listaHero(productos);
   clearTimeout(timerSinDatos);
+  catalogoListo = true;
+  guardarCache(lista);
   if (!lista.length) {
     clearTimeout(timer);
     raiz.style.display = 'none'; raiz.innerHTML = ''; firma = '';
     if (alFallback) alFallback();
     return;
   }
+  dibujar(raiz, lista);
+  if (pendienteAbrir) {
+    const id = pendienteAbrir; pendienteAbrir = null;
+    if (productos.some((p) => p.id === id) && window.abrirDetalle) window.abrirDetalle(id);
+  }
+}
+
+function dibujar(raiz, lista) {
   const nueva = lista.map((p) => [p.id, p.fotos[0], p.nombre, p.precio, esNuevo(p)].join('~')).join('|');
   if (nueva === firma) return; // mismo contenido: no reiniciar el carrusel en cada actualización
   firma = nueva;
@@ -114,7 +144,10 @@ export function pintarHeroRotativo(productos, { alFallback } = {}) {
   marcarPuntos(raiz);
   cargarDesde(0);
 
-  slides.forEach((s) => s.addEventListener('click', () => { if (window.abrirDetalle) window.abrirDetalle(s.dataset.id); }));
+  slides.forEach((s) => s.addEventListener('click', () => {
+    if (!catalogoListo) { pendienteAbrir = s.dataset.id; return; } // todavía no llegó el catálogo: se abre apenas llegue
+    if (window.abrirDetalle) window.abrirDetalle(s.dataset.id);
+  }));
   raiz.querySelectorAll('.hero-rot-punto').forEach((b, k) => b.addEventListener('click', () => irA(raiz, k, true)));
 
   if (!multiple) return;
@@ -143,3 +176,10 @@ export function esperarHeroRotativo(alFallback) {
     if (raiz && !raiz.firstElementChild) { raiz.style.display = 'none'; alFallback(); }
   }, ESPERA_SIN_DATOS_MS);
 }
+
+// Visita repetida: dibujar ya el hero de la última vez, sin esperar a Firestore.
+(function () {
+  const raiz = document.getElementById('hero-rot');
+  const guardado = raiz ? leerCache() : [];
+  if (guardado.length) dibujar(raiz, guardado);
+})();
