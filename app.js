@@ -85,7 +85,10 @@ function aplicarConfigSitio(cfg) {
 // ── datos del negocio (showroom, redes, mayorista) — estáticos, no dependen de Firestore ──
 function aplicarDatosNegocio() {
   document.querySelectorAll('.btn-mayorista').forEach((el) => {
-    if (datosNegocio.canalMayoristaWhatsApp) { el.href = datosNegocio.canalMayoristaWhatsApp; el.style.display = ''; }
+    if (datosNegocio.canalMayoristaWhatsApp) {
+      el.href = datosNegocio.canalMayoristaWhatsApp; el.style.display = '';
+      const bloque = el.closest('.mayorista-bloque'); if (bloque) bloque.style.display = '';
+    }
   });
 
   const maps = $('showroom-maps'); if (maps) maps.href = datosNegocio.showroomMapsUrl;
