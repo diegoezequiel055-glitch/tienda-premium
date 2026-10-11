@@ -1,6 +1,7 @@
 import { db, collection, doc, onSnapshot } from './firebase-config.js';
 import { datosNegocio } from './datos-negocio.js';
 import { fotoCloudinary } from './fotos-cloudinary.js';
+import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativo.js';
 import { categoriasDisponibles, claveDe, normalizar } from './categorias-config.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
@@ -57,7 +58,7 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   renderCatPills();
   document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
   renderGrid();
-  pintarHeroTriptico();
+  pintarHeroRotativo(productos, { alFallback: mostrarTriptico });
   renderDestacados();
   renderNuevos();
 }, () => {
@@ -113,8 +114,14 @@ function pintarSelectEnvio() {
 // ── hero: tríptico. Si Diego eligió fotos a mano, esas ganan siempre.
 // Si no, se arma solo con fotos de productos ⭐ destacados (una vez, al cargar).
 const HTR_PLACEHOLDER = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg>';
+// Tira de 3 fotos: solo se usa si no hay productos para el hero rotativo (hero-rotativo.js).
+function mostrarTriptico() {
+  const cont = $('hero-triptych'); if (cont) cont.style.display = '';
+  pintarHeroTriptico();
+}
+esperarHeroRotativo(mostrarTriptico);
 function pintarHeroTriptico() {
-  const cont = $('hero-triptych'); if (!cont) return;
+  const cont = $('hero-triptych'); if (!cont || cont.style.display === 'none') return;
   const divs = [...cont.querySelectorAll('.htr-ph')];
   if (heroFotosManual && heroFotosManual.some(Boolean)) {
     divs.forEach((div, i) => {
@@ -233,9 +240,10 @@ window.irADestacados = function (ev) {
 };
 
 // ── nuevos ingresos (automático, por fecha real de alta) — se oculta con menos de 2 ──
-const MAX_NUEVOS = 10;
+const MAX_NUEVOS = 8;
 function nuevosList() {
-  return [...productos].filter((p) => p.creadoEn).sort((a, b) => b.creadoEn - a.creadoEn).slice(0, MAX_NUEVOS);
+  const enHero = idsHero(productos); // los del hero rotativo no se repiten acá
+  return [...productos].filter((p) => p.creadoEn && !enHero.has(p.id)).sort((a, b) => b.creadoEn - a.creadoEn).slice(0, MAX_NUEVOS);
 }
 function renderNuevos() {
   const sec = $('nuevos-section'), strip = $('nuevos-strip'); if (!sec || !strip) return;
