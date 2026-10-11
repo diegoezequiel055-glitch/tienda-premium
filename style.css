@@ -234,3 +234,10 @@ button{font-family:inherit}
 .mayorista-bloque h2{font-family:'Anton',sans-serif;font-weight:400;font-size:1.15rem;letter-spacing:.3px;text-transform:uppercase;color:var(--ink)}
 .mayorista-bloque p{font-size:.84rem;color:var(--text2);max-width:360px;line-height:1.5}
 .mayorista-bloque .btn-solid{margin-top:4px}
+
+/* BUSCADOR: contador de resultados y botones */
+.busqueda-info{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:2px 20px 10px}
+.busqueda-cuenta{font-size:.84rem;color:var(--text2)}
+.busqueda-limpiar{min-height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
+.busqueda-todo{margin-top:14px;min-height:44px;padding:0 24px;background:var(--ink);color:#fff}
+@media(min-width:700px){.busqueda-info{padding:2px 32px 10px}}

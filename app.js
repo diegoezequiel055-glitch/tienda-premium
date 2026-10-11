@@ -2,7 +2,8 @@ import { db, collection, doc, onSnapshot } from './firebase-config.js';
 import { datosNegocio } from './datos-negocio.js';
 import { fotoCloudinary } from './fotos-cloudinary.js';
 import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativo.js';
-import { categoriasDisponibles, claveDe, normalizar } from './categorias-config.js';
+import { categoriasDisponibles, claveDe } from './categorias-config.js';
+import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
@@ -166,7 +167,16 @@ function renderCatPills() {
 function marcarPill() {
   document.querySelectorAll('.cat-pill').forEach((b) => b.classList.toggle('active', (b.dataset.cat || '') === categoria));
 }
-window.setBusqueda = function (v) { busqueda = v; renderGrid(); };
+window.setBusqueda = function (v) {
+  busqueda = v;
+  // Al buscar se busca en todo el catálogo: se limpia el filtro de categoría.
+  if (palabrasDe(v).length && categoria) {
+    categoria = '';
+    marcarPill();
+    document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: '' }));
+  }
+  renderGrid();
+};
 window.setCategoria = function (v) {
   categoria = v;
   marcarPill();
@@ -218,11 +228,12 @@ function tarjetaHtml(p) {
 // ── grilla ──
 function renderGrid() {
   const grid = $('grid');
-  if (!productos.length) { grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
-  const q = normalizar(busqueda);
-  const filtrados = productos.filter((p) => (!q || normalizar(p.nombre).includes(q)) && (!categoria || claveDe(p.categoria) === categoria))
+  if (!productos.length) { actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
+  const palabras = palabrasDe(busqueda);
+  const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || claveDe(p.categoria) === categoria))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
-  if (!filtrados.length) { grid.innerHTML = `<div class="empty"><p>${q ? 'No encontramos productos con ese nombre' : 'No hay productos en esta categoría.'}</p></div>`; return; }
+  actualizarInfoBusqueda(palabras.length ? busqueda : '', filtrados.length);
+  if (!filtrados.length) { grid.innerHTML = palabras.length ? htmlSinResultados(busqueda) : `<div class="empty"><p>No hay productos en esta categoría.</p></div>`; return; }
   grid.innerHTML = filtrados.map(tarjetaHtml).join('');
 }
 

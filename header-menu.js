@@ -2,8 +2,8 @@ import { datosNegocio } from './datos-negocio.js';
 import { categoriasDisponibles, resolverClave } from './categorias-config.js';
 
 // ══════════════════════════════════════════
-// HEADER: buscador (lupa) y menú lateral ☰ con categorías.
-// No toca el carrito ni la grilla: usa window.setBusqueda / window.setCategoria
+// HEADER: menú lateral ☰ con categorías (el buscador está en buscador.js).
+// No toca el carrito ni la grilla: usa window.setCategoria
 // de app.js y escucha los eventos 'catalogo-actualizado' y 'categoria-cambiada'.
 // ══════════════════════════════════════════
 
@@ -75,40 +75,9 @@ drawer.addEventListener('click', (e) => {
 });
 $('btn-menu').addEventListener('click', () => (drawer.classList.contains('open') ? cerrarMenu() : abrirMenu()));
 
-// ── buscador ──
-const barra = $('hdr-search');
-const input = $('hdr-search-input');
-let yaBajo = false;
-
-function abrirBusqueda() {
-  barra.classList.add('open');
-  $('btn-lupa').setAttribute('aria-expanded', 'true');
-  input.focus();
-}
-function cerrarBusqueda() {
-  barra.classList.remove('open');
-  $('btn-lupa').setAttribute('aria-expanded', 'false');
-  input.value = '';
-  yaBajo = false;
-  window.setBusqueda('');
-}
-$('btn-lupa').addEventListener('click', () => (barra.classList.contains('open') ? cerrarBusqueda() : abrirBusqueda()));
-$('hdr-search-x').addEventListener('click', cerrarBusqueda);
-input.addEventListener('input', () => {
-  window.setBusqueda(input.value);
-  // El catálogo está más abajo: la primera vez que se escribe, se baja a verlo.
-  if (input.value.trim() && !yaBajo) {
-    yaBajo = true;
-    if ($('grid-titulo').getBoundingClientRect().top > window.innerHeight * 0.5) irAlCatalogo();
-  }
-  if (!input.value.trim()) yaBajo = false;
-});
-input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
-
+// (El buscador de la lupa vive en buscador.js.)
 document.addEventListener('keydown', (e) => {
-  if (e.key !== 'Escape') return;
-  if (drawer.classList.contains('open')) cerrarMenu();
-  else if (barra.classList.contains('open') && document.activeElement === input) cerrarBusqueda();
+  if (e.key === 'Escape' && drawer.classList.contains('open')) cerrarMenu();
 });
 
 // ── sincronización con app.js y con el link (#cat=camisetas) ──
