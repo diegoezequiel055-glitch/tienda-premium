@@ -46,7 +46,7 @@
   <div class="hdr-search" id="hdr-search">
     <div class="hdr-search-box">
       <span class="search-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-3.5-3.5"/></svg></span>
-      <input type="search" id="hdr-search-input" placeholder="Buscar producto..." autocomplete="off" aria-label="Buscar producto">
+      <input type="search" id="hdr-search-input" placeholder="Buscar producto..." autocomplete="off" enterkeyhint="search" aria-label="Buscar producto">
       <button class="hdr-search-x" id="hdr-search-x" aria-label="Cerrar búsqueda">✕</button>
     </div>
   </div>
@@ -75,6 +75,8 @@
 <div class="filtros">
   <div class="cat-pills" id="cat-pills"></div>
 </div>
+
+<div class="busqueda-info" id="busqueda-info" style="display:none"></div>
 
 <main id="grid" class="grid">
   <div class="empty"><p>Cargando catálogo…</p></div>
