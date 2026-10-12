@@ -278,8 +278,12 @@ window.abrirDetalle = function (id) {
   detalleFotoIdx = 0;
   pintarDetalle();
   $('detalle-overlay').classList.add('open');
+  document.dispatchEvent(new CustomEvent('detalle-abierto', { detail: id })); // compartir.js: URL ?p=ID
 };
-window.cerrarDetalle = function () { $('detalle-overlay').classList.remove('open'); detalleId = null; };
+window.cerrarDetalle = function () {
+  $('detalle-overlay').classList.remove('open'); detalleId = null;
+  document.dispatchEvent(new CustomEvent('detalle-cerrado'));
+};
 
 // Varias fotos: carril deslizable (scroll-snap, igual que en las tarjetas) +
 // flechas de escritorio + contador, sincronizado con la miniatura activa.
