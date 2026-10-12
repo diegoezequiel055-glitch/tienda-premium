@@ -21,3 +21,31 @@
 .hero-rot-punto.activo::after{background:#fff;width:20px;margin-left:-10px;border-radius:4px}
 @media (prefers-reduced-motion:reduce){.hero-rot{animation:none}.hero-rot-carril,.hero-rot-punto::after{transition:none}}
 .hero-rot:has(.hero-rot-carril){animation:none}
+
+/* Celular y tablet (< 900 px): la mitad izquierda y las flechas no se ven; las envolturas no afectan el diseño. */
+.hero-rot-foto{display:contents}
+.hero-rot-lado,.hero-rot-flecha{display:none}
+
+/* PC (≥ 900 px): banda oscura a ancho completo (contenedor de 1200 px) en dos mitades.
+   Izquierda: título, subtítulo y producto activo. Derecha: la foto que rota (4:5, sin deformar). */
+@media (min-width:900px){
+  .hero-rot{--hero-h:clamp(480px,70vh,640px);--foto-h:calc(var(--hero-h) - 56px);width:100%;margin:0;aspect-ratio:auto;height:var(--hero-h);
+    background:linear-gradient(100deg,#0a0a0a 30%,#1c1c1c 50%,#0a0a0a 70%) 0 0/250% 100%;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:56px;padding:0 max(32px,calc((100% - 1200px) / 2))}
+  .hero-rot:has(.hero-rot-carril){background:var(--ink)}
+  .hero-rot-lado{display:flex;flex-direction:column;align-items:flex-start;gap:14px;color:#fff;min-width:0}
+  .hero-rot-titulo{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(34px,3.6vw,58px);line-height:1.02;letter-spacing:.3px;text-transform:uppercase}
+  .hero-rot-sub{font-size:clamp(.9rem,1.1vw,1.05rem);color:rgba(255,255,255,.72);line-height:1.5;max-width:520px}
+  .hero-rot-activo{width:100%;margin-top:clamp(6px,1.6vh,20px);padding-top:clamp(12px,2.2vh,22px);border-top:1px solid rgba(255,255,255,.22);display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .hero-rot-act-nombre{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(20px,2vw,28px);line-height:1.1;text-transform:uppercase;letter-spacing:.3px}
+  .hero-rot-act-precio{font-size:1.5rem;font-weight:700;line-height:1.1}
+  .hero-rot-foto{display:block;position:relative;height:var(--foto-h);width:calc(var(--foto-h) * .8);overflow:hidden;border-radius:8px;background:#161616}
+  .hero-rot-info,.hero-rot-degradado{display:none} /* nombre, precio y botón van a la izquierda */
+  .hero-rot-puntos{bottom:12px}
+  .hero-rot-flecha{display:flex;align-items:center;justify-content:center;position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.9);color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;opacity:0;transition:opacity .2s}
+  .hero-rot-foto:hover .hero-rot-flecha,.hero-rot-flecha:focus-visible{opacity:1}
+  .hero-rot-prev{left:10px}
+  .hero-rot-next{right:10px}
+  body.hero-rot-on .inicio-texto{display:none} /* el título y subtítulo ya están en el hero */
+}
+@media (min-width:900px) and (prefers-reduced-motion:reduce){.hero-rot-flecha{transition:none}}

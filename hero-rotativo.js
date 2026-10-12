@@ -8,6 +8,12 @@ import { fotoCloudinary } from './fotos-cloudinary.js';
 // es la misma URL que la ficha, así al abrirla esa foto ya está en caché.
 // app.js solo llama a pintarHeroRotativo() y a idsHero() (para que "Nuevos
 // ingresos" no repita estos productos).
+// En PC (≥ 900 px, ver hero-rotativo.css) el hero es una banda oscura a ancho
+// completo en dos mitades: a la izquierda el título y subtítulo del inicio
+// (config_sitio.heroTitulo / heroSubtitulo, que app.js escribe en #hero-titulo y
+// #hero-subtitulo) más nombre, precio y "Comprar →" del producto activo; a la
+// derecha la foto que rota (con flechas ‹ › y pausa con el mouse encima). En
+// celular esa mitad izquierda no se ve y el diseño es el de siempre.
 // Rapidez: index.html carga este módulo directo (sin esperar a Firestore) y, si
 // el cliente ya nos visitó, dibuja de inmediato el hero de la última vez
 // (guardado en localStorage). Cuando llega el catálogo real se confirma: si es
@@ -43,6 +49,29 @@ let timerSinDatos = null;
 let pausado = false;
 let idx = 0;
 let slides = [];
+let datos = []; // productos mostrados, en el mismo orden que slides
+const CLAVE_TEXTOS = 'heroTextos';
+
+// Título y subtítulo para la mitad izquierda (PC). Se guardan de la última vez para no
+// parpadear: la primera pintura usa lo guardado (o el relleno del HTML) y cuando app.js
+// aplica config_sitio ('config-sitio-aplicada') se actualizan con lo real.
+function textosInicio() {
+  let guardado = null;
+  try { guardado = JSON.parse(localStorage.getItem(CLAVE_TEXTOS) || 'null'); } catch {}
+  const t = document.getElementById('hero-titulo'), sub = document.getElementById('hero-subtitulo');
+  return guardado || { t: t ? t.textContent : '', s: sub ? sub.textContent : '' };
+}
+function pintarTextosLado() {
+  const raiz = document.getElementById('hero-rot'); if (!raiz) return;
+  const x = textosInicio();
+  const t = raiz.querySelector('.hero-rot-titulo'), sub = raiz.querySelector('.hero-rot-sub');
+  if (t) t.textContent = x.t || ''; if (sub) sub.textContent = x.s || '';
+}
+document.addEventListener('config-sitio-aplicada', () => {
+  const t = document.getElementById('hero-titulo'), sub = document.getElementById('hero-subtitulo');
+  try { localStorage.setItem(CLAVE_TEXTOS, JSON.stringify({ t: t ? t.textContent : '', s: sub ? sub.textContent : '' })); } catch {}
+  pintarTextosLado();
+});
 
 function slideHtml(p, i) {
   const foto = esc(fotoCloudinary(p.fotos[0], 'ficha'));
@@ -79,6 +108,14 @@ function cargarDesde(i) {
 
 function marcarPuntos(raiz) {
   raiz.querySelectorAll('.hero-rot-punto').forEach((el, k) => el.classList.toggle('activo', k === idx));
+  // Mitad izquierda (PC): nombre y precio del producto activo.
+  const p = datos[idx]; if (!p) return;
+  const n = raiz.querySelector('.hero-rot-act-nombre'), pr = raiz.querySelector('.hero-rot-act-precio');
+  if (n) n.textContent = p.nombre; if (pr) pr.textContent = '$' + fmt(p.precio);
+}
+function abrirProducto(id) {
+  if (!catalogoListo) { pendienteAbrir = id; return; } // todavía no llegó el catálogo: se abre apenas llegue
+  if (window.abrirDetalle) window.abrirDetalle(id);
 }
 function irA(raiz, i, suave) {
   const car = raiz.querySelector('.hero-rot-carril');
@@ -119,6 +156,7 @@ export function pintarHeroRotativo(productos, { alFallback } = {}) {
   if (!lista.length) {
     clearTimeout(timer);
     raiz.style.display = 'none'; raiz.innerHTML = ''; firma = '';
+    document.body.classList.remove('hero-rot-on');
     if (alFallback) alFallback();
     return;
   }
@@ -135,19 +173,32 @@ function dibujar(raiz, lista) {
   firma = nueva;
   clearTimeout(timer);
   raiz.style.display = '';
+  document.body.classList.add('hero-rot-on'); // en PC oculta el título de abajo (ya está en el hero)
   const multiple = lista.length > 1;
-  raiz.innerHTML = `<div class="hero-rot-carril">${lista.map(slideHtml).join('')}</div>
-    ${multiple ? `<div class="hero-rot-puntos">${lista.map((_, k) => `<button type="button" class="hero-rot-punto" aria-label="Ver producto ${k + 1}"></button>`).join('')}</div>` : ''}`;
+  datos = lista;
+  raiz.innerHTML = `<div class="hero-rot-lado">
+      <div class="hero-rot-titulo"></div>
+      <p class="hero-rot-sub"></p>
+      <div class="hero-rot-activo">
+        <div class="hero-rot-act-nombre"></div>
+        <div class="hero-rot-act-precio"></div>
+        <button type="button" class="hero-rot-btn hero-rot-act-btn">Comprar →</button>
+      </div>
+    </div>
+    <div class="hero-rot-foto">
+      <div class="hero-rot-carril">${lista.map(slideHtml).join('')}</div>
+      ${multiple ? `<button type="button" class="hero-rot-flecha hero-rot-prev" aria-label="Producto anterior">‹</button><button type="button" class="hero-rot-flecha hero-rot-next" aria-label="Producto siguiente">›</button>
+      <div class="hero-rot-puntos">${lista.map((_, k) => `<button type="button" class="hero-rot-punto" aria-label="Ver producto ${k + 1}"></button>`).join('')}</div>` : ''}
+    </div>`;
   idx = 0;
   const car = raiz.querySelector('.hero-rot-carril');
   slides = [...car.children];
+  pintarTextosLado();
   marcarPuntos(raiz);
   cargarDesde(0);
 
-  slides.forEach((s) => s.addEventListener('click', () => {
-    if (!catalogoListo) { pendienteAbrir = s.dataset.id; return; } // todavía no llegó el catálogo: se abre apenas llegue
-    if (window.abrirDetalle) window.abrirDetalle(s.dataset.id);
-  }));
+  slides.forEach((s) => s.addEventListener('click', () => abrirProducto(s.dataset.id)));
+  raiz.querySelector('.hero-rot-act-btn').addEventListener('click', () => abrirProducto(datos[idx].id));
   raiz.querySelectorAll('.hero-rot-punto').forEach((b, k) => b.addEventListener('click', () => irA(raiz, k, true)));
 
   if (!multiple) return;
@@ -164,8 +215,18 @@ function dibujar(raiz, lista) {
   car.addEventListener('touchstart', parar, { passive: true });
   car.addEventListener('touchend', seguir, { passive: true });
   car.addEventListener('touchcancel', seguir, { passive: true });
-  car.addEventListener('mouseenter', parar);
-  car.addEventListener('mouseleave', seguir);
+  // Con mouse (PC): se frena con el cursor encima de todo el hero. En pantallas táctiles no
+  // se usa: un toque dispara mouseenter y la rotación quedaría frenada para siempre.
+  if (window.matchMedia('(hover: hover)').matches) {
+    raiz.addEventListener('mouseenter', parar);
+    raiz.addEventListener('mouseleave', seguir);
+  }
+  const flecha = (d) => {
+    const actual = Math.max(0, Math.min(slides.length - 1, Math.round(car.scrollLeft / (car.clientWidth || 1)))); // posición real, aunque todavía no haya llegado el evento de scroll
+    irA(raiz, (actual + d + slides.length) % slides.length, true);
+  };
+  raiz.querySelector('.hero-rot-prev').addEventListener('click', () => flecha(-1));
+  raiz.querySelector('.hero-rot-next').addEventListener('click', () => flecha(1));
   programar(raiz);
 }
 
