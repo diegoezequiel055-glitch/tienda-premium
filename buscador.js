@@ -6,11 +6,12 @@ import { normalizar, infoCategoria } from './categorias-config.js';
 // htmlSinResultados(); el filtro de la grilla sigue estando en app.js.
 // - Coincide si TODAS las palabras escritas aparecen (en cualquier orden) en el
 //   nombre o en la categoría del producto, sin mayúsculas ni tildes.
-// - Se busca 300 ms después de la última letra (no en cada tecla). Después de
-//   buscar, la vista va al título del catálogo (#grid-titulo) con scroll
-//   instantáneo, pero solo si el título no está ya cerca del tope. Mientras hay
-//   búsqueda, #grid tiene un min-height para que la página no se achique de golpe.
-//   Enter busca al instante, cierra el teclado y reubica la vista.
+// - Mientras se escribe NO se mueve la vista: a los 300 ms de la última letra solo
+//   se filtra la grilla en segundo plano. Enter, o la lupa (la del header o la de
+//   dentro de la barra) con texto, buscan al instante, cierran el teclado y llevan
+//   la vista al título del catálogo (#grid-titulo) con scroll instantáneo (solo si
+//   no está ya cerca del tope; se reubica a los 150 y 400 ms por el teclado).
+//   Mientras hay búsqueda, #grid tiene un min-height para que la página no se achique de golpe.
 // - Al buscar se limpia el filtro de categoría (lo hace window.setBusqueda en app.js).
 // ══════════════════════════════════════════
 
@@ -46,12 +47,12 @@ export function htmlSinResultados(texto) {
 // ── barra de búsqueda ──
 const barra = $('hdr-search');
 const input = $('hdr-search-input');
-const ESPERA_MS = 300; // tiempo sin escribir antes de buscar (evita re-dibujar y saltar en cada letra)
+const ESPERA_MS = 300; // tiempo sin escribir antes de filtrar la grilla en segundo plano
 let timerBusqueda = null;
 let altoFijado = false;
 
-// Lleva la vista al título del catálogo SOLO si no está ya cerca del tope (scroll instantáneo).
-// El título queda a ~130 px del borde (scroll-margin-top de header-menu.css): ese margen cuenta como "ya está".
+// Lleva la vista al título del catálogo (scroll instantáneo). Solo si el título no está ya cerca
+// del tope: queda a ~130 px del borde (scroll-margin-top de header-menu.css) y eso cuenta como "ya está".
 function irAResultados() {
   const t = $('grid-titulo'); if (!t) return;
   const top = t.getBoundingClientRect().top;
@@ -69,12 +70,22 @@ function liberarAlto() {
   const g = $('grid'); if (g) g.style.minHeight = '';
   altoFijado = false;
 }
-function buscarYa(valor) {
+// Filtra la grilla SIN mover la vista (la usa tanto el filtrado mientras se escribe como el Enter/lupa).
+function filtrar(valor) {
   clearTimeout(timerBusqueda);
   if (!valor.trim()) { liberarAlto(); window.setBusqueda(''); return; }
   fijarAlto();
   window.setBusqueda(valor);
+}
+// Enter o lupa con texto: buscar al instante, cerrar el teclado y llevar la vista al catálogo.
+function buscarEIr() {
+  filtrar(input.value);
+  if (!input.value.trim()) return;
+  input.blur(); // cierra el teclado del celular
   irAResultados();
+  // el teclado al bajar cambia el alto de la pantalla: se reubica cuando termina
+  setTimeout(irAResultados, 150);
+  setTimeout(irAResultados, 400);
 }
 function abrirBusqueda() {
   barra.classList.add('open');
@@ -89,7 +100,7 @@ function cerrarBarra() {
 function limpiarTodo() {
   clearTimeout(timerBusqueda);
   input.value = '';
-  buscarYa('');
+  filtrar('');
   cerrarBarra();
 }
 
@@ -99,22 +110,24 @@ window.limpiarBusqueda = function () {
 };
 
 if (barra && input) {
+  // Lupa del header: cerrada → abre; abierta con texto → busca y va al catálogo; abierta y vacía → cierra.
   $('btn-lupa').addEventListener('click', () => {
-    if (barra.classList.contains('open')) limpiarTodo(); else abrirBusqueda();
+    if (!barra.classList.contains('open')) abrirBusqueda();
+    else if (input.value.trim()) buscarEIr();
+    else limpiarTodo();
   });
+  const ir = $('hdr-search-go'); // lupa dentro de la barra, para tocar en el celular además del Enter del teclado
+  if (ir) ir.addEventListener('click', () => { if (input.value.trim()) buscarEIr(); else input.focus(); });
   $('hdr-search-x').addEventListener('click', limpiarTodo);
   input.addEventListener('input', () => {
     clearTimeout(timerBusqueda);
-    const v = input.value;
-    if (!v.trim()) { buscarYa(''); return; } // vacío: se limpia sin demora
-    timerBusqueda = setTimeout(() => buscarYa(input.value), ESPERA_MS);
+    if (!input.value.trim()) { filtrar(''); return; } // vacío: se limpia sin demora
+    timerBusqueda = setTimeout(() => filtrar(input.value), ESPERA_MS); // sin scroll mientras se escribe
   });
   input.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
-    buscarYa(input.value); // cancela la espera y busca al instante
-    input.blur(); // cierra el teclado del celular
-    if (input.value.trim()) setTimeout(irAResultados, 400); // el teclado al bajar cambia el alto de la pantalla
+    buscarEIr();
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && barra.classList.contains('open') && document.activeElement === input) limpiarTodo();

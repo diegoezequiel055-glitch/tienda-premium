@@ -81,6 +81,7 @@ function aplicarConfigSitio(cfg) {
   if (flotante) flotante.href = `https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`;
   heroFotosManual = cfg.heroFotos || null;
   pintarHeroTriptico();
+  document.dispatchEvent(new CustomEvent('config-sitio-aplicada')); // hero-rotativo.js copia título y subtítulo
 }
 
 // ── datos del negocio (showroom, redes, mayorista) — estáticos, no dependen de Firestore ──
