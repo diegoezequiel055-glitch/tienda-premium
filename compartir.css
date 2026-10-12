@@ -1,0 +1,4 @@
+/* Botón "Compartir" de la ficha (compartir.js): discreto, con ícono, área táctil de 44 px. */
+.btn-compartir{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:44px;padding:0 18px;margin-top:12px;align-self:flex-start;border:1px solid var(--border2);border-radius:999px;background:transparent;color:var(--text2);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s}
+.btn-compartir:hover{border-color:var(--ink);color:var(--ink)}
+.btn-compartir:active{transform:scale(.97)}
