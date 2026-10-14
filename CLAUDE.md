@@ -79,6 +79,14 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
   - Prueba social real.
   - Cupón primera compra.
 
+## Vista previa del link y dominio propio
+- Dominio previsto: **https://tiendapremium.com.ar/** (hoy el sitio vive en `https://diegoezequiel055-glitch.github.io/tienda-premium/`, en subcarpeta; con el dominio pasa a la raíz). Todas las rutas del sitio (HTML, CSS, imports de JS, links del footer y del menú) son **relativas**: sirven igual desde `/tienda-premium/` que desde la raíz. No hay service worker, manifest ni rutas que empiecen con `/tienda-premium/`. No volver a escribir rutas absolutas.
+- En el `<head>` de las 5 páginas: `canonical`, `og:url`, `og:site_name` (TIENDAPREMIUM.OK), `og:locale` (es_AR), `og:image` (`https://tiendapremium.com.ar/og-image.png`, 1200×630, con `og:image:width/height/alt`) y `twitter:card=summary_large_image` con título, descripción e imagen. Las URLs son ABSOLUTAS del dominio nuevo (los robots que arman la vista previa no ejecutan JS ni resuelven rutas relativas). Hasta que el dominio esté conectado, esas URLs todavía no existen.
+- `og-image.png` (1200×630, "TIENDAPREMIUM.OK — ROPA URBANA / DEPORTIVA" en blanco sobre fondo negro) está en la raíz del repo. Si se cambia, mantener el nombre y el tamaño 1200×630; WhatsApp/Facebook cachean la vista previa (se limpia con https://developers.facebook.com/tools/debug/ → "Scrape Again").
+- `robots.txt` (permite todo y apunta al sitemap) y `sitemap.xml` (la home y las 4 páginas públicas), con URLs del dominio nuevo.
+- **`CNAME`** (una línea: `tiendapremium.com.ar`) NO está en `main`: vive en la rama `dominio-cname` y se mergea recién cuando Diego confirme que el DNS está listo, porque con el CNAME GitHub Pages deja de servir la dirección vieja.
+- Pendiente a revisar al conectar el dominio: que la clave de API de Firebase (consola de Google Cloud, si tiene restricción por sitio web) y los dominios autorizados de Firebase incluyan `tiendapremium.com.ar`; si no, Firestore podría dejar de responder desde el dominio nuevo.
+
 ## Archivos del repo (un módulo por archivo)
 `index.html`, `contacto.html`, `como-comprar.html`, `cambios-y-devoluciones.html`, `terminos-y-condiciones.html` — páginas.
 `app.js` — catálogo, grilla, ficha de producto, carrito y pedido (el módulo más grande).
