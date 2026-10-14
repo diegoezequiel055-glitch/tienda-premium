@@ -84,7 +84,7 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - En el `<head>` de las 5 páginas: `canonical`, `og:url`, `og:site_name` (TIENDAPREMIUM.OK), `og:locale` (es_AR), `og:image` (`https://tiendapremium.com.ar/og-image.png`, 1200×630, con `og:image:width/height/alt`) y `twitter:card=summary_large_image` con título, descripción e imagen. Las URLs son ABSOLUTAS del dominio nuevo (los robots que arman la vista previa no ejecutan JS ni resuelven rutas relativas). Hasta que el dominio esté conectado, esas URLs todavía no existen.
 - `og-image.png` (1200×630, "TIENDAPREMIUM.OK — ROPA URBANA / DEPORTIVA" en blanco sobre fondo negro) está en la raíz del repo. Si se cambia, mantener el nombre y el tamaño 1200×630; WhatsApp/Facebook cachean la vista previa (se limpia con https://developers.facebook.com/tools/debug/ → "Scrape Again").
 - `robots.txt` (permite todo y apunta al sitemap) y `sitemap.xml` (la home y las 4 páginas públicas), con URLs del dominio nuevo.
-- **`CNAME`** (una línea: `tiendapremium.com.ar`) NO está en `main`: vive en la rama `dominio-cname` y se mergea recién cuando Diego confirme que el DNS está listo, porque con el CNAME GitHub Pages deja de servir la dirección vieja.
+- **`CNAME`** (`tiendapremium.com.ar`, creado por GitHub Pages al configurar el dominio) ya está en `main`: NO borrarlo ni editarlo. El dominio está activo desde 2026-10-14.
 - Pendiente a revisar al conectar el dominio: que la clave de API de Firebase (consola de Google Cloud, si tiene restricción por sitio web) y los dominios autorizados de Firebase incluyan `tiendapremium.com.ar`; si no, Firestore podría dejar de responder desde el dominio nuevo.
 
 ## Archivos del repo (un módulo por archivo)
