@@ -50,3 +50,8 @@
 }
 @media (min-width:900px) and (prefers-reduced-motion:reduce){.hero-rot-flecha{transition:none}}
 .hero-rot-act-precio-nota:empty{display:none}
+
+/* Categoría arriba del nombre (mismo estilo que .card-cat / .detalle-cat: chica, mayúsculas, espaciado) pero clara para leerse sobre la foto/degradado y el fondo negro. */
+.hero-rot-cat,.hero-rot-act-cat{font-size:.63rem;line-height:1.2;color:rgba(255,255,255,.88);text-transform:uppercase;letter-spacing:1.5px;text-shadow:0 1px 6px rgba(0,0,0,.65)}
+.hero-rot-act-cat:empty{display:none}
+@media (min-width:900px){.hero-rot-act-cat{font-size:.7rem}}
