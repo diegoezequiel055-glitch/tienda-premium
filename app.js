@@ -384,7 +384,7 @@ function pintarDetalle() {
   $('detalle-precio-nota').textContent = 'Abonando en efectivo o transferencia';
   const talles = p.talles || [];
   $('detalle-talles').innerHTML = talles.length
-    ? talles.map((t) => `<button class="talle-btn" onclick="agregarAlCarrito('${esc(p.id)}','${esc(t.talle)}')">${esc(t.talle)}</button>`).join('')
+    ? talles.map((t) => `<button type="button" class="talle-btn" data-talle="${esc(t.talle)}" aria-pressed="false">${esc(t.talle)}</button>`).join('')
     : '<span class="sin-stock">Sin stock disponible</span>';
   const avisoStock = textoStockBajo(p);
   $('detalle-stock-bajo').textContent = avisoStock;
@@ -393,16 +393,18 @@ function pintarDetalle() {
 }
 
 // ── carrito ──
+// Devuelve true si se agregó (seleccion-talle.js muestra "Agregado ✓"), false si no.
 window.agregarAlCarrito = function (id, talle) {
-  const p = productos.find((x) => x.id === id); if (!p) return;
-  const fila = (p.talles || []).find((t) => t.talle === talle); if (!fila) return;
+  const p = productos.find((x) => x.id === id); if (!p) return false;
+  const fila = (p.talles || []).find((t) => t.talle === talle); if (!fila) return false;
   const existente = carrito.find((c) => c.id === id && c.talle === talle);
   const enCarrito = existente ? existente.cantidad : 0;
-  if (enCarrito >= fila.stock) { toast(`No hay más stock de ${p.nombre} talle ${talle}.`); return; }
+  if (enCarrito >= fila.stock) { toast(`No hay más stock de ${p.nombre} talle ${talle}.`); return false; }
   if (existente) existente.cantidad++;
   else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, precio: p.precio, cantidad: 1, foto: (p.fotos || [])[0] || null });
   guardarCarrito(); actualizarContador();
   toast(`${p.nombre} (${talle}) agregado al pedido ✓`);
+  return true;
 };
 window.cambiarCantidad = function (idx, delta) {
   const item = carrito[idx]; if (!item) return;

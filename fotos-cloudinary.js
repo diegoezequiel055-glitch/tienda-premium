@@ -10,6 +10,7 @@ export const TAMANOS_FOTO = {
   carrito: { w: 160, q: 'eco' },   // miniatura del carrito y de la ficha (48-52 px en pantalla)
   tarjeta: { w: 400, q: 'eco' },   // tarjetas de la grilla y tira del inicio (~178 px, ×2 para pantallas retina)
   ficha: { w: 900, q: 'good' },    // foto grande de la ficha (más calidad: el cliente mira el detalle)
+  visor: { w: 2000, q: 'good' },   // visor con zoom (se pide solo al abrirlo). c_limit no agranda: una original de 1200 px sale de 1200
 };
 
 const PREFIJOS_TRANSFORMACION = /^(?:w|h|c|f|q|e|t|ar|g|x|y|r|a|b|l|o|dpr|fl|co|bo|d|dn|so|eo|vc|ac)_/;
