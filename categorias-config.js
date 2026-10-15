@@ -7,23 +7,24 @@
 // categoría nueva: sumá el nombre a `stock` de la fila correspondiente. Si dos
 // nombres del stock apuntan a la misma fila, se unifican en una sola categoría.
 // Las que no estén acá se muestran igual con su nombre original, al final.
+// `singular` es el nombre en singular que se usa en el pedido por WhatsApp ("Camiseta — ..."); si falta, el pedido no lleva prefijo.
 // Se compara sin importar mayúsculas ni tildes.
 // ══════════════════════════════════════════
 
 export const CATEGORIAS = [
-  { visible: 'Camisetas', stock: ['Camiseta'] },
-  { visible: 'Conjuntos', stock: ['Conjunto'] },
-  { visible: 'Camperas', stock: ['Campera'] },
-  { visible: 'Chombas', stock: ['Chombas'] },
-  { visible: 'Chalecos', stock: ['Chalecos'] },
-  { visible: 'Remeras', stock: ['Remeras'] },
-  { visible: 'Buzos', stock: ['Buzo'] },
-  { visible: 'Pantalones', stock: ['Pantalón'] },
-  { visible: 'Shorts', stock: ['Short'] },
-  { visible: 'Bermudas', stock: ['Bermuda'] },
-  { visible: 'Gorras', stock: ['Gorra G5'] },
-  { visible: 'Jeans', stock: ['Jean'] },
-  { visible: 'Perfumes', stock: ['Perfume'] },
+  { visible: 'Camisetas', stock: ['Camiseta'], singular: 'Camiseta' },
+  { visible: 'Conjuntos', stock: ['Conjunto'], singular: 'Conjunto' },
+  { visible: 'Camperas', stock: ['Campera'], singular: 'Campera' },
+  { visible: 'Chombas', stock: ['Chombas'], singular: 'Chomba' },
+  { visible: 'Chalecos', stock: ['Chalecos'], singular: 'Chaleco' },
+  { visible: 'Remeras', stock: ['Remeras'], singular: 'Remera' },
+  { visible: 'Buzos', stock: ['Buzo'], singular: 'Buzo' },
+  { visible: 'Pantalones', stock: ['Pantalón'], singular: 'Pantalón' },
+  { visible: 'Shorts', stock: ['Short'], singular: 'Short' },
+  { visible: 'Bermudas', stock: ['Bermuda'], singular: 'Bermuda' },
+  { visible: 'Gorras', stock: ['Gorra G5'], singular: 'Gorra' },
+  { visible: 'Jeans', stock: ['Jean'], singular: 'Jean' },
+  { visible: 'Perfumes', stock: ['Perfume'], singular: 'Perfume' },
 ];
 
 // minúsculas, sin tildes y sin espacios sobrantes
@@ -38,6 +39,13 @@ CATEGORIAS.forEach((c, i) => {
   c.stock.forEach((n) => PORNOMBRE.set(normalizar(n), info));
   PORNOMBRE.set(normalizar(c.visible), info);
 });
+
+const SINGULAR = new Map(); // clave de categoría → nombre en singular (para el mensaje de WhatsApp)
+CATEGORIAS.forEach((c) => { if (c.singular) SINGULAR.set(aSlug(c.visible), c.singular); });
+// Singular de la categoría de un producto ("Camiseta", "Conjunto"...). '' si no se conoce.
+export function singularDe(nombreStock) {
+  return SINGULAR.get(infoCategoria(nombreStock).clave) || '';
+}
 
 // Datos de la categoría de un producto (clave estable para filtros y links #cat=...)
 export function infoCategoria(nombreStock) {
