@@ -17,7 +17,7 @@ const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
 
 let productos = [];
 let cargaInicial = true;
-let pushed = false; // la ficha abierta tiene una entrada propia en el historial
+let empujadas = 0; // entradas de historial agregadas por las fichas abiertas (abrir una desde 'relacionados' suma otra)
 let actual = null;  // producto de la ficha abierta
 
 const idDeLaUrl = () => new URLSearchParams(location.search).get('p') || '';
@@ -42,21 +42,23 @@ document.addEventListener('catalogo-actualizado', (e) => {
 document.addEventListener('detalle-abierto', (e) => {
   const id = e.detail;
   if (idDeLaUrl() === id) return;
-  try { history.pushState({ p: id }, '', `${location.pathname}?p=${encodeURIComponent(id)}${location.hash}`); pushed = true; } catch {}
+  // d = cuántas entradas propias hay apiladas hasta acá: sirve para cerrar de una sola vez y para atrás/adelante
+  try { history.pushState({ p: id, d: empujadas + 1 }, '', `${location.pathname}?p=${encodeURIComponent(id)}${location.hash}`); empujadas++; } catch {}
 });
 
 document.addEventListener('detalle-cerrado', () => {
   actual = null;
-  if (pushed) { pushed = false; history.back(); return; } // vuelve a la entrada anterior (URL limpia)
+  if (empujadas > 0) { const n = empujadas; empujadas = 0; history.go(-n); return; } // vuelve a la entrada anterior a la primera ficha (URL limpia)
   if (idDeLaUrl()) { try { history.replaceState(null, '', location.pathname + location.hash); } catch {} }
 });
 
-// Botón "atrás" (o adelante) del navegador.
+// Botón "atrás" (o adelante) del navegador: la ficha acompaña a la URL (?p=).
 window.addEventListener('popstate', () => {
   const id = idDeLaUrl();
   const abierta = $('detalle-overlay').classList.contains('open');
-  if (!id && abierta) { pushed = false; window.cerrarDetalle(); }
-  else if (id && !abierta && productos.some((p) => p.id === id)) { window.abrirDetalle(id); pushed = true; }
+  empujadas = (history.state && history.state.d) || 0;
+  if (!id && abierta) { empujadas = 0; window.cerrarDetalle(); }
+  else if (id && (!abierta || !actual || actual.id !== id) && productos.some((p) => p.id === id)) window.abrirDetalle(id); // ya está en la URL: no suma entrada
 });
 
 // ── botón Compartir ──
