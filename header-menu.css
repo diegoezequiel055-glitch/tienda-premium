@@ -39,3 +39,13 @@
 .menu-links a{display:flex;align-items:center;min-height:44px;padding:0 20px;font-size:.88rem;color:var(--text2)}
 .menu-links a:hover{color:var(--ink)}
 body.menu-abierto{overflow:hidden}
+
+/* BARRA SIEMPRE VISIBLE: queda por encima de la ficha y del carrito (z-index 250, entre los overlays
+   de 200 y el menú de 300; el visor de fotos, 400, queda por encima de todo). Los paneles arrancan
+   justo debajo de la barra (--hdr-bottom la mide header-menu.js) y la página de fondo no se mueve. */
+.hdr{z-index:250}
+.overlay{padding-top:var(--hdr-bottom,0px)}
+.detalle-panel{max-height:min(92vh,100%)}
+.carrito-panel{max-height:min(94vh,100%)}
+body:has(.overlay.open){overflow:hidden}
+html{scrollbar-gutter:stable}

@@ -62,11 +62,14 @@ function irAlCatalogo() {
   $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+const fichaAbierta = () => $('detalle-overlay').classList.contains('open');
+
 drawer.addEventListener('click', (e) => {
   if (e.target === drawer || e.target.closest('#menu-cerrar')) { cerrarMenu(); return; }
   const btn = e.target.closest('.menu-cat');
   if (btn) {
     cerrarMenu();
+    if (fichaAbierta()) window.cerrarDetalle();
     window.setCategoria(btn.dataset.clave);
     irAlCatalogo();
     return;
@@ -76,6 +79,38 @@ drawer.addEventListener('click', (e) => {
 $('btn-menu').addEventListener('click', () => (drawer.classList.contains('open') ? cerrarMenu() : abrirMenu()));
 
 // (El buscador de la lupa vive en buscador.js.)
+
+// ── barra fija: se mide su borde de abajo para que los paneles (ficha, carrito) arranquen debajo ──
+const barraHdr = document.querySelector('.hdr');
+function medirBarra() {
+  document.documentElement.style.setProperty('--hdr-bottom', Math.max(0, Math.round(barraHdr.getBoundingClientRect().bottom)) + 'px');
+}
+window.addEventListener('scroll', medirBarra, { passive: true });
+window.addEventListener('resize', medirBarra);
+if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barraHdr);
+document.addEventListener('detalle-abierto', medirBarra);
+medirBarra();
+
+// Carrito desde la ficha: cierra la ficha y abre el carrito (el onclick del botón ya abre el carrito).
+barraHdr.addEventListener('click', (e) => {
+  if (e.target.closest('#btn-cart') && fichaAbierta()) window.cerrarDetalle();
+}, true);
+
+// Logo = volver al inicio: cierra ficha y carrito, limpia búsqueda y categoría, sube y deja la URL en la raíz.
+function irAlInicio(e) {
+  if (e) e.preventDefault();
+  if ($('carrito-overlay').classList.contains('open')) window.cerrarCarrito();
+  if (fichaAbierta()) window.cerrarDetalle();
+  if (window.reiniciarBusqueda) window.reiniciarBusqueda();
+  window.setCategoria('');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  // cerrar la ficha puede volver atrás en el historial (asíncrono): se deja la URL limpia después también
+  const limpiarUrl = () => { try { history.replaceState(null, '', location.pathname); } catch {} };
+  limpiarUrl();
+  setTimeout(() => { limpiarUrl(); window.scrollTo({ top: 0, behavior: 'instant' }); }, 120);
+  setTimeout(limpiarUrl, 400);
+}
+$('hdr-logo').addEventListener('click', irAlInicio);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && drawer.classList.contains('open')) cerrarMenu();
 });

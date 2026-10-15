@@ -104,6 +104,7 @@ function limpiarTodo() {
   cerrarBarra();
 }
 
+window.reiniciarBusqueda = limpiarTodo; // sin mover la vista (lo usa el logo del header)
 window.limpiarBusqueda = function () {
   limpiarTodo();
   irAResultados();
@@ -112,6 +113,7 @@ window.limpiarBusqueda = function () {
 if (barra && input) {
   // Lupa del header: cerrada → abre; abierta con texto → busca y va al catálogo; abierta y vacía → cierra.
   $('btn-lupa').addEventListener('click', () => {
+    if ($('detalle-overlay').classList.contains('open')) { window.cerrarDetalle(); abrirBusqueda(); return; } // desde la ficha: la cierra y abre el buscador
     if (!barra.classList.contains('open')) abrirBusqueda();
     else if (input.value.trim()) buscarEIr();
     else limpiarTodo();
