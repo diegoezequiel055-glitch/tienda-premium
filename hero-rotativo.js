@@ -85,6 +85,7 @@ function slideHtml(p, i) {
     <div class="hero-rot-degradado"></div>
     ${esNuevo(p) ? '<span class="hero-rot-nuevo">Nuevo</span>' : ''}
     <div class="hero-rot-info">
+      ${p.categoria ? `<div class="hero-rot-cat">${esc(p.categoria)}</div>` : ''}
       <div class="hero-rot-nombre">${esc(p.nombre)}</div>
       <div class="hero-rot-precio">$${fmt(precioLista(p))}</div>
       ${extrasPrecioHtml(p, 'hero')}
@@ -112,6 +113,7 @@ function marcarPuntos(raiz) {
   raiz.querySelectorAll('.hero-rot-punto').forEach((el, k) => el.classList.toggle('activo', k === idx));
   // Mitad izquierda (PC): nombre y precio del producto activo.
   const p = datos[idx]; if (!p) return;
+  const cat = raiz.querySelector('.hero-rot-act-cat'); if (cat) cat.textContent = p.categoria || '';
   const n = raiz.querySelector('.hero-rot-act-nombre'), pr = raiz.querySelector('.hero-rot-act-precio'), pn = raiz.querySelector('.hero-rot-act-precio-nota');
   if (n) n.textContent = p.nombre; if (pr) pr.textContent = '$' + fmt(precioLista(p));
   if (pn) pn.innerHTML = extrasPrecioHtml(p, 'hero');
@@ -145,7 +147,7 @@ function leerCache() {
 function guardarCache(lista) {
   try {
     if (!lista.length) { localStorage.removeItem(CLAVE_CACHE); return; }
-    localStorage.setItem(CLAVE_CACHE, JSON.stringify(lista.map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio, precioTarjeta: p.precioTarjeta, creadoEn: p.creadoEn, fotos: [p.fotos[0]] }))));
+    localStorage.setItem(CLAVE_CACHE, JSON.stringify(lista.map((p) => ({ id: p.id, nombre: p.nombre, categoria: p.categoria, precio: p.precio, precioTarjeta: p.precioTarjeta, creadoEn: p.creadoEn, fotos: [p.fotos[0]] }))));
   } catch {}
 }
 
@@ -171,7 +173,7 @@ export function pintarHeroRotativo(productos, { alFallback } = {}) {
 }
 
 function dibujar(raiz, lista) {
-  const nueva = lista.map((p) => [p.id, p.fotos[0], p.nombre, p.precio, p.precioTarjeta, esNuevo(p)].join('~')).join('|');
+  const nueva = lista.map((p) => [p.id, p.fotos[0], p.nombre, p.categoria, p.precio, p.precioTarjeta, esNuevo(p)].join('~')).join('|');
   if (nueva === firma) return; // mismo contenido: no reiniciar el carrusel en cada actualización
   firma = nueva;
   clearTimeout(timer);
@@ -183,6 +185,7 @@ function dibujar(raiz, lista) {
       <div class="hero-rot-titulo"></div>
       <p class="hero-rot-sub"></p>
       <div class="hero-rot-activo">
+        <div class="hero-rot-act-cat"></div>
         <div class="hero-rot-act-nombre"></div>
         <div class="hero-rot-act-precio"></div>
         <div class="hero-rot-act-precio-nota"></div>
