@@ -13,7 +13,6 @@
 
 export const fmtPrecio = (n) => Number(n || 0).toLocaleString('es-AR');
 
-export const NOTA_CUOTAS = 'Hasta 3 cuotas sin interés';
 export const NOTA_SOLO_EFECTIVO = 'Abonando en efectivo o transferencia'; // como se ve hoy
 
 export const tienePrecioTarjeta = (p) => Number.isFinite(p?.precioTarjeta) && p.precioTarjeta > 0 && p.precioTarjeta > (p.precio || 0);
@@ -27,8 +26,26 @@ export const precioLista = (p) => (tienePrecioTarjeta(p) ? p.precioTarjeta : p.p
 // "Efectivo o transferencia: $X" (solo cuando hay precio de tarjeta; si no, no hace falta aclarar).
 export const lineaEfectivo = (p) => (tienePrecioTarjeta(p) ? `Efectivo o transferencia: $${fmtPrecio(p.precio)}` : '');
 
-// Aclaraciones que van debajo del precio grande, en la tarjeta del catálogo y en la ficha.
-export const notasPrecio = (p) => (tienePrecioTarjeta(p) ? [NOTA_CUOTAS, lineaEfectivo(p)] : [NOTA_SOLO_EFECTIVO]);
+// Debajo del precio grande (de tarjeta), siempre estas dos líneas, iguales en todas las pantallas:
+//   "3 cuotas de $X sin interés"          X = precioTarjeta / 3 redondeado al peso, sin decimales
+//   "$Y con transferencia o efectivo"     Y = precio de efectivo (resaltado en verde)
+export const montoCuota = (p) => Math.round(p.precioTarjeta / 3);
+export const textoCuotas = (p) => (tienePrecioTarjeta(p) ? `3 cuotas de $${fmtPrecio(montoCuota(p))} sin interés` : '');
+export const textoEfectivoVerde = (p) => (tienePrecioTarjeta(p) ? `$${fmtPrecio(p.precio)} con transferencia o efectivo` : '');
+
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// El ÚNICO formato de esas dos líneas (HTML). variante: 'card' (listado), 'ficha', 'hero', 'rel' (relacionados) — solo cambia
+// el tamaño/color por CSS (precios.css). Sin precioTarjeta: como siempre ('card' y 'ficha' llevan "Abonando en efectivo o
+// transferencia"; 'hero' y 'rel' no llevan nada).
+export function extrasPrecioHtml(p, variante) {
+  if (!tienePrecioTarjeta(p)) {
+    if (variante === 'card') return `<div class="card-precio-nota">${NOTA_SOLO_EFECTIVO}</div>`;
+    if (variante === 'ficha') return NOTA_SOLO_EFECTIVO;
+    return '';
+  }
+  return `<span class="px-extras px-v-${variante}"><span class="px-cuotas">${esc(textoCuotas(p))}</span><span class="px-efectivo">${esc(textoEfectivoVerde(p))}</span></span>`;
+}
 
 // ══════════════════════════════════════════
 // CARRITO — cada ítem guarda los dos precios: `precio` (efectivo o transferencia) y, si el producto lo

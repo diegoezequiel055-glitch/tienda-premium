@@ -9,7 +9,7 @@
 .hero-rot-carril::-webkit-scrollbar{display:none}
 .hero-rot-slide{position:relative;flex:0 0 100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;cursor:pointer}
 .hero-rot-slide img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
-.hero-rot-degradado{position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.45) 50%,rgba(0,0,0,0) 100%);pointer-events:none}
+.hero-rot-degradado{position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(to top,rgba(0,0,0,.86) 0%,rgba(0,0,0,.68) 45%,rgba(0,0,0,.4) 70%,rgba(0,0,0,0) 100%);pointer-events:none}/* más oscuro detrás del texto: el verde claro del precio en efectivo cumple 4,5:1 incluso sobre una camiseta blanca */
 .hero-rot-nuevo{position:absolute;top:14px;left:14px;background:#fff;color:var(--ink);font-size:.74rem;font-weight:700;letter-spacing:.3px;padding:5px 13px;border-radius:999px}
 .hero-rot-info{position:absolute;left:0;right:0;bottom:0;padding:0 18px 40px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;color:#fff;pointer-events:none}
 .hero-rot-nombre{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(22px,6.4vw,30px);line-height:1.05;text-transform:uppercase;letter-spacing:.3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 8px rgba(0,0,0,.35)}
@@ -49,5 +49,4 @@
   body.hero-rot-on .inicio-texto{display:none} /* el título y subtítulo ya están en el hero */
 }
 @media (min-width:900px) and (prefers-reduced-motion:reduce){.hero-rot-flecha{transition:none}}
-.hero-rot-precio-nota,.hero-rot-act-precio-nota{font-size:.8rem;font-weight:400;line-height:1.2;opacity:.9}
 .hero-rot-act-precio-nota:empty{display:none}

@@ -243,5 +243,4 @@ button{font-family:inherit}
 .busqueda-limpiar{min-height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
 .busqueda-todo{margin-top:14px;min-height:44px;padding:0 24px;background:var(--ink);color:#fff}
 @media(min-width:700px){.busqueda-info{padding:2px 32px 10px}}
-.card-precio-efectivo{margin-top:0;font-weight:500;color:var(--text)}
 .detalle-precio-nota{line-height:1.45}
