@@ -1,17 +1,33 @@
 /* Líneas de precio debajo del precio de tarjeta (precios.js › extrasPrecioHtml). Un solo formato para todas las pantallas;
    solo cambia el tamaño por variante: px-v-card (listado), px-v-ficha, px-v-hero, px-v-rel (relacionados).
-   Verde #0b6b2c: contraste 6,7:1 sobre blanco y 5,8:1 sobre el fondo verde suave (mínimo pedido 4,5:1). */
-.px-extras{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:2px;min-width:0;max-width:100%}
+   Diseño: 1) precio de tarjeta (lo dibuja cada pantalla), 2) "3 cuotas de $X sin interés" en gris, PEGADO al precio,
+   3) con más aire, "$Y con transferencia o efectivo" en verde fuerte y negrita, sin fondo ni etiqueta, con una línea
+   vertical verde de 3 px a la izquierda (la línea acompaña solo a este renglón).
+   Contrastes: verde #0b6b2c 6,7:1 sobre blanco; gris #6b6b6b 5,3:1; en el hero, verde claro #9df5bf sobre el degradado oscuro. */
+.px-extras{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin-top:2px;min-width:0;max-width:100%}
 .px-cuotas{display:block;font-size:.72rem;line-height:1.25;color:#6b6b6b;font-family:'Outfit',sans-serif;font-weight:400}
-.px-efectivo{display:inline-block;max-width:100%;box-sizing:border-box;font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;line-height:1.25;color:#0b6b2c;background:#e3f4e8;border-radius:6px;padding:3px 8px;overflow-wrap:anywhere}
+.px-efectivo{display:block;max-width:100%;box-sizing:border-box;margin-top:9px;padding-left:8px;border-left:3px solid #0b6b2c;font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;line-height:1.3;color:#0b6b2c;overflow-wrap:anywhere}
+/* listado: sus bloques van separados 9 px; se anula para que las cuotas queden pegadas al precio */
+.px-v-card{margin-top:-6px}
 /* ficha del producto (precio grande 1.7rem) */
-.px-v-ficha{gap:5px;margin-top:4px}
+.px-v-ficha{margin-top:0}
 .px-v-ficha .px-cuotas{font-size:.84rem}
-.px-v-ficha .px-efectivo{font-size:1.05rem;padding:4px 10px}
-/* hero: sobre foto oscura la etiqueta es blanca con texto verde (se lee sobre cualquier foto) */
-.px-v-hero{gap:4px}
-.px-v-hero .px-cuotas{color:rgba(255,255,255,.9);font-size:.8rem}
-.px-v-hero .px-efectivo{background:#fff;color:#0b6b2c;font-size:.95rem;padding:3px 10px}
+.px-v-ficha .px-efectivo{font-size:1.05rem;margin-top:11px}
+/* hero: sobre la foto oscura, verde claro y blanco (sin fondo); el degradado de la foto se oscurece detrás del texto */
+.px-v-hero{margin-top:-3px}
+.px-v-hero .px-cuotas{color:rgba(255,255,255,.92);font-size:.8rem}
+.px-v-hero .px-efectivo{color:#9df5bf;border-left-color:#9df5bf;font-size:.95rem;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 /* relacionados (tarjetas chicas) */
+.px-v-rel{margin-top:-2px}
 .px-v-rel .px-cuotas{font-size:.62rem}
-.px-v-rel .px-efectivo{font-size:.7rem;padding:2px 6px}
+.px-v-rel .px-efectivo{font-size:.7rem;margin-top:6px;padding-left:6px}
+/* celular (hasta 480 px): línea verde -2 px y cuotas -1 px; en relacionados 10 px las dos (no menos). Escritorio no cambia. */
+@media (max-width:480px){
+  .px-cuotas{font-size:10.52px}                     /* listado: 11,52 → 10,52 */
+  .px-efectivo{font-size:11.44px}                   /* listado: 13,44 → 11,44 */
+  .px-v-ficha .px-cuotas{font-size:12.44px}         /* ficha: 13,44 → 12,44 */
+  .px-v-ficha .px-efectivo{font-size:14.8px}        /* ficha: 16,8 → 14,8 */
+  .px-v-hero .px-cuotas{font-size:11.8px}           /* hero: 12,8 → 11,8 */
+  .px-v-hero .px-efectivo{font-size:13.2px}         /* hero: 15,2 → 13,2 */
+  .px-v-rel .px-cuotas,.px-v-rel .px-efectivo{font-size:10px}
+}
