@@ -1,0 +1,27 @@
+/* Visor de fotos a pantalla completa con zoom (visor-imagen.js). */
+#detalle-foto img{cursor:zoom-in}
+body.visor-abierto{overflow:hidden}
+.visor{position:fixed;inset:0;z-index:400;background:#050505;display:none;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none}
+.visor.abierto{display:block}
+.visor-escena{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab}
+.visor-escena.arrastrando{cursor:grabbing}
+.visor-img{position:absolute;left:50%;top:50%;max-width:none;transform-origin:center center;will-change:transform;-webkit-user-drag:none;user-select:none;pointer-events:none}
+.visor-img.anim{transition:transform .22s ease}
+.visor-img.fade{animation:visor-fade .18s ease}
+@keyframes visor-fade{from{opacity:0}to{opacity:1}}
+.visor-cerrar{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:1.2rem;cursor:pointer;z-index:2}
+.visor-cerrar:hover{background:rgba(255,255,255,.28)}
+.visor-contador{position:absolute;top:max(22px,calc(env(safe-area-inset-top) + 10px));left:16px;background:rgba(255,255,255,.16);color:#fff;font-size:.8rem;font-weight:600;padding:4px 12px;border-radius:999px;z-index:2;pointer-events:none}
+.visor-flecha,.visor-zoom{display:none}
+@media (hover:hover) and (pointer:fine){
+  .visor-flecha{display:flex;align-items:center;justify-content:center;position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:1.8rem;line-height:1;cursor:pointer;z-index:2}
+  .visor-flecha:hover{background:rgba(255,255,255,.3)}
+  .visor-prev{left:16px}
+  .visor-next{right:16px}
+  .visor-zoom{display:flex;flex-direction:column;gap:8px;position:absolute;right:16px;bottom:24px;z-index:2}
+  .visor-zoom button{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:1.4rem;line-height:1;cursor:pointer}
+  .visor-zoom button:hover{background:rgba(255,255,255,.3)}
+}
+.visor.una .visor-flecha,.visor.una .visor-contador{display:none}
+.visor-flecha.oculta{visibility:hidden}
+@media (prefers-reduced-motion:reduce){.visor-img.anim{transition:none}.visor-img.fade{animation:none}}

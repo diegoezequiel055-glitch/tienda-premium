@@ -1,0 +1,11 @@
+/* Elegir talle y botón "Agregar al carrito" de la ficha (seleccion-talle.js). */
+.talle-btn.sel{background:var(--ink);border-color:var(--ink);color:#fff}
+.talle-btn.agotado{opacity:.4;text-decoration:line-through;cursor:not-allowed}
+.detalle-talles.pulso{animation:talles-pulso 1.3s ease}
+@keyframes talles-pulso{0%,100%{box-shadow:0 0 0 0 rgba(10,10,10,0)}25%,65%{box-shadow:0 0 0 4px rgba(10,10,10,.28)}}
+.detalle-talles{border-radius:10px}
+.btn-agregar{width:100%;min-height:52px;margin-top:14px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:background .15s,transform .1s}
+.btn-agregar:active{transform:scale(.98)}
+.btn-agregar.pendiente{background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
+.btn-agregar.ok{background:#1f8f4a}
+@media (prefers-reduced-motion:reduce){.detalle-talles.pulso{animation:none}.btn-agregar{transition:none}}
