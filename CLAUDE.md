@@ -138,3 +138,10 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
   - `pedido-mensaje.js` recibe `items` (ya no `subtotal`) y calcula todo con `precios.js` (`usaPrecioTarjeta`, `precioUnitario`, `subtotalDe`). El formato de los renglones "• Categoría — Nombre (Talle X) xN = $T" y del resto de las líneas NO cambia (lo lee Carga rápida de StockMGR).
   - Pruebas puras: `node test-pedido-mensaje.mjs` (9 combinaciones × 2 modos, carrito mixto, carritos viejos; `--mensajes` escribe el texto exacto de cada caso).
 - Prueba sin tocar datos: copiar el repo a una carpeta aparte y cambiar `firebase-config.js` por un stub que entregue fichas simuladas (con/sin `precioTarjeta`).
+
+## Orden de precios con precioTarjeta (pulido) — `precios.js` › `extrasPrecioHtml` + `precios.css`
+- Cuando la ficha trae `precioTarjeta` válido, TODAS las pantallas (listado, hero rotativo —incluida la mitad izquierda en PC—, ficha, "Quizá también te guste" y "Completá tu look") muestran: 1) precio de tarjeta en grande, 2) en gris y más chico "3 cuotas de $X sin interés" (X = `precioTarjeta / 3` redondeado al peso, sin decimales, separador de miles argentino), 3) en verde (#0b6b2c, contraste 6,7:1 sobre blanco; en el hero, etiqueta blanca con texto verde para leerse sobre la foto) "$Y con transferencia o efectivo" (Y = precio de efectivo).
+- Un solo formato: `extrasPrecioHtml(p, variante)` (`card` | `ficha` | `hero` | `rel`); solo cambia el tamaño por CSS (`.px-v-*` en `precios.css`). Ya no existen "Hasta 3 cuotas sin interés" ni "Efectivo o transferencia: $X" en estas pantallas (`lineaEfectivo` queda solo para el texto de compartir).
+- Sin `precioTarjeta` (o inválido): se ve exactamente como antes ("Abonando en efectivo o transferencia" en listado y ficha; nada en hero y relacionados).
+- Carrito con Tarjeta: una sola leyenda de cuotas ("Hasta 3 cuotas sin interés." debajo de las formas de pago); se quitó la de debajo del total.
+- Pruebas: `node test-precios.mjs` y `node test-pedido-mensaje.mjs`.

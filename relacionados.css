@@ -12,4 +12,3 @@
 .rel-precio{font-family:'Anton',sans-serif;font-size:1rem;color:var(--ink)}
 .rel-card:hover .rel-foto{opacity:.92}
 .rel-card:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:var(--radius)}
-.rel-precio-efectivo{font-size:.66rem;line-height:1.25;color:var(--muted)}

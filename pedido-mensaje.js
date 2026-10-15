@@ -45,11 +45,10 @@ export function totalesHtml({ items, tipoEntrega, costoEnvio, formaPago }) {
     const mas = costoEnvio ? ` + Envío: $${fmt(costoEnvio)}` : '';
     return `Subtotal (precio efectivo/transferencia): $${fmt(subtotal)}${mas}${envio}<br><strong>Total: a confirmar</strong><br>${chico('Con tarjeta el precio puede variar; te lo informamos antes de cerrar.')}`;
   }
-  const cuotas = tarjetaReal ? `<br>${chico('Con tarjeta: hasta 3 cuotas sin interés.')}` : '';
-  if (tipoEntrega === 'correo') return `Subtotal: $${fmt(subtotal)}<br>${chico('Envío a cotizar por WhatsApp')}${cuotas}`;
+  if (tipoEntrega === 'correo') return `Subtotal: $${fmt(subtotal)}<br>${chico('Envío a cotizar por WhatsApp')}`;
   return (costoEnvio
     ? `Productos: $${fmt(subtotal)} + Envío: $${fmt(costoEnvio)}<br><strong>Total: $${fmt(subtotal + costoEnvio)}</strong>`
-    : 'Total: $' + fmt(subtotal + costoEnvio)) + cuotas;
+    : 'Total: $' + fmt(subtotal + costoEnvio));
 }
 
 // datos: { marca, nombre, items:[{categoria,nombre,talle,cantidad,precio,precioTarjeta?}], tipoEntrega,

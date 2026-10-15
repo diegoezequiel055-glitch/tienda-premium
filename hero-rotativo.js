@@ -27,7 +27,7 @@ const ESPERA_SIN_DATOS_MS = 8000;
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
-import { precioLista, lineaEfectivo } from './precios.js';
+import { precioLista, extrasPrecioHtml } from './precios.js';
 const esNuevo = (p) => Date.now() - p.creadoEn <= DIAS_NUEVO * 864e5;
 
 // Mismas reglas de publicación del catálogo (por si algo llegara sin cumplirlas).
@@ -87,7 +87,7 @@ function slideHtml(p, i) {
     <div class="hero-rot-info">
       <div class="hero-rot-nombre">${esc(p.nombre)}</div>
       <div class="hero-rot-precio">$${fmt(precioLista(p))}</div>
-      ${lineaEfectivo(p) ? `<div class="hero-rot-precio-nota">${esc(lineaEfectivo(p))}</div>` : ''}
+      ${extrasPrecioHtml(p, 'hero')}
       <button type="button" class="hero-rot-btn">Comprar →</button>
     </div>
   </div>`;
@@ -114,7 +114,7 @@ function marcarPuntos(raiz) {
   const p = datos[idx]; if (!p) return;
   const n = raiz.querySelector('.hero-rot-act-nombre'), pr = raiz.querySelector('.hero-rot-act-precio'), pn = raiz.querySelector('.hero-rot-act-precio-nota');
   if (n) n.textContent = p.nombre; if (pr) pr.textContent = '$' + fmt(precioLista(p));
-  if (pn) pn.textContent = lineaEfectivo(p);
+  if (pn) pn.innerHTML = extrasPrecioHtml(p, 'hero');
 }
 function abrirProducto(id) {
   if (!catalogoListo) { pendienteAbrir = id; return; } // todavía no llegó el catálogo: se abre apenas llegue

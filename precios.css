@@ -1,0 +1,17 @@
+/* Líneas de precio debajo del precio de tarjeta (precios.js › extrasPrecioHtml). Un solo formato para todas las pantallas;
+   solo cambia el tamaño por variante: px-v-card (listado), px-v-ficha, px-v-hero, px-v-rel (relacionados).
+   Verde #0b6b2c: contraste 6,7:1 sobre blanco y 5,8:1 sobre el fondo verde suave (mínimo pedido 4,5:1). */
+.px-extras{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:2px;min-width:0;max-width:100%}
+.px-cuotas{display:block;font-size:.72rem;line-height:1.25;color:#6b6b6b;font-family:'Outfit',sans-serif;font-weight:400}
+.px-efectivo{display:inline-block;max-width:100%;box-sizing:border-box;font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;line-height:1.25;color:#0b6b2c;background:#e3f4e8;border-radius:6px;padding:3px 8px;overflow-wrap:anywhere}
+/* ficha del producto (precio grande 1.7rem) */
+.px-v-ficha{gap:5px;margin-top:4px}
+.px-v-ficha .px-cuotas{font-size:.84rem}
+.px-v-ficha .px-efectivo{font-size:1.05rem;padding:4px 10px}
+/* hero: sobre foto oscura la etiqueta es blanca con texto verde (se lee sobre cualquier foto) */
+.px-v-hero{gap:4px}
+.px-v-hero .px-cuotas{color:rgba(255,255,255,.9);font-size:.8rem}
+.px-v-hero .px-efectivo{background:#fff;color:#0b6b2c;font-size:.95rem;padding:3px 10px}
+/* relacionados (tarjetas chicas) */
+.px-v-rel .px-cuotas{font-size:.62rem}
+.px-v-rel .px-efectivo{font-size:.7rem;padding:2px 6px}
