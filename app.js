@@ -4,14 +4,10 @@ import { fotoCloudinary } from './fotos-cloudinary.js';
 import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativo.js';
 import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
+import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
-const NOTAS_PAGO = {
-  efectivo: 'Solo para entregas en CABA o zona AMBA.',
-  transferencia: '',
-  tarjeta: 'El pago con tarjeta puede variar. Te informamos el total antes de cerrar.',
-};
 const TIPOS_ENTREGA = { retiro: 'Retiro en showroom', motomensajeria: 'Motomensajería (CABA/GBA)', correo: 'Correo Argentino' };
 const PROVINCIAS = ['Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'];
 // Código postal argentino: 4 dígitos (viejo formato) o CPA (1 letra + 4 dígitos + 3 letras, ej. B1657ABC).
@@ -415,7 +411,20 @@ window.cambiarCantidad = function (idx, delta) {
   guardarCarrito(); renderCarrito(); actualizarContador();
 };
 window.quitarDelCarrito = function (idx) {
+  const item = carrito[idx]; if (!item) return;
   carrito.splice(idx, 1);
+  guardarCarrito(); renderCarrito(); actualizarContador();
+  document.dispatchEvent(new CustomEvent('carrito-eliminado', { detail: { item, idx } })); // deshacer-eliminar.js muestra "Deshacer"
+};
+// Vuelve a poner un producto eliminado (mismo talle y cantidad, en su lugar). Si mientras tanto se volvió a
+// agregar el mismo producto y talle, se suman las cantidades sin pasar el stock.
+window.restaurarEliminado = function (item, idx) {
+  const p = productos.find((x) => x.id === item.id);
+  const fila = p && (p.talles || []).find((t) => t.talle === item.talle);
+  const max = fila ? fila.stock : item.cantidad;
+  const existente = carrito.find((c) => c.id === item.id && c.talle === item.talle);
+  if (existente) existente.cantidad = Math.min(max, existente.cantidad + item.cantidad);
+  else carrito.splice(Math.min(idx, carrito.length), 0, { ...item, cantidad: Math.min(max, item.cantidad) });
   guardarCarrito(); renderCarrito(); actualizarContador();
 };
 function actualizarContador() {
@@ -490,9 +499,9 @@ function renderEntregaDetalle() {
 
 function pintarSelectorPago() {
   $('pago-selector').innerHTML = Object.entries(FORMAS_PAGO).map(([k, l]) => `<button class="modo-btn${formaPago === k ? ' active' : ''}" onclick="setFormaPago('${k}')">${l}</button>`).join('');
-  $('pago-nota').textContent = formaPago ? NOTAS_PAGO[formaPago] : 'Elegí cómo preferís pagar.';
+  $('pago-nota').textContent = formaPago ? notaPago(formaPago, tipoEntrega) : 'Elegí cómo preferís pagar.';
 }
-window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actualizarBotonPedir(); };
+window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actualizarTotales(); }; // actualizarTotales también refresca el resumen (con Tarjeta cambia)
 
 function entregaCompleta() {
   if (tipoEntrega === 'retiro') return true;
@@ -507,15 +516,8 @@ function actualizarTotales() {
   const env = envioElegido();
   const notaEl = $('envio-nota');
   if (notaEl) notaEl.textContent = tipoEntrega === 'motomensajeria' && env?.estimado ? 'Precio estimado — tarifa por horario, se confirma por WhatsApp.' : '';
-  const totalEl = $('carrito-total');
-  if (tipoEntrega === 'correo') {
-    totalEl.innerHTML = `Subtotal: $${fmt(totalCarrito())}<br><span style="font-size:.76rem;color:var(--muted)">Envío a cotizar por WhatsApp</span>`;
-  } else {
-    const totalConEnvio = totalCarrito() + costoEnvio();
-    totalEl.innerHTML = costoEnvio()
-      ? `Productos: $${fmt(totalCarrito())} + Envío: $${fmt(costoEnvio())}<br><strong>Total: $${fmt(totalConEnvio)}</strong>`
-      : 'Total: $' + fmt(totalConEnvio);
-  }
+  $('carrito-total').innerHTML = totalesHtml({ subtotal: totalCarrito(), tipoEntrega, costoEnvio: costoEnvio(), formaPago });
+  if (formaPago) $('pago-nota').textContent = notaPago(formaPago, tipoEntrega); // la aclaración de Efectivo depende de la entrega
   actualizarBotonPedir();
 }
 
@@ -528,10 +530,10 @@ function renderCarrito() {
       <div class="carrito-item-foto">${c.foto ? `<img src="${esc(fotoCloudinary(c.foto, 'carrito'))}" alt="" loading="lazy">` : ''}</div>
       <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(c.precio)} c/u</div>
       <div class="carrito-item-ctrl">
-        <button class="qty-btn" onclick="cambiarCantidad(${i},-1)">−</button>
+        <button class="qty-btn" aria-label="Restar uno"${c.cantidad <= 1 ? ' disabled' : ''} onclick="cambiarCantidad(${i},-1)">−</button>
         <span>${c.cantidad}</span>
-        <button class="qty-btn" onclick="cambiarCantidad(${i},1)">+</button>
-        <button class="carrito-item-quitar" onclick="quitarDelCarrito(${i})" title="Quitar">🗑</button>
+        <button class="qty-btn" aria-label="Sumar uno" onclick="cambiarCantidad(${i},1)">+</button>
+        <button type="button" class="carrito-item-quitar" aria-label="Eliminar" title="Eliminar" onclick="quitarDelCarrito(${i})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>
       </div>
     </div>`).join('');
   }
@@ -548,36 +550,18 @@ window.hacerPedido = function () {
   if (!entregaCompleta()) { toast(tipoEntrega === 'correo' ? 'Completá provincia, localidad y un código postal válido.' : 'Elegí tu localidad.'); return; }
   if (!formaPago) { toast('Elegí una forma de pago para continuar.'); return; }
 
-  const lineas = carrito.map((c) => `• ${c.categoria} — ${c.nombre} (Talle ${c.talle}) x${c.cantidad} = $${fmt(c.precio * c.cantidad)}`).join('\n');
-  const subtotal = totalCarrito();
-
-  let entregaTxt, envioTxt;
-  if (tipoEntrega === 'retiro') {
-    entregaTxt = 'Retiro en showroom';
-    envioTxt = 'Sin costo (retiro)';
-  } else if (tipoEntrega === 'motomensajeria') {
-    const env = envioElegido();
-    entregaTxt = `Motomensajería — ${env.localidad}`;
-    envioTxt = `${env.estimado ? '≈' : ''}$${fmt(env.precio)}${env.estimado ? ' (estimado, se confirma por WhatsApp)' : ''}`;
-  } else {
-    entregaTxt = `Correo Argentino — ${correoLocalidad.trim()}, ${correoProvincia} (CP ${correoCP.trim().toUpperCase()})`;
-    envioTxt = 'A cotizar por WhatsApp';
-  }
-
-  const pagoTxt = `${FORMAS_PAGO[formaPago]}${NOTAS_PAGO[formaPago] ? ' (' + NOTAS_PAGO[formaPago] + ')' : ''}`;
-  const totalTxt = tipoEntrega === 'correo' ? `$${fmt(subtotal)} + envío a cotizar` : `$${fmt(subtotal + costoEnvio())}`;
-
-  const msg = `¡Hola! Quiero hacer este pedido en ${datosNegocio.nombreMarca}:
-Nombre: ${clienteNombre.trim()}
-${lineas}
-
-Subtotal: $${fmt(subtotal)}
-Entrega: ${entregaTxt}
-Envío: ${envioTxt}
-Forma de pago: ${pagoTxt}
-Total: ${totalTxt}
-
-Pedido a confirmar, sujeto a stock y costo de envío.`;
+  const msg = armarMensaje({
+    marca: datosNegocio.nombreMarca,
+    nombre: clienteNombre,
+    items: carrito,
+    subtotal: totalCarrito(),
+    tipoEntrega,
+    envio: envioElegido(),
+    costoEnvio: costoEnvio(),
+    correo: { localidad: correoLocalidad, provincia: correoProvincia, cp: correoCP },
+    formaPago,
+    formaPagoLabel: FORMAS_PAGO[formaPago],
+  });
 
   window.open(`https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`, '_blank');
 };

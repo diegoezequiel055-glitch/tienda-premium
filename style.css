@@ -193,7 +193,9 @@ button{font-family:inherit}
 .carrito-item-info em{font-style:normal;color:var(--ink);font-weight:600;font-size:.72rem}
 .carrito-item-ctrl{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .qty-btn{width:26px;height:26px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:.9rem}
-.carrito-item-quitar{background:none;border:none;color:var(--danger);cursor:pointer;font-size:.9rem;padding:4px}
+.qty-btn:disabled{opacity:.4;cursor:default;background:var(--surface3);color:var(--muted)}
+.carrito-item-quitar{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;margin-left:4px;border:none;border-radius:8px;background:var(--danger);color:#fff;cursor:pointer;padding:0}
+.carrito-item-quitar:active{transform:scale(.95)}
 .carrito-vacio{text-align:center;padding:30px 10px;color:var(--muted);font-size:.85rem}
 .carrito-form{display:flex;flex-direction:column;gap:10px;padding-top:14px;margin-top:4px;border-top:1px solid var(--border)}
 .carrito-foot{flex-shrink:0;padding:14px 18px;border-top:1px solid var(--border)}
