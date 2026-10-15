@@ -27,6 +27,7 @@ const ESPERA_SIN_DATOS_MS = 8000;
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
+import { precioLista, lineaEfectivo } from './precios.js';
 const esNuevo = (p) => Date.now() - p.creadoEn <= DIAS_NUEVO * 864e5;
 
 // Mismas reglas de publicación del catálogo (por si algo llegara sin cumplirlas).
@@ -85,7 +86,8 @@ function slideHtml(p, i) {
     ${esNuevo(p) ? '<span class="hero-rot-nuevo">Nuevo</span>' : ''}
     <div class="hero-rot-info">
       <div class="hero-rot-nombre">${esc(p.nombre)}</div>
-      <div class="hero-rot-precio">$${fmt(p.precio)}</div>
+      <div class="hero-rot-precio">$${fmt(precioLista(p))}</div>
+      ${lineaEfectivo(p) ? `<div class="hero-rot-precio-nota">${esc(lineaEfectivo(p))}</div>` : ''}
       <button type="button" class="hero-rot-btn">Comprar →</button>
     </div>
   </div>`;
@@ -110,8 +112,9 @@ function marcarPuntos(raiz) {
   raiz.querySelectorAll('.hero-rot-punto').forEach((el, k) => el.classList.toggle('activo', k === idx));
   // Mitad izquierda (PC): nombre y precio del producto activo.
   const p = datos[idx]; if (!p) return;
-  const n = raiz.querySelector('.hero-rot-act-nombre'), pr = raiz.querySelector('.hero-rot-act-precio');
-  if (n) n.textContent = p.nombre; if (pr) pr.textContent = '$' + fmt(p.precio);
+  const n = raiz.querySelector('.hero-rot-act-nombre'), pr = raiz.querySelector('.hero-rot-act-precio'), pn = raiz.querySelector('.hero-rot-act-precio-nota');
+  if (n) n.textContent = p.nombre; if (pr) pr.textContent = '$' + fmt(precioLista(p));
+  if (pn) pn.textContent = lineaEfectivo(p);
 }
 function abrirProducto(id) {
   if (!catalogoListo) { pendienteAbrir = id; return; } // todavía no llegó el catálogo: se abre apenas llegue
@@ -142,7 +145,7 @@ function leerCache() {
 function guardarCache(lista) {
   try {
     if (!lista.length) { localStorage.removeItem(CLAVE_CACHE); return; }
-    localStorage.setItem(CLAVE_CACHE, JSON.stringify(lista.map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio, creadoEn: p.creadoEn, fotos: [p.fotos[0]] }))));
+    localStorage.setItem(CLAVE_CACHE, JSON.stringify(lista.map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio, precioTarjeta: p.precioTarjeta, creadoEn: p.creadoEn, fotos: [p.fotos[0]] }))));
   } catch {}
 }
 
@@ -168,7 +171,7 @@ export function pintarHeroRotativo(productos, { alFallback } = {}) {
 }
 
 function dibujar(raiz, lista) {
-  const nueva = lista.map((p) => [p.id, p.fotos[0], p.nombre, p.precio, esNuevo(p)].join('~')).join('|');
+  const nueva = lista.map((p) => [p.id, p.fotos[0], p.nombre, p.precio, p.precioTarjeta, esNuevo(p)].join('~')).join('|');
   if (nueva === firma) return; // mismo contenido: no reiniciar el carrusel en cada actualización
   firma = nueva;
   clearTimeout(timer);
@@ -182,6 +185,7 @@ function dibujar(raiz, lista) {
       <div class="hero-rot-activo">
         <div class="hero-rot-act-nombre"></div>
         <div class="hero-rot-act-precio"></div>
+        <div class="hero-rot-act-precio-nota"></div>
         <button type="button" class="hero-rot-btn hero-rot-act-btn">Comprar →</button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativ
 import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
+import { precioLista, notasPrecio, tienePrecioTarjeta, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
@@ -26,7 +27,7 @@ let correoCP = '';
 let clienteNombre = '';
 let detalleId = null;
 let detalleFotoIdx = 0;
-let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, cantidad}]
+let carrito = cargarCarrito(); // [{id, nombre, categoria, talle, precio, precioTarjeta?, cantidad}] — precio = efectivo/transferencia
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -51,6 +52,8 @@ window.toast = function (msg) {
 // ── catálogo en vivo (ya viene filtrado: solo lo publicable con foto, precio y stock) ──
 onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const rc = resolverCarrito(carrito, productos); // carritos guardados (incluso viejos): precios al día por ID
+  if (rc.cambio) { carrito = rc.carrito; guardarCarrito(); renderCarrito(); }
   if (categoria && !categoriasDisponibles(productos).some((c) => c.clave === categoria)) window.setCategoria('');
   renderCatPills();
   document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
@@ -215,8 +218,8 @@ function tarjetaHtml(p) {
       ${cardFotoHtml(p)}
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
-      <div class="card-precio">$${fmt(p.precio)}</div>
-      <div class="card-precio-nota">Abonando en efectivo o transferencia</div>
+      <div class="card-precio">$${fmt(precioLista(p))}</div>
+      ${notasPrecio(p).map((n, i, l) => `<div class="card-precio-nota${tienePrecioTarjeta(p) && i === l.length - 1 ? ' card-precio-efectivo' : ''}">${esc(n)}</div>`).join('')}
       <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
       ${avisoStock ? `<div class="aviso-stock-bajo">${avisoStock}</div>` : ''}
     </div>`;
@@ -376,8 +379,8 @@ function pintarDetalle() {
   actualizarUIFotoDetalle();
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
-  $('detalle-precio').textContent = '$' + fmt(p.precio);
-  $('detalle-precio-nota').textContent = 'Abonando en efectivo o transferencia';
+  $('detalle-precio').textContent = '$' + fmt(precioLista(p));
+  $('detalle-precio-nota').innerHTML = notasPrecio(p).map(esc).join('<br>');
   const talles = p.talles || [];
   $('detalle-talles').innerHTML = talles.length
     ? talles.map((t) => `<button type="button" class="talle-btn" data-talle="${esc(t.talle)}" aria-pressed="false">${esc(t.talle)}</button>`).join('')
@@ -397,7 +400,7 @@ window.agregarAlCarrito = function (id, talle) {
   const enCarrito = existente ? existente.cantidad : 0;
   if (enCarrito >= fila.stock) { toast(`No hay más stock de ${p.nombre} talle ${talle}.`); return false; }
   if (existente) existente.cantidad++;
-  else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, precio: p.precio, cantidad: 1, foto: (p.fotos || [])[0] || null });
+  else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, ...preciosParaCarrito(p), cantidad: 1, foto: (p.fotos || [])[0] || null });
   guardarCarrito(); actualizarContador();
   toast(`${p.nombre} (${talle}) agregado al pedido ✓`);
   return true;
@@ -430,7 +433,6 @@ window.restaurarEliminado = function (item, idx) {
 function actualizarContador() {
   $('cart-count').textContent = carrito.reduce((a, c) => a + c.cantidad, 0);
 }
-function totalCarrito() { return carrito.reduce((a, c) => a + c.precio * c.cantidad, 0); }
 function envioElegido() { return envios.find((e) => e.id === envioId) || null; }
 function costoEnvio() { return tipoEntrega === 'motomensajeria' ? (envioElegido()?.precio || 0) : 0; }
 
@@ -499,9 +501,9 @@ function renderEntregaDetalle() {
 
 function pintarSelectorPago() {
   $('pago-selector').innerHTML = Object.entries(FORMAS_PAGO).map(([k, l]) => `<button class="modo-btn${formaPago === k ? ' active' : ''}" onclick="setFormaPago('${k}')">${l}</button>`).join('');
-  $('pago-nota').textContent = formaPago ? notaPago(formaPago, tipoEntrega) : 'Elegí cómo preferís pagar.';
+  $('pago-nota').textContent = formaPago ? notaPago(formaPago, tipoEntrega, usaPrecioTarjeta(carrito, formaPago)) : 'Elegí cómo preferís pagar.';
 }
-window.setFormaPago = function (f) { formaPago = f; pintarSelectorPago(); actualizarTotales(); }; // actualizarTotales también refresca el resumen (con Tarjeta cambia)
+window.setFormaPago = function (f) { formaPago = f; renderCarrito(); }; // con Tarjeta cambian los precios de cada renglón y el total
 
 function entregaCompleta() {
   if (tipoEntrega === 'retiro') return true;
@@ -516,8 +518,8 @@ function actualizarTotales() {
   const env = envioElegido();
   const notaEl = $('envio-nota');
   if (notaEl) notaEl.textContent = tipoEntrega === 'motomensajeria' && env?.estimado ? 'Precio estimado — tarifa por horario, se confirma por WhatsApp.' : '';
-  $('carrito-total').innerHTML = totalesHtml({ subtotal: totalCarrito(), tipoEntrega, costoEnvio: costoEnvio(), formaPago });
-  if (formaPago) $('pago-nota').textContent = notaPago(formaPago, tipoEntrega); // la aclaración de Efectivo depende de la entrega
+  $('carrito-total').innerHTML = totalesHtml({ items: carrito, tipoEntrega, costoEnvio: costoEnvio(), formaPago });
+  if (formaPago) $('pago-nota').textContent = notaPago(formaPago, tipoEntrega, usaPrecioTarjeta(carrito, formaPago)); // la aclaración de Efectivo depende de la entrega
   actualizarBotonPedir();
 }
 
@@ -528,7 +530,7 @@ function renderCarrito() {
   } else {
     body.innerHTML = carrito.map((c, i) => `<div class="carrito-item">
       <div class="carrito-item-foto">${c.foto ? `<img src="${esc(fotoCloudinary(c.foto, 'carrito'))}" alt="" loading="lazy">` : ''}</div>
-      <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(c.precio)} c/u</div>
+      <div class="carrito-item-info"><b>${esc(c.nombre)}</b>Talle ${esc(c.talle)} · $${fmt(precioUnitario(c, carrito, formaPago))} c/u</div>
       <div class="carrito-item-ctrl">
         <button class="qty-btn" aria-label="Restar uno"${c.cantidad <= 1 ? ' disabled' : ''} onclick="cambiarCantidad(${i},-1)">−</button>
         <span>${c.cantidad}</span>
@@ -554,7 +556,6 @@ window.hacerPedido = function () {
     marca: datosNegocio.nombreMarca,
     nombre: clienteNombre,
     items: carrito,
-    subtotal: totalCarrito(),
     tipoEntrega,
     envio: envioElegido(),
     costoEnvio: costoEnvio(),

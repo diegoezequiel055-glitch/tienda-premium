@@ -127,3 +127,14 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 `contacto.js` — formulario de contacto/arrepentimiento.
 `firebase-config.js` — conexión a Firestore.
 `style.css` — estilos generales.
+
+## Precio de lista (tarjeta) — etapa 1 (`precios.js`)
+- `catalogo_publico` puede traer `precioTarjeta` (precio de lista con tarjeta, hasta 3 cuotas sin interés) además de `precio` (efectivo/transferencia, siempre está). StockMGR lo va a escribir solo con su interruptor "mostrar precio de tarjeta" encendido.
+- `precios.js` decide qué se muestra: `tienePrecioTarjeta(p)` es verdadero solo si `precioTarjeta` es un número mayor que `precio`; si no (documento viejo, interruptor apagado, valor inválido) todo se ve como siempre ("Abonando en efectivo o transferencia", un solo precio).
+- Con `precioTarjeta`: precio grande = tarjeta, y debajo "Hasta 3 cuotas sin interés" (tarjeta del catálogo y ficha) y "Efectivo o transferencia: $X" (tarjeta, ficha, hero, relacionados y texto de compartir). Mayorista y curva no existen en la tienda.
+- El hero guarda una copia en localStorage y no se redibuja si la "firma" no cambia: `precioTarjeta` está incluido en la firma (si no, el precio viejo se quedaría pegado).
+- ETAPA 2 (carrito y mensaje): cada ítem del carrito guarda `precio` (efectivo/transferencia) y, si el producto lo tiene, `precioTarjeta`. Al llegar el catálogo, `resolverCarrito` (precios.js) actualiza por ID los carritos guardados en el navegador (también los viejos); un ítem cuyo producto ya no está queda como estaba.
+  - Efectivo/Transferencia: precio de efectivo. Tarjeta con TODOS los ítems con `precioTarjeta`: precio de tarjeta, total numérico, "Forma de pago: Tarjeta (hasta 3 cuotas sin interés)", sin "a confirmar". Tarjeta con algún ítem sin `precioTarjeta` (ficha vieja, interruptor apagado o carrito mixto): como siempre — precio de efectivo y "Total: a confirmar".
+  - `pedido-mensaje.js` recibe `items` (ya no `subtotal`) y calcula todo con `precios.js` (`usaPrecioTarjeta`, `precioUnitario`, `subtotalDe`). El formato de los renglones "• Categoría — Nombre (Talle X) xN = $T" y del resto de las líneas NO cambia (lo lee Carga rápida de StockMGR).
+  - Pruebas puras: `node test-pedido-mensaje.mjs` (9 combinaciones × 2 modos, carrito mixto, carritos viejos; `--mensajes` escribe el texto exacto de cada caso).
+- Prueba sin tocar datos: copiar el repo a una carpeta aparte y cambiar `firebase-config.js` por un stub que entregue fichas simuladas (con/sin `precioTarjeta`).

@@ -14,6 +14,7 @@ import { datosNegocio } from './datos-negocio.js';
 
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
+import { precioLista, lineaEfectivo } from './precios.js';
 
 let productos = [];
 let cargaInicial = true;
@@ -75,7 +76,7 @@ function copiar(texto) {
 async function compartir() {
   const p = actual; if (!p) return;
   const url = linkDe(p.id);
-  const text = `Mirá esta prenda en ${datosNegocio.nombreMarca}: ${p.nombre} — $${fmt(p.precio)}`;
+  const text = `Mirá esta prenda en ${datosNegocio.nombreMarca}: ${p.nombre} — $${fmt(precioLista(p))}${lineaEfectivo(p) ? ' (' + lineaEfectivo(p).toLowerCase() + ')' : ''}`;
   if (navigator.share) {
     try { await navigator.share({ title: p.nombre, text, url }); }
     catch (err) { if (err && err.name === 'AbortError') return; /* canceló: sin aviso */ await copiarLink(url); }
