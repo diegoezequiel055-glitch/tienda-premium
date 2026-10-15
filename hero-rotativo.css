@@ -49,3 +49,5 @@
   body.hero-rot-on .inicio-texto{display:none} /* el título y subtítulo ya están en el hero */
 }
 @media (min-width:900px) and (prefers-reduced-motion:reduce){.hero-rot-flecha{transition:none}}
+.hero-rot-precio-nota,.hero-rot-act-precio-nota{font-size:.8rem;font-weight:400;line-height:1.2;opacity:.9}
+.hero-rot-act-precio-nota:empty{display:none}

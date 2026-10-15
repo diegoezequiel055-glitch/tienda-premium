@@ -5,6 +5,7 @@ import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativ
 import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
+import { precioLista, notasPrecio, tienePrecioTarjeta } from './precios.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
 const FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta' };
@@ -215,8 +216,8 @@ function tarjetaHtml(p) {
       ${cardFotoHtml(p)}
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
-      <div class="card-precio">$${fmt(p.precio)}</div>
-      <div class="card-precio-nota">Abonando en efectivo o transferencia</div>
+      <div class="card-precio">$${fmt(precioLista(p))}</div>
+      ${notasPrecio(p).map((n, i, l) => `<div class="card-precio-nota${tienePrecioTarjeta(p) && i === l.length - 1 ? ' card-precio-efectivo' : ''}">${esc(n)}</div>`).join('')}
       <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
       ${avisoStock ? `<div class="aviso-stock-bajo">${avisoStock}</div>` : ''}
     </div>`;
@@ -376,8 +377,8 @@ function pintarDetalle() {
   actualizarUIFotoDetalle();
   $('detalle-cat').textContent = p.categoria;
   $('detalle-nombre').textContent = p.nombre;
-  $('detalle-precio').textContent = '$' + fmt(p.precio);
-  $('detalle-precio-nota').textContent = 'Abonando en efectivo o transferencia';
+  $('detalle-precio').textContent = '$' + fmt(precioLista(p));
+  $('detalle-precio-nota').innerHTML = notasPrecio(p).map(esc).join('<br>');
   const talles = p.talles || [];
   $('detalle-talles').innerHTML = talles.length
     ? talles.map((t) => `<button type="button" class="talle-btn" data-talle="${esc(t.talle)}" aria-pressed="false">${esc(t.talle)}</button>`).join('')
