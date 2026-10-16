@@ -9,13 +9,8 @@ $('contacto-whatsapp').href = `https://wa.me/${datosNegocio.whatsappNumero}`;
 $('contacto-whatsapp').textContent = datosNegocio.whatsappNumero;
 $('contacto-email').href = `mailto:${datosNegocio.email}`;
 $('contacto-email').textContent = datosNegocio.email;
-$('contacto-direccion').textContent = datosNegocio.showroomDireccion;
-$('contacto-maps').href = datosNegocio.showroomMapsUrl;
-
-if (datosNegocio.showroomHorarios) {
-  $('contacto-horarios-item').style.display = '';
-  $('contacto-horarios').textContent = datosNegocio.showroomHorarios;
-}
+// Sin dirección exacta, mapa ni horarios: solo el texto público (el rótulo "Showroom" ya está en el HTML).
+$('contacto-direccion').textContent = datosNegocio.showroomTexto.replace(/^Showroom\s*/, '');
 if (datosNegocio.instagram) {
   $('contacto-instagram-item').style.display = '';
   $('contacto-instagram').href = datosNegocio.instagram;

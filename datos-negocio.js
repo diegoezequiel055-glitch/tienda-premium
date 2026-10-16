@@ -17,10 +17,9 @@ export const datosNegocio = {
   condicionFiscal: 'Monotributista',
   cuit: '20-46183728-0', // se muestra en el footer y en términos solo cuando tenga valor
 
-  // Showroom
-  showroomDireccion: 'Diagonal 152 (Belgrano) 5453, Loma Hermosa, San Martín',
-  showroomHorarios: 'Lunes a viernes con cita previa, sábados de 15 a 20 hs',
-  showroomMapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Diagonal 152 (Belgrano) 5453, Loma Hermosa, San Martín'),
+  // Showroom — texto público (sin calle ni número, sin mapa ni horarios exactos). La dirección se pasa
+  // por WhatsApp cuando el cliente coordina la cita; no escribirla acá ni en ningún archivo del sitio.
+  showroomTexto: 'Showroom en Loma Hermosa, San Martín · Lunes a sábado con cita previa',
 
   // Contacto
   whatsappNumero: '5491156253612', // con código de país y área, sin + ni espacios

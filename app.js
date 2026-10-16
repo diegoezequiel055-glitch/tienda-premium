@@ -92,9 +92,9 @@ function aplicarDatosNegocio() {
     }
   });
 
-  const maps = $('showroom-maps'); if (maps) maps.href = datosNegocio.showroomMapsUrl;
-  const dir = $('showroom-direccion'); if (dir) dir.textContent = datosNegocio.showroomDireccion;
-  const hor = $('showroom-horarios'); if (hor) hor.textContent = datosNegocio.showroomHorarios ? ' · ' + datosNegocio.showroomHorarios : '';
+  // Franja de información: "Showroom" en negrita y el resto del texto público (sin dirección exacta).
+  const sh = $('showroom-texto');
+  if (sh) { const m = datosNegocio.showroomTexto.match(/^(Showroom)(.*)$/); sh.innerHTML = m ? `<b>${esc(m[1])}</b>${esc(m[2])}` : esc(datosNegocio.showroomTexto); }
 }
 
 // ── envíos (motomensajería) en vivo ──
@@ -480,7 +480,7 @@ function pintarSelectorEntrega() {
 function renderEntregaDetalle() {
   const cont = $('entrega-detalle'); if (!cont) return;
   if (tipoEntrega === 'retiro') {
-    cont.innerHTML = `<p class="modo-nota" style="margin:8px 0 0;text-align:left">${esc(datosNegocio.showroomDireccion)}${datosNegocio.showroomHorarios ? ' · ' + esc(datosNegocio.showroomHorarios) : ''}. Sin costo.</p>`;
+    cont.innerHTML = `<p class="modo-nota" style="margin:8px 0 0;text-align:left">${esc(datosNegocio.showroomTexto)}. Sin costo.</p>`;
   } else if (tipoEntrega === 'motomensajeria') {
     cont.innerHTML = `<select id="envio-select" onchange="setEnvio(this.value)" style="margin-top:8px"><option value="">Elegí tu localidad...</option></select><p class="modo-nota" id="envio-nota" style="margin-top:6px"></p>`;
     pintarSelectEnvio();

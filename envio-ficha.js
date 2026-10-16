@@ -27,7 +27,7 @@ function detalleTexto(e) {
   if (e.tipoEntrega === 'retiro') {
     const d = datosNegocio;
     return `<p class="envio-res"><b>Retiro en showroom: gratis</b></p>
-      <p class="envio-nota">${esc(d.showroomDireccion)}${d.showroomHorarios ? ' · ' + esc(d.showroomHorarios) : ''}</p>`;
+      <p class="envio-nota">${esc(d.showroomTexto)}</p>`;
   }
   if (e.tipoEntrega === 'motomensajeria') {
     const ordenadas = [...e.envios].sort((a, b) => a.localidad.localeCompare(b.localidad, 'es'));
