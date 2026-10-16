@@ -210,8 +210,8 @@ button{font-family:inherit}
 .btn-whatsapp:disabled{opacity:.5;cursor:default}
 
 /* WHATSAPP FLOTANTE */
-.whatsapp-float{position:fixed;bottom:max(22px,env(safe-area-inset-bottom));right:max(18px,env(safe-area-inset-right));z-index:60;width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.25);overflow:hidden}
-.whatsapp-float svg{display:block;flex:none;pointer-events:none}
+.whatsapp-float{position:fixed;bottom:max(22px,env(safe-area-inset-bottom));right:max(18px,env(safe-area-inset-right));z-index:60;width:56px;height:56px;border-radius:50%;overflow:hidden;background:#26D366;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.whatsapp-float img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
 /* Con la ficha, el carrito, el menú o el visor abiertos el botón no se muestra (no puede tapar sus botones ni quedar suelto al costado del panel). */
 body:has(.overlay.open) .whatsapp-float,body:has(.menu-overlay.open) .whatsapp-float,body.visor-abierto .whatsapp-float{visibility:hidden;pointer-events:none}
 
