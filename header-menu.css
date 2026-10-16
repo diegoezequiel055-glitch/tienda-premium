@@ -48,4 +48,3 @@ body.menu-abierto{overflow:hidden}
 .detalle-panel{max-height:min(92vh,100%)}
 .carrito-panel{max-height:min(94vh,100%)}
 body:has(.overlay.open){overflow:hidden}
-html{scrollbar-gutter:stable}
