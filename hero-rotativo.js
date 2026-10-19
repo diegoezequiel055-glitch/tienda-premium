@@ -4,8 +4,8 @@ import { fotoCloudinary } from './fotos-cloudinary.js';
 // HERO ROTATIVO — foto grande del inicio con los 4 productos más nuevos.
 // "Más nuevos" = campo `creadoEn` de catalogo_publico (fecha real de alta en
 // StockMGR, la misma que usa "Nuevos ingresos"). Etiqueta "Nuevo" si se cargó
-// hace 30 días o menos. Foto = primera del producto, tamaño 'ficha' (900 px):
-// es la misma URL que la ficha, así al abrirla esa foto ya está en caché.
+// hace 30 días o menos. Foto = primera del producto, tamaño 'ficha' (900 px) en PC y
+// 'heroMovil' (750 px, calidad económica) en celular y tablet (< 900 px).
 // app.js solo llama a pintarHeroRotativo() y a idsHero() (para que "Nuevos
 // ingresos" no repita estos productos).
 // En PC (≥ 900 px, ver hero-rotativo.css) el hero es una banda oscura a ancho
@@ -75,7 +75,7 @@ document.addEventListener('config-sitio-aplicada', () => {
 });
 
 function slideHtml(p, i) {
-  const foto = esc(fotoCloudinary(p.fotos[0], 'ficha'));
+  const foto = esc(fotoCloudinary(p.fotos[0], window.matchMedia('(max-width: 899px)').matches ? 'heroMovil' : 'ficha')); // celular: 750 px con calidad económica; PC: 900 px
   // La primera foto carga ya (es lo primero que se ve); las demás se piden de a una desde JS.
   const img = i === 0
     ? `<img src="${foto}" alt="${esc(p.nombre)}" fetchpriority="high" decoding="async">`
