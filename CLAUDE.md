@@ -177,4 +177,4 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - **Título de la portada**: "TIENDAPREMIUM.OK | Camisetas de fútbol y ropa urbana" (`marca.js` respeta el formato `MARCA | texto`). En PC con el hero activo el `<h1>` sigue en la página pero oculto a la vista (accesible).
 - `--muted` = #6b6b6b (contraste 5,3:1 sobre blanco). Enlaces legales del pie: 44 px de alto táctil.
 - **No se publican** `CLAUDE.md`, `*.md`, `test-*.mjs` ni `build-*.mjs`: lo define `_config.yml` (`exclude` de Jekyll/GitHub Pages). Un archivo interno nuevo se agrega ahí.
-- Pendiente: favicon / apple-touch-icon (no hay un logo en forma de ícono; el único logo del repo es el texto "TIENDAPREMIUM.OK").
+- Favicon: `favicon.png` (48 px) y `apple-touch-icon.png` (180 px) con "TP" en Anton blanca sobre negro (#0a0a0a); `<link>` en las 5 páginas. No hay `manifest.json`.
