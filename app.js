@@ -6,6 +6,7 @@ import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 import './fotos-tarjeta.js';
+import { paginar, textoVerMas, TAMANO_PAGINA } from './paginacion.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
@@ -19,6 +20,8 @@ let productos = [];
 let envios = [];
 let busqueda = '';
 let categoria = '';
+let mostrados = TAMANO_PAGINA; // cuántos productos del catálogo filtrado se ven ("Ver más" suma otra tanda)
+let filtradosActuales = [];
 let formaPago = null;
 let tipoEntrega = null; // 'retiro' | 'motomensajeria' | 'correo'
 let envioId = null; // id de envios_publico (solo aplica si tipoEntrega === 'motomensajeria')
@@ -183,10 +186,12 @@ window.setBusqueda = function (v) {
     marcarPill();
     document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: '' }));
   }
+  mostrados = TAMANO_PAGINA;
   renderGrid();
 };
 window.setCategoria = function (v) {
   categoria = v;
+  mostrados = TAMANO_PAGINA;
   marcarPill();
   renderGrid();
   document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: v }));
@@ -237,14 +242,32 @@ function tarjetaHtml(p) {
 function renderGrid() {
   const grid = $('grid');
   liberarReservas();
-  if (!productos.length) { actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
+  if (!productos.length) { filtradosActuales = []; pintarVerMas(0); actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
   const palabras = palabrasDe(busqueda);
   const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || claveDe(p.categoria) === categoria))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
   actualizarInfoBusqueda(palabras.length ? busqueda : '', filtrados.length);
+  filtradosActuales = filtrados;
+  const { visibles, restantes } = paginar(filtrados, mostrados);
+  pintarVerMas(restantes);
   if (!filtrados.length) { grid.innerHTML = palabras.length ? htmlSinResultados(busqueda) : `<div class="empty"><p>No hay productos en esta categoría.</p></div>`; return; }
-  grid.innerHTML = filtrados.map(tarjetaHtml).join('');
+  grid.innerHTML = visibles.map(tarjetaHtml).join('');
 }
+
+// Botón "Ver más": agrega otra tanda al final sin repintar lo que ya está (no salta el scroll).
+function pintarVerMas(restantes) {
+  const caja = $('ver-mas-caja'); if (!caja) return;
+  caja.hidden = restantes <= 0;
+  $('ver-mas-btn').textContent = textoVerMas(restantes);
+}
+window.verMasProductos = function () {
+  const grid = $('grid');
+  const ya = grid.querySelectorAll(':scope > .card').length;
+  mostrados = ya + TAMANO_PAGINA;
+  const { visibles, restantes } = paginar(filtradosActuales, mostrados);
+  grid.insertAdjacentHTML('beforeend', visibles.slice(ya).map(tarjetaHtml).join(''));
+  pintarVerMas(restantes);
+};
 
 // ── destacados (productos tildados ⭐ desde el panel) — se oculta con menos de 2 ──
 function destacadosList() {
