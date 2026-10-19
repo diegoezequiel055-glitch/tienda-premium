@@ -62,8 +62,15 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   renderDestacados();
   renderNuevos();
 }, () => {
+  liberarReservas();
+  document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
+
+// Quita el espacio reservado (esqueletos.css) cuando ya hay contenido real o se decidió no mostrar la sección.
+function liberarReservas() {
+  const g = $('grid'); g.classList.remove('grid-reservando'); g.removeAttribute('aria-busy');
+}
 
 // ── configuración del sitio en vivo (textos y fotos editables desde el panel) ──
 let heroFotosManual = null; // [url|null, url|null, url|null] elegidas a mano, o null si Diego no configuró ninguna
@@ -228,6 +235,7 @@ function tarjetaHtml(p) {
 // ── grilla ──
 function renderGrid() {
   const grid = $('grid');
+  liberarReservas();
   if (!productos.length) { actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
   const palabras = palabrasDe(busqueda);
   const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || claveDe(p.categoria) === categoria))
@@ -244,7 +252,7 @@ function destacadosList() {
 function renderDestacados() {
   const sec = $('destacados-section'), strip = $('destacados-strip'); if (!sec || !strip) return;
   const lista = destacadosList();
-  sec.style.display = lista.length >= 2 ? '' : 'none';
+  sec.classList.remove('reservando'); sec.style.display = lista.length >= 2 ? '' : 'none';
   if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
 window.irADestacados = function (ev) {
@@ -262,7 +270,7 @@ function nuevosList() {
 function renderNuevos() {
   const sec = $('nuevos-section'), strip = $('nuevos-strip'); if (!sec || !strip) return;
   const lista = nuevosList();
-  sec.style.display = lista.length >= 2 ? '' : 'none';
+  sec.classList.remove('reservando'); sec.style.display = lista.length >= 2 ? '' : 'none';
   if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
 window.irANuevos = function (ev) {

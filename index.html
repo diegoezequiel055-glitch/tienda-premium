@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="relacionados.css">
 <link rel="stylesheet" href="precios.css">
 <link rel="stylesheet" href="deshacer-eliminar.css">
+<link rel="stylesheet" href="esqueletos.css">
 </head>
 <body>
 
@@ -79,12 +80,12 @@
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
 </div>
 
-<section class="destacados" id="nuevos-section" style="display:none">
+<section class="destacados reservando" id="nuevos-section">
   <h2 class="section-title">Nuevos ingresos</h2>
   <div class="destacados-strip" id="nuevos-strip"></div>
 </section>
 
-<section class="destacados" id="destacados-section" style="display:none">
+<section class="destacados reservando" id="destacados-section">
   <h2 class="section-title">Destacados</h2>
   <div class="destacados-strip" id="destacados-strip"></div>
 </section>
@@ -97,8 +98,9 @@
 
 <div class="busqueda-info" id="busqueda-info" style="display:none"></div>
 
-<main id="grid" class="grid">
-  <div class="empty"><p>Cargando catálogo…</p></div>
+<main id="grid" class="grid grid-reservando" aria-busy="true">
+  <div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div>
+  <p class="solo-lectores" role="status">Cargando catálogo…</p>
 </main>
 
 <section class="inicio-texto">

@@ -1,0 +1,18 @@
+/* Espacio reservado mientras llega el catálogo, para que la página no salte al cargar (CLS).
+   Las secciones "Nuevos ingresos" y "Destacados" arrancan con su alto reservado (alto real medido
+   en celular: ~560 px y ~520 px) y la grilla con tarjetas esqueleto. app.js quita .reservando
+   y .grid-reservando al pintar (o oculta la sección si no hay productos para mostrar). */
+.destacados.reservando{min-height:520px}
+.destacados.reservando .destacados-strip:empty{min-height:420px;background:
+  linear-gradient(var(--surface2),var(--surface2)) 20px 2px/180px 225px no-repeat,
+  linear-gradient(var(--surface2),var(--surface2)) 216px 2px/180px 225px no-repeat}
+@media(min-width:700px){
+  .destacados.reservando{min-height:600px}
+  .destacados.reservando .destacados-strip:empty{min-height:480px;background:
+    linear-gradient(var(--surface2),var(--surface2)) 32px 2px/230px 288px no-repeat,
+    linear-gradient(var(--surface2),var(--surface2)) 278px 2px/230px 288px no-repeat,
+    linear-gradient(var(--surface2),var(--surface2)) 524px 2px/230px 288px no-repeat}
+}
+.grid-reservando{min-height:80vh;align-content:start}
+.card-esqueleto{aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius)}
+.solo-lectores{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
