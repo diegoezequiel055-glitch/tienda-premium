@@ -109,7 +109,7 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - Pendiente a revisar al conectar el dominio: que la clave de API de Firebase (consola de Google Cloud, si tiene restricción por sitio web) y los dominios autorizados de Firebase incluyan `tiendapremium.com.ar`; si no, Firestore podría dejar de responder desde el dominio nuevo.
 
 ## Google Analytics 4 (`analytics.js`)
-- ID de medición **G-4V2GTP47P4**. `analytics.js` está en las 5 páginas. `gtag.js` se inyecta con `async` recién cuando la página terminó de cargar (`load` + `requestIdleCallback`): no bloquea nada. Configuración sin señales de Google ni personalización de anuncios (`allow_google_signals:false`, `allow_ad_personalization_signals:false`); GA4 ya anonimiza la IP.
+- ID de medición **G-XMQQ0PMRDY**. `analytics.js` está en las 5 páginas. `gtag.js` se inyecta con `async` recién cuando la página terminó de cargar (`load` + `requestIdleCallback`): no bloquea nada. Configuración sin señales de Google ni personalización de anuncios (`allow_google_signals:false`, `allow_ad_personalization_signals:false`); GA4 ya anonimiza la IP.
 - **Solo envía desde `tiendapremium.com.ar`** (y `www.`). En localhost, IP local, `github.io` y pruebas no se carga ni `gtag.js` ni se envía nada.
 - **Excluir visitas propias:** entrar a cualquier página con `?interno=1` guarda `analyticsInterno=1` en localStorage (con try/catch) y desde ese navegador no se envía nada; `?interno=0` la quita.
 - **Modo debug:** `?analytics_debug=1` (se recuerda en la pestaña; `=0` lo apaga) NO envía nada y muestra en la consola cada evento con sus parámetros y si se habría enviado. Sirve también en producción para verificar.
