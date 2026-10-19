@@ -1,0 +1,520 @@
+/* GENERADO por build-css.mjs — no editar a mano: editá el CSS de cada módulo y corré `node build-css.mjs`. */
+
+/* ── style.css ── */
+:root {
+  --bg:#ffffff; --surface:#fafaf9; --surface2:#f5f4f0; --surface3:#eeeee8;
+  --border:#ededed; --border2:#dddddd;
+  --ink:#0a0a0a; --text:#121212; --text2:#555555; --muted:#6b6b6b;
+  --danger:#d93636; --success:#25d366;
+  --radius:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;font-size:15px;padding-bottom:30px}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+
+/* .promo-bar: ver promo-bar.css */
+
+.hdr{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;backdrop-filter:blur(10px)}
+.hdr-logo{font-family:'Anton',sans-serif;font-size:1.05rem;letter-spacing:1.5px;color:var(--ink);white-space:nowrap}
+.hdr-logo span{color:var(--ink)}
+.hdr-nav{display:none;align-items:center;gap:24px;flex:1;justify-content:center}
+.hdr-nav a{font-size:.82rem;color:var(--text);letter-spacing:.2px}
+@media(min-width:760px){.hdr-nav{display:flex}}
+.btn-cart{background:var(--ink);color:#fff;border:none;border-radius:999px;padding:9px 16px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:7px;flex-shrink:0}
+
+/* HERO */
+.hero-triptych{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border)}
+.htr-ph{aspect-ratio:3/4;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--border2);overflow:hidden}
+.htr-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.htr-ph-mid{background:var(--surface)}
+.inicio-texto{text-align:center;padding:30px 20px 6px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.inicio-texto h1{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(17px,4.4vw,24px);line-height:1.1;letter-spacing:.3px;color:var(--ink);text-transform:uppercase;max-width:680px}
+.inicio-texto p{color:var(--text2);font-size:.8rem;line-height:1.5;max-width:440px}
+.btn-solid,.btn-outline{display:inline-flex;align-items:center;min-height:44px;padding:0 24px;border-radius:999px;font-weight:600;font-size:.85rem;white-space:nowrap}
+.btn-solid{background:var(--ink);color:#fff}
+.btn-outline{border:1px solid var(--ink);color:var(--ink)}
+
+/* CONFIANZA Y CONTACTO */
+.confianza{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px 0 36px}
+.confianza-grid{display:flex;flex-wrap:wrap}
+.confianza-item{flex:1 1 220px;padding:18px 20px;display:flex;gap:12px;align-items:flex-start;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.confianza-item svg{flex-shrink:0;margin-top:2px;color:var(--ink)}
+.confianza-item div{display:flex;flex-direction:column;gap:2px}
+.confianza-item b{font-size:.82rem;color:var(--ink);font-weight:600}
+.confianza-item span{font-size:.74rem;color:var(--muted);line-height:1.5}
+.confianza-link{font-size:.74rem;color:var(--ink);font-weight:600;text-decoration:underline;margin-top:4px}
+
+.como-comprar{padding:30px 20px 0}
+@media(min-width:700px){.como-comprar{padding:34px 32px 0}}
+.como-comprar-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;margin-top:16px}
+.paso{display:flex;flex-direction:column;gap:6px}
+.paso-n{font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--ink)}
+.paso p{font-size:.78rem;color:var(--text2);line-height:1.5}
+
+/* TÍTULOS DE SECCIÓN */
+.section-title{font-family:'Anton',sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:.5px;color:var(--ink);text-transform:uppercase;padding:0 20px;margin:0}
+.section-title-grid{padding-top:10px}
+@media(min-width:700px){.section-title{padding:0 32px}}
+
+/* DESTACADOS */
+.destacados{padding:34px 0 10px;display:flex;flex-direction:column;gap:14px}
+.destacados-strip{display:flex;gap:16px;overflow-x:auto;padding:2px 20px 10px;scroll-snap-type:x mandatory;scroll-padding-left:20px}
+.destacados-strip::-webkit-scrollbar{display:none}
+.destacados-strip .card{flex:0 0 180px;scroll-snap-align:start}
+@media(min-width:700px){.destacados-strip{padding:2px 32px 10px;scroll-padding-left:32px}.destacados-strip .card{flex-basis:230px}}
+
+.modo-selector{display:inline-flex;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;padding:4px;gap:2px}
+.modo-btn{background:none;border:none;color:var(--text2);padding:8px 16px;border-radius:999px;font-family:inherit;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap}
+.modo-btn.active{background:var(--ink);color:#fff;font-weight:600}
+.modo-nota{font-size:.72rem;color:var(--muted);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.5}
+
+.filtros{display:flex;gap:10px;flex-wrap:wrap;padding:6px 20px 16px;align-items:center}
+.search-wrap{position:relative;flex:1 1 180px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex}
+.search-wrap input{width:100%;padding:10px 12px 10px 34px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text);font-family:inherit;font-size:.85rem}
+.cat-pills{display:flex;gap:8px;overflow-x:auto;flex:2 1 260px;padding-bottom:2px}
+.cat-pills::-webkit-scrollbar{display:none}
+.cat-pill{flex-shrink:0;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:9px 15px;border-radius:999px;font-family:inherit;font-size:.8rem;cursor:pointer;white-space:nowrap}
+.cat-pill.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px 14px;padding:4px 20px 30px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 22px;padding:4px 32px 50px}}
+.card{cursor:pointer;display:flex;flex-direction:column;gap:9px;padding-bottom:26px}
+.card-foto{position:relative;width:100%;aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
+.card:hover .card-foto{opacity:.9}
+.card-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.card-foto-scroll{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory}
+.card-foto-scroll::-webkit-scrollbar{display:none}
+.card-foto-scroll img{flex:0 0 100%;scroll-snap-align:start}
+.card-foto-contador{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.64rem;padding:2px 8px;border-radius:999px;pointer-events:none}
+.sin-foto{font-size:.72rem;color:var(--muted)}
+.card-cat{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+.card-nombre{font-size:.88rem;font-weight:500;line-height:1.3;margin-top:2px;color:var(--ink)}
+.card-precio{font-family:'Anton',sans-serif;font-size:1.1rem;color:var(--ink);margin-top:2px}
+.card-precio small{font-size:.68rem;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:400;display:block;margin-top:1px}
+.card-precio-nota{font-size:.64rem;color:var(--muted);margin-top:-4px}
+.card-talles{font-size:.68rem;color:var(--text2);margin-top:1px}
+.aviso-stock-bajo{font-size:.68rem;color:var(--danger);font-weight:700;margin-top:2px}
+
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)}
+.empty p{font-size:.9rem;line-height:1.6}
+
+/* BANDA NEGRA */
+.banda-negra{background:var(--ink);padding:52px 20px;display:flex;align-items:center;justify-content:center;margin-top:10px}
+.banda-negra p{max-width:620px;text-align:center;margin:0;font-family:'Anton',sans-serif;font-size:clamp(20px,4vw,32px);line-height:1.2;color:#fff;text-transform:uppercase}
+
+.pie{padding:48px 20px 90px;border-top:1px solid var(--border)}
+.pie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:30px;max-width:980px;margin:0 auto}
+.pie-col-marca{display:flex;flex-direction:column;gap:10px}
+.pie-logo{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:1px;color:var(--ink)}
+.pie-redes{display:flex;gap:12px}
+.pie-redes a{color:var(--ink)}
+.pie-desc{font-size:.76rem;color:var(--muted);line-height:1.6;max-width:260px}
+.pie-col b{display:block;font-size:.72rem;color:var(--ink);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.pie-nav{list-style:none;display:flex;flex-direction:column;gap:7px}
+.pie-nav a{font-size:.8rem;color:var(--text2)}
+.pie-col p{font-size:.78rem;color:var(--text2);line-height:1.6}
+.pie-legal-row{max-width:980px;margin:26px auto 0;text-align:center;font-size:.74rem;color:var(--text2);display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;justify-content:center}
+.pie-legal-row a{text-decoration:underline;display:inline-flex;align-items:center;min-height:44px;padding:0 6px} /* área táctil mínima de 44 px */
+.pie-sep{color:var(--border2)}
+.pie-copy{max-width:980px;margin:14px auto 0;text-align:center;font-size:.72rem;color:var(--muted)}
+
+/* PÁGINA CONTACTO */
+.arrep-banner{background:var(--surface2);border-bottom:1px solid var(--border);padding:16px 20px}
+.arrep-banner p{max-width:720px;margin:0 auto;font-size:.82rem;line-height:1.6;color:var(--text2)}
+.contacto-grid{display:grid;grid-template-columns:1fr;gap:36px;max-width:900px;margin:0 auto;padding:36px 20px 60px}
+@media(min-width:760px){.contacto-grid{grid-template-columns:1fr 1.2fr;padding:44px 32px 70px}}
+.contacto-info h1{font-family:'Anton',sans-serif;font-weight:400;font-size:1.6rem;color:var(--ink);text-transform:uppercase;margin-bottom:20px}
+.contacto-info-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:20px}
+.contacto-info-item svg{flex-shrink:0;color:var(--ink);margin-top:2px}
+.contacto-info-item b{display:block;font-size:.84rem;color:var(--ink)}
+.contacto-info-item span{font-size:.8rem;color:var(--text2);line-height:1.5}
+.contacto-info-item div>*:first-child{margin-top:0!important}
+.contacto-form{display:flex;flex-direction:column;gap:14px}
+.contacto-form .field{display:flex;flex-direction:column;gap:6px}
+.contacto-form label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.contacto-form input,.contacto-form textarea{width:100%;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:.85rem}
+.contacto-form textarea{min-height:90px;resize:vertical}
+.contacto-estado{font-size:.8rem;color:var(--success);font-weight:600}
+
+/* OVERLAYS (ficha + carrito) */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+@media(min-width:640px){.overlay{align-items:center}}
+.cerrar{background:none;border:none;color:var(--text2);font-size:1.1rem;cursor:pointer;padding:4px 8px}
+
+/* FICHA DE PRODUCTO */
+.detalle-panel{background:var(--bg);width:100%;max-width:480px;max-height:92vh;border-radius:var(--radius) var(--radius) 0 0;overflow-y:auto;border:1px solid var(--border);position:relative}
+@media(min-width:640px){.detalle-panel{border-radius:var(--radius)}}
+.cerrar-flot{position:sticky;top:10px;float:right;margin-right:10px;z-index:5;background:rgba(255,255,255,.85);border:1px solid var(--border);border-radius:50%;width:32px;height:32px}
+/* La foto se ve completa (contain). Altura estable = proporción de la primera foto (--ficha-ratio, ficha-foto.js), tope: 70 % de la pantalla y lo que deja el precio visible sin scroll (alto de pantalla − 340 px), nunca menos de 240 px. */
+.detalle-foto{position:relative;width:100%;aspect-ratio:var(--ficha-ratio,3 / 4);max-height:max(240px,min(70vh,calc(100vh - 340px)));max-height:max(240px,min(70svh,calc(100svh - 340px)));background:var(--surface2);display:flex;align-items:center;justify-content:center}
+.detalle-foto img{width:100%;height:100%;object-fit:contain}
+.detalle-foto-scroll{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory}
+.detalle-foto-scroll::-webkit-scrollbar{display:none}
+.detalle-foto-scroll img{flex:0 0 100%;scroll-snap-align:start;width:100%;height:100%;object-fit:contain;background:var(--surface2)}
+.detalle-foto-contador{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.68rem;padding:3px 9px;border-radius:999px;pointer-events:none}
+.detalle-foto-flecha{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.88);border:1px solid var(--border);color:var(--ink);font-size:1.15rem;line-height:1;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+.detalle-foto:hover .detalle-foto-flecha{opacity:1}
+.detalle-foto-prev{left:10px}
+.detalle-foto-next{right:10px}
+.detalle-foto-flecha.oculta{display:none}
+@media(hover:none){.detalle-foto-flecha{display:none}}
+.detalle-miniaturas{display:flex;gap:8px;padding:10px 22px 0;overflow-x:auto}
+.detalle-miniaturas:empty{display:none}
+.mini-foto{width:52px;height:52px;flex-shrink:0;border-radius:6px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:var(--surface2)}
+.mini-foto.active{border-color:var(--ink)}
+.mini-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.detalle-body{padding:4px 22px 26px;display:flex;flex-direction:column;gap:10px}
+.detalle-cat{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+.detalle-nombre{font-family:'Anton',sans-serif;font-weight:400;font-size:1.4rem;line-height:1.2;color:var(--ink)}
+.detalle-precio{font-family:'Anton',sans-serif;font-size:1.7rem;color:var(--ink)}
+.detalle-precio span{font-size:.78rem;color:var(--muted);font-family:'Outfit',sans-serif;display:block;margin-top:2px}
+.detalle-precio-nota{font-size:.78rem;color:var(--muted);margin-top:-6px}
+.detalle-talles{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.talle-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 14px;font-size:.82rem;font-family:inherit;cursor:pointer;transition:all .15s}
+.talle-btn:hover{border-color:var(--ink)}
+.talle-btn:active{transform:scale(.95)}
+.talle-btn:disabled{opacity:.35;cursor:default}
+.sin-stock{font-size:.8rem;color:var(--danger)}
+.detalle-stock-bajo{font-size:.82rem}
+
+/* CARRITO */
+.carrito-panel{background:var(--bg);width:100%;max-width:460px;max-height:94vh;border-radius:var(--radius) var(--radius) 0 0;display:flex;flex-direction:column;border:1px solid var(--border);overflow:hidden}
+@media(min-width:640px){.carrito-panel{border-radius:var(--radius)}}
+.carrito-head{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--border)}
+.carrito-head h2{font-family:'Anton',sans-serif;font-weight:400;font-size:1.15rem;color:var(--ink)}
+.carrito-scroll{flex:1;min-height:0;overflow-y:auto;padding:10px 18px 14px}
+.carrito-body{display:flex;flex-direction:column}
+.carrito-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);flex-shrink:0}
+.carrito-item-foto{width:48px;height:48px;flex-shrink:0;border-radius:6px;overflow:hidden;background:var(--surface2)}
+.carrito-item-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.carrito-item-info{flex:1;font-size:.82rem;line-height:1.4;color:var(--text)}
+.carrito-item-info b{display:block;font-size:.85rem;color:var(--ink)}
+.carrito-item-info em{font-style:normal;color:var(--ink);font-weight:600;font-size:.72rem}
+.carrito-item-ctrl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.qty-btn{width:26px;height:26px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);cursor:pointer;font-size:.9rem}
+.qty-btn:disabled{opacity:.4;cursor:default;background:var(--surface3);color:var(--muted)}
+.carrito-item-quitar{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;margin-left:4px;border:none;border-radius:8px;background:var(--danger);color:#fff;cursor:pointer;padding:0}
+.carrito-item-quitar:active{transform:scale(.95)}
+.carrito-vacio{text-align:center;padding:30px 10px;color:var(--muted);font-size:.85rem}
+.carrito-form{display:flex;flex-direction:column;gap:10px;padding-top:14px;margin-top:4px;border-top:1px solid var(--border)}
+.carrito-foot{flex-shrink:0;padding:14px 18px;border-top:1px solid var(--border)}
+.pago-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+#cliente-nombre,#envio-select,#correo-provincia,#correo-localidad,#correo-cp{width:100%;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:.85rem}
+.pago-selector,.entrega-selector{display:flex;width:100%;flex-wrap:wrap}
+.pago-selector .modo-btn{flex:1}
+.entrega-selector .modo-btn{flex:1 1 30%;white-space:normal;line-height:1.2;padding:8px 6px}
+.carrito-total{font-family:'Anton',sans-serif;font-size:1.3rem;text-align:right;color:var(--ink)}
+.btn-whatsapp{background:var(--success);color:#06210f;border:none;border-radius:999px;padding:13px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-whatsapp:disabled{opacity:.5;cursor:default}
+
+/* WHATSAPP FLOTANTE */
+.whatsapp-float{position:fixed;bottom:max(22px,env(safe-area-inset-bottom));right:max(18px,env(safe-area-inset-right));z-index:60;width:56px;height:56px;border-radius:50%;overflow:hidden;background:#26D366;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.whatsapp-float img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
+/* Con la ficha, el carrito, el menú o el visor abiertos el botón no se muestra (no puede tapar sus botones ni quedar suelto al costado del panel). */
+body:has(.overlay.open) .whatsapp-float,body:has(.menu-overlay.open) .whatsapp-float,body.visor-abierto .whatsapp-float{visibility:hidden;pointer-events:none}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);border-left:3px solid #fff;color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:.82rem;z-index:300;opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* PÁGINAS LEGALES (Cambios y devoluciones / Términos y condiciones) */
+.legal-hdr{padding:16px 20px;border-bottom:1px solid var(--border)}
+.legal-back{font-size:.8rem;color:var(--text2);text-decoration:underline}
+.legal-page{max-width:640px;margin:0 auto;padding:36px 20px 60px}
+.legal-page h1{font-family:'Anton',sans-serif;font-weight:400;font-size:1.7rem;color:var(--ink);text-transform:uppercase;margin-bottom:18px}
+.legal-page h2{font-family:'Anton',sans-serif;font-weight:400;font-size:1.05rem;color:var(--ink);text-transform:uppercase;margin:26px 0 8px}
+.legal-page p{font-size:.86rem;line-height:1.7;color:var(--text2);margin-bottom:10px}
+.legal-page ul{margin:0 0 10px 18px}
+.legal-page li{font-size:.86rem;line-height:1.7;color:var(--text2);margin-bottom:5px}
+
+/* INICIO: franja compacta de información y bloque Mayorista */
+.info-franja{margin:22px 0 0;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr}
+.info-fila{display:flex;gap:10px;align-items:flex-start;padding:10px 20px;border-bottom:1px solid var(--border)}
+.info-fila svg{flex-shrink:0;margin-top:2px;color:var(--ink)}
+.info-fila p{font-size:.76rem;line-height:1.45;color:var(--muted)}
+.info-fila b{color:var(--ink);font-weight:600;font-size:.8rem;margin-right:4px}
+.info-fila .confianza-link{margin:0 0 0 4px;white-space:nowrap}
+@media(min-width:769px){.info-franja{grid-template-columns:1fr 1fr}.info-fila:nth-child(odd){border-right:1px solid var(--border)}}
+.mayorista-bloque{text-align:center;padding:26px 20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.mayorista-bloque h2{font-family:'Anton',sans-serif;font-weight:400;font-size:1.15rem;letter-spacing:.3px;text-transform:uppercase;color:var(--ink)}
+.mayorista-bloque p{font-size:.84rem;color:var(--text2);max-width:360px;line-height:1.5}
+.mayorista-bloque .btn-solid{margin-top:4px}
+
+/* BUSCADOR: contador de resultados y botones */
+.busqueda-info{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:2px 20px 10px}
+.busqueda-cuenta{font-size:.84rem;color:var(--text2)}
+.busqueda-limpiar{min-height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
+.busqueda-todo{margin-top:14px;min-height:44px;padding:0 24px;background:var(--ink);color:#fff}
+@media(min-width:700px){.busqueda-info{padding:2px 32px 10px}}
+.detalle-precio-nota{line-height:1.45}
+
+/* ── promo-bar.css ── */
+/* Barra negra de arriba: mini-eslogan rotativo (promo-bar.js). Alto fijo para
+   que al rotar no se mueva nada, y cada texto en una sola línea. */
+.promo-bar{background:var(--ink);color:#fff;text-align:center;font-size:.78rem;letter-spacing:.3px;height:34px;line-height:34px;padding:0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .4s ease}
+.promo-bar.promo-oculta{opacity:0}
+@media (max-width:400px){.promo-bar{font-size:.74rem;letter-spacing:.2px}}
+@media (prefers-reduced-motion:reduce){.promo-bar{transition:none}}
+
+/* ── hero-rotativo.css ── */
+/* Hero rotativo del inicio (hero-rotativo.js). Alto reservado desde el principio (4:5).
+   El ancho se limita para que el alto no pase del 80% de la pantalla (ni 460 px de ancho): en
+   celular vertical (375-430 px) queda a todo el ancho; en anchos intermedios se centra. */
+/* Mientras llega la foto: fondo neutro con un brillo suave que se desplaza. */
+.hero-rot{position:relative;width:100%;width:min(100%,calc(80vh * .8),460px);width:min(100%,calc(80svh * .8),460px);margin:0 auto;aspect-ratio:4/5;background:linear-gradient(100deg,var(--surface2) 30%,var(--surface3) 50%,var(--surface2) 70%) 0 0/250% 100%;animation:hero-rot-brillo 1.6s ease-in-out infinite;overflow:hidden}
+@keyframes hero-rot-brillo{from{background-position:100% 0}to{background-position:-50% 0}}
+.hero-rot.hero-rot-fade .hero-rot-carril{opacity:0}
+.hero-rot-carril{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;transition:opacity .25s ease}
+.hero-rot-carril::-webkit-scrollbar{display:none}
+.hero-rot-slide{position:relative;flex:0 0 100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;cursor:pointer}
+.hero-rot-slide img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.hero-rot-degradado{position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(to top,rgba(0,0,0,.86) 0%,rgba(0,0,0,.68) 45%,rgba(0,0,0,.4) 70%,rgba(0,0,0,0) 100%);pointer-events:none}/* más oscuro detrás del texto: el verde claro del precio en efectivo cumple 4,5:1 incluso sobre una camiseta blanca */
+.hero-rot-nuevo{position:absolute;top:14px;left:14px;background:#fff;color:var(--ink);font-size:.74rem;font-weight:700;letter-spacing:.3px;padding:5px 13px;border-radius:999px}
+.hero-rot-info{position:absolute;left:0;right:0;bottom:0;padding:0 18px 40px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;color:#fff;pointer-events:none}
+.hero-rot-nombre{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(22px,6.4vw,30px);line-height:1.05;text-transform:uppercase;letter-spacing:.3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.hero-rot-precio{font-size:1.6rem;font-weight:700;line-height:1.1}
+.hero-rot-btn{pointer-events:auto;margin-top:6px;min-height:48px;padding:0 28px;border-radius:999px;border:none;background:#fff;color:var(--ink);font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer}
+.hero-rot-puntos{position:absolute;left:0;right:0;bottom:14px;display:flex;justify-content:center;gap:4px}
+.hero-rot-punto{width:22px;height:22px;padding:0;border:none;background:none;cursor:pointer;position:relative}
+.hero-rot-punto::after{content:'';position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:rgba(255,255,255,.5);transition:all .2s}
+.hero-rot-punto.activo::after{background:#fff;width:20px;margin-left:-10px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){.hero-rot{animation:none}.hero-rot-carril,.hero-rot-punto::after{transition:none}}
+.hero-rot:has(.hero-rot-carril){animation:none}
+
+/* Celular y tablet (< 900 px): la mitad izquierda y las flechas no se ven; las envolturas no afectan el diseño. */
+.hero-rot-foto{display:contents}
+.hero-rot-lado,.hero-rot-flecha{display:none}
+
+/* PC (≥ 900 px): banda oscura a ancho completo (contenedor de 1200 px) en dos mitades.
+   Izquierda: título, subtítulo y producto activo. Derecha: la foto que rota (4:5, sin deformar). */
+@media (min-width:900px){
+  .hero-rot{--hero-h:clamp(480px,70vh,640px);--foto-h:calc(var(--hero-h) - 56px);width:100%;margin:0;aspect-ratio:auto;height:var(--hero-h);
+    background:linear-gradient(100deg,#0a0a0a 30%,#1c1c1c 50%,#0a0a0a 70%) 0 0/250% 100%;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:56px;padding:0 max(32px,calc((100% - 1200px) / 2))}
+  .hero-rot:has(.hero-rot-carril){background:var(--ink)}
+  .hero-rot-lado{display:flex;flex-direction:column;align-items:flex-start;gap:14px;color:#fff;min-width:0}
+  .hero-rot-titulo{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(34px,3.6vw,58px);line-height:1.02;letter-spacing:.3px;text-transform:uppercase}
+  .hero-rot-sub{font-size:clamp(.9rem,1.1vw,1.05rem);color:rgba(255,255,255,.72);line-height:1.5;max-width:520px}
+  .hero-rot-activo{width:100%;margin-top:clamp(6px,1.6vh,20px);padding-top:clamp(12px,2.2vh,22px);border-top:1px solid rgba(255,255,255,.22);display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .hero-rot-act-nombre{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(20px,2vw,28px);line-height:1.1;text-transform:uppercase;letter-spacing:.3px}
+  .hero-rot-act-precio{font-size:1.5rem;font-weight:700;line-height:1.1}
+  .hero-rot-foto{display:block;position:relative;height:var(--foto-h);width:calc(var(--foto-h) * .8);overflow:hidden;border-radius:8px;background:#161616}
+  .hero-rot-info,.hero-rot-degradado{display:none} /* nombre, precio y botón van a la izquierda */
+  .hero-rot-puntos{bottom:12px}
+  .hero-rot-flecha{display:flex;align-items:center;justify-content:center;position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.9);color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;opacity:0;transition:opacity .2s}
+  .hero-rot-foto:hover .hero-rot-flecha,.hero-rot-flecha:focus-visible{opacity:1}
+  .hero-rot-prev{left:10px}
+  .hero-rot-next{right:10px}
+  /* el título y subtítulo ya están en el hero: el bloque de abajo se oculta a la vista pero el <h1> sigue accesible (lectores de pantalla y buscadores) */
+  body.hero-rot-on .inicio-texto{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+}
+@media (min-width:900px) and (prefers-reduced-motion:reduce){.hero-rot-flecha{transition:none}}
+.hero-rot-act-precio-nota:empty{display:none}
+
+/* Categoría arriba del nombre (mismo estilo que .card-cat / .detalle-cat: chica, mayúsculas, espaciado) pero clara para leerse sobre la foto/degradado y el fondo negro. */
+.hero-rot-cat,.hero-rot-act-cat{font-size:.63rem;line-height:1.2;color:rgba(255,255,255,.88);text-transform:uppercase;letter-spacing:1.5px;text-shadow:0 1px 6px rgba(0,0,0,.65)}
+.hero-rot-act-cat:empty{display:none}
+@media (min-width:900px){.hero-rot-act-cat{font-size:.7rem}}
+
+/* ── header-menu.css ── */
+/* HEADER compacto con lupa, carrito y ☰ + menú lateral de categorías */
+.hdr{flex-wrap:wrap;padding:6px 14px;gap:8px}
+@media(min-width:760px){.hdr{padding:8px 32px}}
+.hdr-acciones{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
+.hdr-nav{margin-left:auto;margin-right:0;flex:0 1 auto;gap:22px}
+.hdr-btn{width:44px;height:44px;border-radius:50%;border:none;background:transparent;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.hdr-btn:hover,.hdr-btn[aria-expanded="true"]{background:var(--surface3)}
+.hdr .btn-cart{min-height:44px;padding:0 14px}
+@media(max-width:420px){
+  .hdr{padding:6px 8px 6px 12px;gap:4px}
+  .hdr-logo{font-size:.95rem;letter-spacing:1px}
+  .hdr-acciones{gap:2px}
+  .hdr-btn{width:42px}
+}
+
+.hdr-search{display:none;flex:0 0 100%;padding:2px 0 8px}
+.hdr-search.open{display:block}
+.hdr-search-box{position:relative}
+.hdr-search-box .search-icon{left:14px}
+.hdr-search-box input{width:100%;height:44px;padding:0 84px 0 38px;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;color:var(--text);font-family:inherit;font-size:16px}
+.hdr-search-x{position:absolute;right:44px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:none;background:transparent;color:var(--text2);font-size:1rem;cursor:pointer;border-radius:50%}
+.hdr-search-go{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:none;background:var(--ink);color:#fff;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+#grid-titulo{scroll-margin-top:130px}
+
+/* panel lateral */
+.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;justify-content:flex-end}
+.menu-overlay.open{display:flex}
+.menu-panel{width:min(86vw,340px);height:100%;background:var(--bg);display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.2);animation:menuEntra .22s ease-out}
+@keyframes menuEntra{from{transform:translateX(100%)}to{transform:none}}
+.menu-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 10px 20px;border-bottom:1px solid var(--border);font-family:'Anton',sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--ink)}
+.menu-cerrar{width:44px;height:44px;border:none;background:transparent;font-size:1.1rem;cursor:pointer;color:var(--ink);border-radius:50%}
+.menu-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-bottom:24px}
+.menu-cats{display:flex;flex-direction:column;padding:8px 0}
+.menu-cat{text-align:left;background:none;border:none;border-bottom:1px solid var(--border);padding:0 20px;min-height:48px;font-family:inherit;font-size:.95rem;color:var(--text);cursor:pointer}
+.menu-cat.active{font-weight:700;color:var(--ink);background:var(--surface2)}
+.menu-cat:first-child{font-weight:600}
+.menu-links{display:flex;flex-direction:column;padding:14px 0 0;border-top:6px solid var(--surface2)}
+.menu-links a{display:flex;align-items:center;min-height:44px;padding:0 20px;font-size:.88rem;color:var(--text2)}
+.menu-links a:hover{color:var(--ink)}
+body.menu-abierto{overflow:hidden}
+
+/* BARRA SIEMPRE VISIBLE: queda por encima de la ficha y del carrito (z-index 250, entre los overlays
+   de 200 y el menú de 300; el visor de fotos, 400, queda por encima de todo). Los paneles arrancan
+   justo debajo de la barra (--hdr-bottom la mide header-menu.js) y la página de fondo no se mueve. */
+.hdr{z-index:250}
+.overlay{padding-top:var(--hdr-bottom,0px)}
+.detalle-panel{max-height:min(92vh,100%)}
+.carrito-panel{max-height:min(94vh,100%)}
+body:has(.overlay.open){overflow:hidden}
+
+/* ── envio-ficha.css ── */
+/* Calcular envío en la ficha del producto */
+#detalle-envio{margin-top:6px;border-top:1px solid var(--border);padding-top:6px}
+.envio-toggle{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;background:none;border:none;font-family:inherit;font-size:.9rem;font-weight:600;color:var(--ink);cursor:pointer;padding:0}
+.envio-panel{padding:2px 0 6px}
+.envio-opciones{display:flex;flex-direction:column;gap:6px}
+.envio-op{text-align:left;min-height:42px;padding:0 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;font-family:inherit;font-size:.82rem;color:var(--text);cursor:pointer}
+.envio-op.active{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+#ficha-envio-select{width:100%;margin-top:8px;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:16px}
+.envio-res{font-size:.82rem;line-height:1.5;color:var(--text);margin-top:8px}
+.envio-nota{font-size:.74rem;line-height:1.5;color:var(--muted);margin-top:4px}
+
+/* ── compartir.css ── */
+/* Botón "Compartir" de la ficha (compartir.js): discreto, con ícono, área táctil de 44 px. */
+.btn-compartir{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:44px;padding:0 18px;margin-top:12px;align-self:flex-start;border:1px solid var(--border2);border-radius:999px;background:transparent;color:var(--text2);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s}
+.btn-compartir:hover{border-color:var(--ink);color:var(--ink)}
+.btn-compartir:active{transform:scale(.97)}
+
+/* ── seleccion-talle.css ── */
+/* Elegir talle y botón "Agregar al carrito" de la ficha (seleccion-talle.js). */
+.talle-btn.sel{background:var(--ink);border-color:var(--ink);color:#fff}
+.talle-btn.agotado{opacity:.4;text-decoration:line-through;cursor:not-allowed}
+.detalle-talles.pulso{animation:talles-pulso 1.3s ease}
+@keyframes talles-pulso{0%,100%{box-shadow:0 0 0 0 rgba(10,10,10,0)}25%,65%{box-shadow:0 0 0 4px rgba(10,10,10,.28)}}
+.detalle-talles{border-radius:10px}
+.btn-agregar{width:100%;min-height:52px;margin-top:14px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:background .15s,transform .1s}
+.btn-agregar:active{transform:scale(.98)}
+.btn-agregar.pendiente{background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
+.btn-agregar.ok{background:#1f8f4a}
+@media (prefers-reduced-motion:reduce){.detalle-talles.pulso{animation:none}.btn-agregar{transition:none}}
+
+/* ── visor-imagen.css ── */
+/* Visor de fotos a pantalla completa con zoom (visor-imagen.js). */
+#detalle-foto img{cursor:zoom-in}
+body.visor-abierto{overflow:hidden}
+.visor{position:fixed;inset:0;z-index:400;background:#050505;display:none;touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none}
+.visor.abierto{display:block}
+.visor-escena{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab}
+.visor-escena.arrastrando{cursor:grabbing}
+.visor-img{position:absolute;left:50%;top:50%;max-width:none;transform-origin:center center;will-change:transform;-webkit-user-drag:none;user-select:none;pointer-events:none}
+.visor-img.anim{transition:transform .22s ease}
+.visor-img.fade{animation:visor-fade .18s ease}
+@keyframes visor-fade{from{opacity:0}to{opacity:1}}
+.visor-cerrar{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:1.2rem;cursor:pointer;z-index:2}
+.visor-cerrar:hover{background:rgba(255,255,255,.28)}
+.visor-contador{position:absolute;top:max(22px,calc(env(safe-area-inset-top) + 10px));left:16px;background:rgba(255,255,255,.16);color:#fff;font-size:.8rem;font-weight:600;padding:4px 12px;border-radius:999px;z-index:2;pointer-events:none}
+.visor-flecha,.visor-zoom{display:none}
+@media (hover:hover) and (pointer:fine){
+  .visor-flecha{display:flex;align-items:center;justify-content:center;position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:1.8rem;line-height:1;cursor:pointer;z-index:2}
+  .visor-flecha:hover{background:rgba(255,255,255,.3)}
+  .visor-prev{left:16px}
+  .visor-next{right:16px}
+  .visor-zoom{display:flex;flex-direction:column;gap:8px;position:absolute;right:16px;bottom:24px;z-index:2}
+  .visor-zoom button{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;font-size:1.4rem;line-height:1;cursor:pointer}
+  .visor-zoom button:hover{background:rgba(255,255,255,.3)}
+}
+.visor.una .visor-flecha,.visor.una .visor-contador{display:none}
+.visor-flecha.oculta{visibility:hidden}
+@media (prefers-reduced-motion:reduce){.visor-img.anim{transition:none}.visor-img.fade{animation:none}}
+
+/* ── relacionados.css ── */
+/* Productos relacionados en la ficha (relacionados.js). */
+.rel{margin-top:22px;padding-top:6px;display:flex;flex-direction:column;gap:22px;border-top:1px solid var(--border)}
+.rel-titulo{font-family:'Anton',sans-serif;font-weight:400;font-size:1.05rem;letter-spacing:.4px;text-transform:uppercase;color:var(--ink);margin:14px 0 10px}
+.rel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
+.rel-carril{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:22px;margin:0 -22px;padding:0 22px 6px;scrollbar-width:none}
+.rel-carril::-webkit-scrollbar{display:none}
+.rel-carril .rel-card{flex:0 0 150px;scroll-snap-align:start}
+.rel-card{display:flex;flex-direction:column;gap:4px;padding:0;border:none;background:none;text-align:left;cursor:pointer;color:inherit;font-family:inherit;min-width:0}
+.rel-foto{display:block;aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.rel-foto img{width:100%;height:100%;object-fit:cover;display:block}
+.rel-nombre{font-size:.8rem;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rel-precio{font-family:'Anton',sans-serif;font-size:1rem;color:var(--ink)}
+.rel-card:hover .rel-foto{opacity:.92}
+.rel-card:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:var(--radius)}
+
+/* ── precios.css ── */
+/* Líneas de precio debajo del precio de tarjeta (precios.js › extrasPrecioHtml). Un solo formato para todas las pantallas;
+   solo cambia el tamaño por variante: px-v-card (listado), px-v-ficha, px-v-hero, px-v-rel (relacionados).
+   Diseño: 1) precio de tarjeta (lo dibuja cada pantalla), 2) "3 cuotas de $X sin interés" en gris, PEGADO al precio,
+   3) con más aire, "$Y con transferencia o efectivo" en verde fuerte y negrita, sin fondo ni etiqueta, con una línea
+   vertical verde de 3 px a la izquierda (la línea acompaña solo a este renglón).
+   Contrastes: verde #0b6b2c 6,7:1 sobre blanco; gris #6b6b6b 5,3:1; en el hero, verde claro #9df5bf sobre el degradado oscuro. */
+.px-extras{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin-top:2px;min-width:0;max-width:100%}
+.px-cuotas{display:block;font-size:.72rem;line-height:1.25;color:#6b6b6b;font-family:'Outfit',sans-serif;font-weight:400}
+.px-efectivo{display:block;max-width:100%;box-sizing:border-box;margin-top:9px;padding-left:8px;border-left:3px solid #0b6b2c;font-family:'Outfit',sans-serif;font-weight:700;font-size:.84rem;line-height:1.3;color:#0b6b2c;overflow-wrap:anywhere}
+/* listado: sus bloques van separados 9 px; se anula para que las cuotas queden pegadas al precio */
+.px-v-card{margin-top:-6px}
+/* ficha del producto (precio grande 1.7rem) */
+.px-v-ficha{margin-top:0}
+.px-v-ficha .px-cuotas{font-size:.84rem}
+.px-v-ficha .px-efectivo{font-size:1.05rem;margin-top:11px}
+/* hero: sobre la foto oscura, verde claro y blanco (sin fondo); el degradado de la foto se oscurece detrás del texto */
+.px-v-hero{margin-top:-3px}
+.px-v-hero .px-cuotas{color:rgba(255,255,255,.92);font-size:.8rem}
+.px-v-hero .px-efectivo{color:#9df5bf;border-left-color:#9df5bf;font-size:.95rem;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+/* relacionados (tarjetas chicas) */
+.px-v-rel{margin-top:-2px}
+.px-v-rel .px-cuotas{font-size:.62rem}
+.px-v-rel .px-efectivo{font-size:.7rem;margin-top:6px;padding-left:6px}
+/* celular (hasta 480 px): línea verde -2 px y cuotas -1 px; en relacionados 10 px las dos (no menos). Escritorio no cambia. */
+@media (max-width:480px){
+  .px-cuotas{font-size:10.52px}                     /* listado: 11,52 → 10,52 */
+  .px-efectivo{font-size:11.44px}                   /* listado: 13,44 → 11,44 */
+  .px-v-ficha .px-cuotas{font-size:12.44px}         /* ficha: 13,44 → 12,44 */
+  .px-v-ficha .px-efectivo{font-size:14.8px}        /* ficha: 16,8 → 14,8 */
+  .px-v-hero .px-cuotas{font-size:11.8px}           /* hero: 12,8 → 11,8 */
+  .px-v-hero .px-efectivo{font-size:13.2px}         /* hero: 15,2 → 13,2 */
+  .px-v-rel .px-cuotas,.px-v-rel .px-efectivo{font-size:10px}
+}
+
+/* ── deshacer-eliminar.css ── */
+/* Aviso "Producto eliminado · Deshacer" (deshacer-eliminar.js). Queda por encima del carrito y de su botón de pedir. */
+.deshacer-barra{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(30px);z-index:500;display:flex;align-items:center;gap:14px;max-width:92vw;padding:6px 8px 6px 16px;border-radius:999px;background:var(--ink);color:#fff;font-size:.85rem;box-shadow:0 6px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.deshacer-barra.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.deshacer-btn{min-height:40px;padding:0 16px;border:none;border-radius:999px;background:#fff;color:var(--ink);font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.deshacer-barra{transition:none}}
+
+/* ── esqueletos.css ── */
+/* Espacio reservado mientras llega el catálogo, para que la página no salte al cargar (CLS).
+   Las secciones "Nuevos ingresos" y "Destacados" arrancan con su alto reservado (alto real medido
+   en celular: ~560 px y ~520 px) y la grilla con tarjetas esqueleto. app.js quita .reservando
+   y .grid-reservando al pintar (o oculta la sección si no hay productos para mostrar). */
+.destacados.reservando{min-height:520px}
+.destacados.reservando .destacados-strip:empty{min-height:420px;background:
+  linear-gradient(var(--surface2),var(--surface2)) 20px 2px/180px 225px no-repeat,
+  linear-gradient(var(--surface2),var(--surface2)) 216px 2px/180px 225px no-repeat}
+@media(min-width:700px){
+  .destacados.reservando{min-height:600px}
+  .destacados.reservando .destacados-strip:empty{min-height:480px;background:
+    linear-gradient(var(--surface2),var(--surface2)) 32px 2px/230px 288px no-repeat,
+    linear-gradient(var(--surface2),var(--surface2)) 278px 2px/230px 288px no-repeat,
+    linear-gradient(var(--surface2),var(--surface2)) 524px 2px/230px 288px no-repeat}
+}
+.grid-reservando{min-height:80vh;align-content:start}
+.card-esqueleto{aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius)}
+.solo-lectores{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.card-foto-scroll img:not([src]){visibility:hidden}
+
+/* ── paginacion.css ── */
+/* Botón "Ver más" del catálogo (paginacion.js / app.js). */
+.ver-mas-caja{display:flex;justify-content:center;padding:0 20px 44px}
+.ver-mas-caja[hidden]{display:none}
+.ver-mas-btn{min-height:48px;padding:0 32px;border-radius:999px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);font-family:inherit;font-weight:600;font-size:.92rem;cursor:pointer}
+.ver-mas-btn:hover{background:var(--ink);color:#fff}
+@media(min-width:700px){.ver-mas-caja{padding:0 32px 56px}}
