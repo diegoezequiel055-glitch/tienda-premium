@@ -1,7 +1,7 @@
 :root {
   --bg:#ffffff; --surface:#fafaf9; --surface2:#f5f4f0; --surface3:#eeeee8;
   --border:#ededed; --border2:#dddddd;
-  --ink:#0a0a0a; --text:#121212; --text2:#555555; --muted:#8a8a8a;
+  --ink:#0a0a0a; --text:#121212; --text2:#555555; --muted:#6b6b6b;
   --danger:#d93636; --success:#25d366;
   --radius:6px;
 }
