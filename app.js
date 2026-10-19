@@ -5,6 +5,7 @@ import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativ
 import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
+import './fotos-tarjeta.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
@@ -213,7 +214,7 @@ function cardFotoHtml(p) {
   }
   return `<div class="card-foto">
       <div class="card-foto-scroll" onscroll="actualizarContadorCard(this)">
-        ${fotos.map((f) => `<img src="${esc(fotoCloudinary(f, 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
+        ${fotos.map((f, i) => `<img ${i === 0 ? 'src' : 'data-src'}="${esc(fotoCloudinary(f, 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
       </div>
       <span class="card-foto-contador">1/${fotos.length}</span>
     </div>`;

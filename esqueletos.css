@@ -16,3 +16,4 @@
 .grid-reservando{min-height:80vh;align-content:start}
 .card-esqueleto{aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius)}
 .solo-lectores{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.card-foto-scroll img:not([src]){visibility:hidden}
