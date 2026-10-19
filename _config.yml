@@ -1,0 +1,10 @@
+# GitHub Pages (Jekyll) NO publica estos archivos en tiendapremium.com.ar.
+# Siguen en el repo para trabajar (Claude Code lee CLAUDE.md; las pruebas se corren con `node test-*.mjs`),
+# pero /CLAUDE.md, /CLAUDE.html y los tests dejan de ser públicos (dan 404).
+# Un archivo nuevo de notas o pruebas que no deba verse en la web se agrega acá.
+exclude:
+  - CLAUDE.md
+  - "*.md"
+  - "test-*.mjs"
+  - "build-*.mjs"
+  - "_config.yml"
