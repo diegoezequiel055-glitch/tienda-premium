@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TIENDAPREMIUM.OK</title>
-<meta name="description" content="TIENDAPREMIUM.OK — Camisetas, conjuntos y ropa urbana. Catálogo completo, hacé tu pedido por WhatsApp.">
-<meta property="og:title" content="TIENDAPREMIUM.OK">
-<meta property="og:description" content="Camisetas, conjuntos y ropa urbana. Catálogo completo, hacé tu pedido por WhatsApp.">
+<title>TIENDAPREMIUM.OK | Camisetas de fútbol y ropa urbana</title>
+<meta name="description" content="Camisetas de fútbol, conjuntos y ropa urbana. Elegí tu talle y hacé tu pedido por WhatsApp. Envíos a todo el país.">
+<meta property="og:title" content="TIENDAPREMIUM.OK | Camisetas de fútbol y ropa urbana">
+<meta property="og:description" content="Camisetas de fútbol, conjuntos y ropa urbana. Elegí tu talle y hacé tu pedido por WhatsApp. Envíos a todo el país.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://tiendapremium.com.ar/">
 <meta property="og:url" content="https://tiendapremium.com.ar/">
@@ -17,8 +17,8 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Logo de TIENDAPREMIUM.OK sobre fondo negro">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="TIENDAPREMIUM.OK">
-<meta name="twitter:description" content="Camisetas, conjuntos y ropa urbana. Catálogo completo, hacé tu pedido por WhatsApp.">
+<meta name="twitter:title" content="TIENDAPREMIUM.OK | Camisetas de fútbol y ropa urbana">
+<meta name="twitter:description" content="Camisetas de fútbol, conjuntos y ropa urbana. Elegí tu talle y hacé tu pedido por WhatsApp. Envíos a todo el país.">
 <meta name="twitter:image" content="https://tiendapremium.com.ar/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://res.cloudinary.com">
@@ -26,17 +26,7 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="modulepreload" href="hero-rotativo.js">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="promo-bar.css">
-<link rel="stylesheet" href="hero-rotativo.css">
-<link rel="stylesheet" href="header-menu.css">
-<link rel="stylesheet" href="envio-ficha.css">
-<link rel="stylesheet" href="compartir.css">
-<link rel="stylesheet" href="seleccion-talle.css">
-<link rel="stylesheet" href="visor-imagen.css">
-<link rel="stylesheet" href="relacionados.css">
-<link rel="stylesheet" href="precios.css">
-<link rel="stylesheet" href="deshacer-eliminar.css">
+<link rel="stylesheet" href="tienda.css">
 </head>
 <body>
 
@@ -79,12 +69,12 @@
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
 </div>
 
-<section class="destacados" id="nuevos-section" style="display:none">
+<section class="destacados reservando" id="nuevos-section">
   <h2 class="section-title">Nuevos ingresos</h2>
   <div class="destacados-strip" id="nuevos-strip"></div>
 </section>
 
-<section class="destacados" id="destacados-section" style="display:none">
+<section class="destacados reservando" id="destacados-section">
   <h2 class="section-title">Destacados</h2>
   <div class="destacados-strip" id="destacados-strip"></div>
 </section>
@@ -97,9 +87,13 @@
 
 <div class="busqueda-info" id="busqueda-info" style="display:none"></div>
 
-<main id="grid" class="grid">
-  <div class="empty"><p>Cargando catálogo…</p></div>
+<main id="grid" class="grid grid-reservando" aria-busy="true">
+  <div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div>
+  <p class="solo-lectores" role="status">Cargando catálogo…</p>
 </main>
+<div class="ver-mas-caja" id="ver-mas-caja" hidden>
+  <button type="button" class="ver-mas-btn" id="ver-mas-btn" onclick="verMasProductos()">Ver más productos</button>
+</div>
 
 <section class="inicio-texto">
   <h1 id="hero-titulo">Indumentaria deportiva, al mejor precio</h1>

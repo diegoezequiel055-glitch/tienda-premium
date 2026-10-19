@@ -5,6 +5,8 @@ import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativ
 import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
+import './fotos-tarjeta.js';
+import { paginar, textoVerMas, TAMANO_PAGINA } from './paginacion.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
 
 const WHATSAPP_MSG_DEFECTO = '¡Hola! Quería hacer una consulta.';
@@ -18,6 +20,8 @@ let productos = [];
 let envios = [];
 let busqueda = '';
 let categoria = '';
+let mostrados = TAMANO_PAGINA; // cuántos productos del catálogo filtrado se ven ("Ver más" suma otra tanda)
+let filtradosActuales = [];
 let formaPago = null;
 let tipoEntrega = null; // 'retiro' | 'motomensajeria' | 'correo'
 let envioId = null; // id de envios_publico (solo aplica si tipoEntrega === 'motomensajeria')
@@ -62,8 +66,15 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   renderDestacados();
   renderNuevos();
 }, () => {
+  liberarReservas();
+  document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
   $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
 });
+
+// Quita el espacio reservado (esqueletos.css) cuando ya hay contenido real o se decidió no mostrar la sección.
+function liberarReservas() {
+  const g = $('grid'); g.classList.remove('grid-reservando'); g.removeAttribute('aria-busy');
+}
 
 // ── configuración del sitio en vivo (textos y fotos editables desde el panel) ──
 let heroFotosManual = null; // [url|null, url|null, url|null] elegidas a mano, o null si Diego no configuró ninguna
@@ -175,10 +186,12 @@ window.setBusqueda = function (v) {
     marcarPill();
     document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: '' }));
   }
+  mostrados = TAMANO_PAGINA;
   renderGrid();
 };
 window.setCategoria = function (v) {
   categoria = v;
+  mostrados = TAMANO_PAGINA;
   marcarPill();
   renderGrid();
   document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: v }));
@@ -206,7 +219,7 @@ function cardFotoHtml(p) {
   }
   return `<div class="card-foto">
       <div class="card-foto-scroll" onscroll="actualizarContadorCard(this)">
-        ${fotos.map((f) => `<img src="${esc(fotoCloudinary(f, 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
+        ${fotos.map((f, i) => `<img ${i === 0 ? 'src' : 'data-src'}="${esc(fotoCloudinary(f, 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
       </div>
       <span class="card-foto-contador">1/${fotos.length}</span>
     </div>`;
@@ -228,14 +241,33 @@ function tarjetaHtml(p) {
 // ── grilla ──
 function renderGrid() {
   const grid = $('grid');
-  if (!productos.length) { actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
+  liberarReservas();
+  if (!productos.length) { filtradosActuales = []; pintarVerMas(0); actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
   const palabras = palabrasDe(busqueda);
   const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || claveDe(p.categoria) === categoria))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
   actualizarInfoBusqueda(palabras.length ? busqueda : '', filtrados.length);
+  filtradosActuales = filtrados;
+  const { visibles, restantes } = paginar(filtrados, mostrados);
+  pintarVerMas(restantes);
   if (!filtrados.length) { grid.innerHTML = palabras.length ? htmlSinResultados(busqueda) : `<div class="empty"><p>No hay productos en esta categoría.</p></div>`; return; }
-  grid.innerHTML = filtrados.map(tarjetaHtml).join('');
+  grid.innerHTML = visibles.map(tarjetaHtml).join('');
 }
+
+// Botón "Ver más": agrega otra tanda al final sin repintar lo que ya está (no salta el scroll).
+function pintarVerMas(restantes) {
+  const caja = $('ver-mas-caja'); if (!caja) return;
+  caja.hidden = restantes <= 0;
+  $('ver-mas-btn').textContent = textoVerMas(restantes);
+}
+window.verMasProductos = function () {
+  const grid = $('grid');
+  const ya = grid.querySelectorAll(':scope > .card').length;
+  mostrados = ya + TAMANO_PAGINA;
+  const { visibles, restantes } = paginar(filtradosActuales, mostrados);
+  grid.insertAdjacentHTML('beforeend', visibles.slice(ya).map(tarjetaHtml).join(''));
+  pintarVerMas(restantes);
+};
 
 // ── destacados (productos tildados ⭐ desde el panel) — se oculta con menos de 2 ──
 function destacadosList() {
@@ -244,7 +276,7 @@ function destacadosList() {
 function renderDestacados() {
   const sec = $('destacados-section'), strip = $('destacados-strip'); if (!sec || !strip) return;
   const lista = destacadosList();
-  sec.style.display = lista.length >= 2 ? '' : 'none';
+  sec.classList.remove('reservando'); sec.style.display = lista.length >= 2 ? '' : 'none';
   if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
 window.irADestacados = function (ev) {
@@ -262,7 +294,7 @@ function nuevosList() {
 function renderNuevos() {
   const sec = $('nuevos-section'), strip = $('nuevos-strip'); if (!sec || !strip) return;
   const lista = nuevosList();
-  sec.style.display = lista.length >= 2 ? '' : 'none';
+  sec.classList.remove('reservando'); sec.style.display = lista.length >= 2 ? '' : 'none';
   if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
 window.irANuevos = function (ev) {

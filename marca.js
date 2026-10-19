@@ -12,5 +12,9 @@ if (logo) logo.textContent = datosNegocio.nombreMarca;
 // El título de cada página ya trae su propio prefijo en el HTML
 // (ej. "Contacto — TIENDAPREMIUM.OK"); acá solo se reemplaza la marca
 // después del guión, por si cambia.
+// La portada usa el formato "MARCA | descripción" (ej. "TIENDAPREMIUM.OK | Camisetas de fútbol y ropa urbana"):
+// la marca va primero y el resto se conserva.
+const portada = document.title.split(' | ');
 const partes = document.title.split(' — ');
-document.title = partes.length > 1 ? `${partes[0]} — ${datosNegocio.nombreMarca}` : datosNegocio.nombreMarca;
+if (portada.length > 1) document.title = `${datosNegocio.nombreMarca} | ${portada.slice(1).join(' | ')}`;
+else document.title = partes.length > 1 ? `${partes[0]} — ${datosNegocio.nombreMarca}` : datosNegocio.nombreMarca;
