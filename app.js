@@ -403,6 +403,7 @@ window.agregarAlCarrito = function (id, talle) {
   else carrito.push({ id, nombre: p.nombre, categoria: p.categoria, talle, ...preciosParaCarrito(p), cantidad: 1, foto: (p.fotos || [])[0] || null });
   guardarCarrito(); actualizarContador();
   toast(`${p.nombre} (${talle}) agregado al pedido ✓`);
+  document.dispatchEvent(new CustomEvent('carrito-agregado', { detail: { id, nombre: p.nombre, categoria: p.categoria, talle, cantidad: 1, precio: p.precio } })); // analytics.js
   return true;
 };
 window.cambiarCantidad = function (idx, delta) {
@@ -564,6 +565,8 @@ window.hacerPedido = function () {
     formaPagoLabel: FORMAS_PAGO[formaPago],
   });
 
+  // analytics.js: solo tipos y valores (forma de pago, tipo de entrega, productos); nada del cliente ni del mensaje
+  document.dispatchEvent(new CustomEvent('pedido-iniciado', { detail: { items: carrito, formaPago, tipoEntrega, costoEnvio: costoEnvio() } }));
   window.open(`https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`, '_blank');
 };
 

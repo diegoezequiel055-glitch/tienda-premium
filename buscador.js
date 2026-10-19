@@ -76,6 +76,7 @@ function filtrar(valor) {
   if (!valor.trim()) { liberarAlto(); window.setBusqueda(''); return; }
   fijarAlto();
   window.setBusqueda(valor);
+  document.dispatchEvent(new CustomEvent('busqueda-hecha', { detail: { termino: valor.trim() } })); // analytics.js
 }
 // Enter o lupa con texto: buscar al instante, cerrar el teclado y llevar la vista al catálogo.
 function buscarEIr() {

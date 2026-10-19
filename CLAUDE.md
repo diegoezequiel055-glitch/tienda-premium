@@ -108,6 +108,15 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - **`CNAME`** (`tiendapremium.com.ar`, creado por GitHub Pages al configurar el dominio) ya está en `main`: NO borrarlo ni editarlo. El dominio está activo desde 2026-10-14.
 - Pendiente a revisar al conectar el dominio: que la clave de API de Firebase (consola de Google Cloud, si tiene restricción por sitio web) y los dominios autorizados de Firebase incluyan `tiendapremium.com.ar`; si no, Firestore podría dejar de responder desde el dominio nuevo.
 
+## Google Analytics 4 (`analytics.js`)
+- ID de medición **G-4V2GTP47P4**. `analytics.js` está en las 5 páginas. `gtag.js` se inyecta con `async` recién cuando la página terminó de cargar (`load` + `requestIdleCallback`): no bloquea nada. Configuración sin señales de Google ni personalización de anuncios (`allow_google_signals:false`, `allow_ad_personalization_signals:false`); GA4 ya anonimiza la IP.
+- **Solo envía desde `tiendapremium.com.ar`** (y `www.`). En localhost, IP local, `github.io` y pruebas no se carga ni `gtag.js` ni se envía nada.
+- **Excluir visitas propias:** entrar a cualquier página con `?interno=1` guarda `analyticsInterno=1` en localStorage (con try/catch) y desde ese navegador no se envía nada; `?interno=0` la quita.
+- **Modo debug:** `?analytics_debug=1` (se recuerda en la pestaña; `=0` lo apaga) NO envía nada y muestra en la consola cada evento con sus parámetros y si se habría enviado. Sirve también en producción para verificar.
+- **Eventos** (moneda `ARS`): `view_item` (al abrir una ficha: item_id = id de `catalogo_publico`, item_name, item_category, price = precio de efectivo/transferencia), `add_to_cart` (+ talle en `item_variant` y `quantity`), `begin_checkout` (al tocar "Hacer pedido por WhatsApp": `value` = subtotal + envío de motomensajería, `payment_type` = efectivo/transferencia/tarjeta, `shipping_tier` = retiro/motomensajeria/correo, items con el precio que corresponde a la forma de pago), `click_whatsapp` (botón flotante, `ubicacion:'boton_flotante'`), `share` (`method` = web_share/copy_link, `content_type:'product'`, `item_id`), `search` (`search_term`, en minúsculas, máx. 100 caracteres, se manda el último término tras 1,2 s sin escribir). Los demás módulos solo avisan con eventos del DOM (`detalle-abierto`, `carrito-agregado`, `pedido-iniciado`, `producto-compartido`, `busqueda-hecha`).
+- **Nunca se envían datos personales**: ni nombre, teléfono, dirección, localidad, código postal ni el texto del mensaje de WhatsApp; solo producto, valores y tipos (`test-analytics.mjs` lo verifica). Términos y condiciones tiene la línea de Privacidad. El `page_view` y los cambios de URL (`?p=`) los mide GA4 solo (medición mejorada).
+- Pruebas: `node test-analytics.mjs`.
+
 ## Dirección del showroom: NO publicar
 - La calle y el número del showroom no van en ningún archivo de este repo (es público en GitHub), ni en la web, ni en el mensaje de WhatsApp, ni en Firestore. Lo único público es `datosNegocio.showroomTexto` ("Showroom en Loma Hermosa, San Martín · Lunes a sábado con cita previa"), que usan la franja de información del inicio, Contacto, el detalle de "Retiro en showroom" del carrito, "Calcular envío" de la ficha y Términos y condiciones. No hay mapas ni enlaces a Google Maps. El mensaje de WhatsApp de "Retiro en showroom" dice solo "Entrega: Retiro en showroom". Antes de agregar un mapa, JSON-LD de negocio local o un texto de ubicación, consultarlo.
 - Pendiente legal: Términos y condiciones antes decía "Domicilio: <dirección>"; ahora dice el texto del showroom. Revisar con el contador si la normativa de defensa del consumidor exige informar el domicilio del vendedor en la web (se puede cumplir de otra forma).
@@ -128,6 +137,7 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 `pedido-mensaje.js` — mensaje de WhatsApp y resumen de totales del carrito (ver Carrito y pedido).
 `deshacer-eliminar.js` / `deshacer-eliminar.css` — aviso "Producto eliminado · Deshacer" del carrito.
 `ficha-foto.js` — proporción estable de la foto principal de la ficha (ver arriba).
+`analytics.js` — Google Analytics 4 (ver arriba).
 `seleccion-talle.js` / `seleccion-talle.css` — elegir talle y botón Agregar al carrito de la ficha.
 `visor-imagen.js` / `visor-imagen.css` — visor de fotos con zoom (ver arriba).
 `compartir.js` / `compartir.css` — link por producto (`?p=ID`) y botón Compartir de la ficha (ver arriba).
