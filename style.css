@@ -114,8 +114,8 @@ button{font-family:inherit}
 .pie-nav{list-style:none;display:flex;flex-direction:column;gap:7px}
 .pie-nav a{font-size:.8rem;color:var(--text2)}
 .pie-col p{font-size:.78rem;color:var(--text2);line-height:1.6}
-.pie-legal-row{max-width:980px;margin:34px auto 0;text-align:center;font-size:.74rem;color:var(--text2);display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.pie-legal-row a{text-decoration:underline}
+.pie-legal-row{max-width:980px;margin:26px auto 0;text-align:center;font-size:.74rem;color:var(--text2);display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;justify-content:center}
+.pie-legal-row a{text-decoration:underline;display:inline-flex;align-items:center;min-height:44px;padding:0 6px} /* área táctil mínima de 44 px */
 .pie-sep{color:var(--border2)}
 .pie-copy{max-width:980px;margin:14px auto 0;text-align:center;font-size:.72rem;color:var(--muted)}
 
