@@ -78,14 +78,14 @@ async function compartir() {
   const url = linkDe(p.id);
   const text = `Mirá esta prenda en ${datosNegocio.nombreMarca}: ${p.nombre} — $${fmt(precioLista(p))}${lineaEfectivo(p) ? ' (' + lineaEfectivo(p).toLowerCase() + ')' : ''}`;
   if (navigator.share) {
-    try { await navigator.share({ title: p.nombre, text, url }); }
+    try { await navigator.share({ title: p.nombre, text, url }); document.dispatchEvent(new CustomEvent('producto-compartido', { detail: { id: p.id, metodo: 'web_share' } })); }
     catch (err) { if (err && err.name === 'AbortError') return; /* canceló: sin aviso */ await copiarLink(url); }
     return;
   }
   await copiarLink(url);
 }
 async function copiarLink(url) {
-  try { await copiar(url); aviso('Link copiado'); } catch { aviso('No se pudo copiar el link'); }
+  try { await copiar(url); aviso('Link copiado'); if (actual) document.dispatchEvent(new CustomEvent('producto-compartido', { detail: { id: actual.id, metodo: 'copy_link' } })); } catch { aviso('No se pudo copiar el link'); }
 }
 
 document.addEventListener('detalle-pintado', (e) => {
