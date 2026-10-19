@@ -1,7 +1,7 @@
 import { subtotalDe, precioUnitario } from './precios.js';
 
 // ══════════════════════════════════════════
-// GOOGLE ANALYTICS 4 (G-4V2GTP47P4) — medición anónima de visitas y uso de la tienda.
+// GOOGLE ANALYTICS 4 (G-XMQQ0PMRDY) — medición anónima de visitas y uso de la tienda.
 // - gtag.js se carga de forma asíncrona, recién cuando la página terminó de cargar.
 // - Solo envía datos desde tiendapremium.com.ar. En localhost y en las pruebas NO envía nada.
 // - Excluir mis propias visitas: entrar a cualquier página con ?interno=1 guarda una marca en
@@ -18,7 +18,7 @@ import { subtotalDe, precioUnitario } from './precios.js';
 // detecta acá. Ver test-analytics.mjs.
 // ══════════════════════════════════════════
 
-export const ID_MEDICION = 'G-4V2GTP47P4';
+export const ID_MEDICION = 'G-XMQQ0PMRDY';
 export const HOST_PRODUCCION = ['tiendapremium.com.ar', 'www.tiendapremium.com.ar'];
 export const CLAVE_INTERNO = 'analyticsInterno';
 const MONEDA = 'ARS';

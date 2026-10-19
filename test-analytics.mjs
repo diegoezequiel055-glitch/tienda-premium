@@ -5,7 +5,7 @@ import { debeEnviar, accionInterno, eventos, terminoSeguro, ID_MEDICION } from '
 let n = 0; const ok = (t) => { n++; console.log('  ✔ ' + t); };
 
 console.log('Solo se envía desde tiendapremium.com.ar, sin marca interna y sin modo debug');
-assert.equal(ID_MEDICION, 'G-4V2GTP47P4');
+assert.equal(ID_MEDICION, 'G-XMQQ0PMRDY');
 assert.equal(debeEnviar({ host: 'tiendapremium.com.ar', interno: false, debug: false }), true);
 assert.equal(debeEnviar({ host: 'www.tiendapremium.com.ar', interno: false, debug: false }), true);
 for (const host of ['localhost', '127.0.0.1', '192.168.1.107', 'diegoezequiel055-glitch.github.io', 'otro.com', '']) assert.equal(debeEnviar({ host, interno: false, debug: false }), false);
