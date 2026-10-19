@@ -167,3 +167,14 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - Sin `precioTarjeta` (o inválido): se ve exactamente como antes ("Abonando en efectivo o transferencia" en listado y ficha; nada en hero y relacionados).
 - Carrito con Tarjeta: una sola leyenda de cuotas ("Hasta 3 cuotas sin interés." debajo de las formas de pago).
 - Pruebas: `node test-precios.mjs` y `node test-pedido-mensaje.mjs`.
+
+## Rendimiento y limpieza (rama `tienda-rendimiento`)
+- **CSS de la portada**: `index.html` carga UN solo `tienda.css`, GENERADO por `node build-css.mjs` uniendo (en este orden) `style.css`, `promo-bar.css`, `hero-rotativo.css`, `header-menu.css`, `envio-ficha.css`, `compartir.css`, `seleccion-talle.css`, `visor-imagen.css`, `relacionados.css`, `precios.css`, `deshacer-eliminar.css`, `esqueletos.css`, `paginacion.css`. **Después de tocar cualquiera de esos CSS hay que correr `node build-css.mjs`** y subir `tienda.css` (`node test-css.mjs` avisa si quedó desactualizado). Las otras 4 páginas siguen con `style.css` + `promo-bar.css`.
+- **Sin saltos al cargar** (`esqueletos.css`): "Nuevos ingresos" y "Destacados" arrancan con la clase `reservando` (alto reservado) y la grilla con tarjetas esqueleto (`grid-reservando`); `app.js` las quita al pintar (o oculta la sección si hay menos de 2 productos).
+- **Fotos de las tarjetas** (`fotos-tarjeta.js`): solo la primera foto lleva `src`; las demás `data-src`, que se activa al tocar, pasar el mouse, enfocar o deslizar el carril. El carrusel y el contador 1/N funcionan igual.
+- **Paginación** (`paginacion.js`, `test-paginacion.mjs`): la grilla muestra 24 y "Ver más productos" suma otras 24. Se filtra (búsqueda + categoría) sobre TODOS los productos y recién después se pagina; el contador de resultados usa el total filtrado. Cambiar categoría o búsqueda vuelve a 24.
+- **Hero en celular y tablet (< 900 px)**: foto `heroMovil` (750 px, `q_auto:eco`, en `fotos-cloudinary.js`); en PC sigue `ficha` (900 px).
+- **Título de la portada**: "TIENDAPREMIUM.OK | Camisetas de fútbol y ropa urbana" (`marca.js` respeta el formato `MARCA | texto`). En PC con el hero activo el `<h1>` sigue en la página pero oculto a la vista (accesible).
+- `--muted` = #6b6b6b (contraste 5,3:1 sobre blanco). Enlaces legales del pie: 44 px de alto táctil.
+- **No se publican** `CLAUDE.md`, `*.md`, `test-*.mjs` ni `build-*.mjs`: lo define `_config.yml` (`exclude` de Jekyll/GitHub Pages). Un archivo interno nuevo se agrega ahí.
+- Pendiente: favicon / apple-touch-icon (no hay un logo en forma de ícono; el único logo del repo es el texto "TIENDAPREMIUM.OK").
