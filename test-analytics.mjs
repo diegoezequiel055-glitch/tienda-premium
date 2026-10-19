@@ -1,6 +1,6 @@
 // Pruebas puras de analytics.js (decisión de envío y armado de eventos). Correr: node test-analytics.mjs
 import assert from 'node:assert/strict';
-import { debeEnviar, accionInterno, eventos, ID_MEDICION } from './analytics.js';
+import { debeEnviar, accionInterno, eventos, terminoSeguro, ID_MEDICION } from './analytics.js';
 
 let n = 0; const ok = (t) => { n++; console.log('  ✔ ' + t); };
 
@@ -52,6 +52,14 @@ assert.deepEqual(eventos.share({ id: 'x', metodo: 'copy_link' }), { method: 'cop
 assert.deepEqual(eventos.search('  Arsenal  '), { search_term: 'arsenal' });
 assert.equal(eventos.search('x'.repeat(300)).search_term.length, 100);
 ok('click_whatsapp, share (web_share / copy_link) y search (minúsculas, máx. 100 caracteres)');
+
+console.log('\nBúsquedas: no se envía el término si parece un dato personal');
+for (const t of ['1155551234', '123456', 'pedido 987654 ok', '11 5555-1234', '+54 9 11 5555 1234', '(011) 4555-1234', '011-4555-1234', 'juan@gmail.com', 'a@b', 'mi mail es x@y.com', '11.5555.1234', '4000 5000 600'])
+  assert.equal(terminoSeguro(t), false, 'debería bloquearse: ' + t);
+ok('teléfonos (con y sin separadores), emails y 6+ dígitos seguidos: bloqueados');
+for (const t of ['arsenal', 'river 26/27', 'camiseta boca 10', 'g5 2024', '12345', 'adidas 3 tiras', 'retro milan 1990', 'icon bayern múnich', ''])
+  assert.equal(terminoSeguro(t), true, 'debería permitirse: ' + t);
+ok('búsquedas normales de producto (con años, números cortos o 5 dígitos): permitidas');
 
 console.log('\nNunca datos personales');
 const sucio = { ...carrito[0], nombreCliente: 'Juan Pérez', telefono: '1155551234', direccion: 'Calle Falsa 123', localidad: 'Rosario', cp: '2000', mensaje: '¡Hola! Quiero hacer este pedido' };

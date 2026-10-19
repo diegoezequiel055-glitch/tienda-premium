@@ -9,6 +9,7 @@ import { subtotalDe, precioUnitario } from './precios.js';
 // - ?analytics_debug=1 (se recuerda en la pestaña): NO envía nada y muestra en la consola cada
 //   evento con sus parámetros y si se habría enviado. Sirve para probar, también en producción.
 // - Eventos: view_item, add_to_cart, begin_checkout, click_whatsapp, share, search (moneda ARS).
+//   search no se envía si el término parece un teléfono, un email o tiene 6+ dígitos seguidos.
 // - NUNCA se envían datos personales: ni nombre, teléfono, dirección, localidad ni el texto del
 //   mensaje de WhatsApp. Solo datos de producto (id, nombre, categoría, talle, precio), valores,
 //   forma de pago, tipo de entrega y el término de búsqueda.
@@ -39,6 +40,16 @@ const itemBase = (x) => ({
   item_name: texto(x.nombre ?? x.item_name),
   item_category: texto(x.categoria ?? x.item_category),
 });
+
+// ¿Es seguro mandar este término de búsqueda? No si parece un email, un teléfono o tiene 6 o más
+// dígitos seguidos (podría ser un dato personal escrito por error): en ese caso no se envía el evento.
+export function terminoSeguro(termino) {
+  const t = String(termino ?? '');
+  if (t.includes('@')) return false;                       // email
+  if (/\d{6,}/.test(t)) return false;                      // 6 o más dígitos seguidos
+  if ((t.match(/\d/g) || []).length >= 7) return false;    // teléfono con espacios, guiones o paréntesis
+  return true;
+}
 
 // Armado de cada evento (solo datos de producto / valores / tipos).
 export const eventos = {
@@ -117,6 +128,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     const t = texto(e.detail && e.detail.termino).toLowerCase();
     clearTimeout(timerBusqueda);
     if (!t) { ultimaBusqueda = ''; return; }
+    if (!terminoSeguro(t)) return; // parece teléfono, email o tiene 6+ dígitos: no se manda el evento
     timerBusqueda = setTimeout(() => { if (t !== ultimaBusqueda) { ultimaBusqueda = t; registrar('search', eventos.search(t)); } }, 1200);
   });
 }
