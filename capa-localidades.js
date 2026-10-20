@@ -47,6 +47,8 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     const alto = vv ? vv.height : window.innerHeight, arriba = vv ? vv.offsetTop : 0;
     capa.style.setProperty('--vv-h', Math.round(alto) + 'px');
     capa.style.setProperty('--vv-top', Math.round(arriba) + 'px');
+    // La capa exterior (blanca) cubre SIEMPRE todo lo visible, incluso si Safari corre el visor más allá del layout viewport.
+    capa.style.height = Math.max(window.innerHeight, Math.round(arriba + alto)) + 'px';
   }
   const pedirAjuste = () => { if (!pendiente) pendiente = requestAnimationFrame(ajustar); };
   ajustar();
@@ -86,6 +88,10 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
   const bs = document.body.style;
   const bodyPrevio = { position: bs.position, top: bs.top, left: bs.left, right: bs.right, width: bs.width };
   bs.position = 'fixed'; bs.top = `-${guardado.y}px`; bs.left = '0'; bs.right = '0'; bs.width = '100%';
+  // Otros campos de formulario de la página: deshabilitados mientras la capa está abierta (Safari los cuenta para su barra gris
+  // con flechas ‹ › y tilde aunque estén ocultos o inertes). Se restauran al cerrar.
+  const camposFuera = [...document.querySelectorAll('input,select,textarea')].filter((el) => !capa.contains(el) && !el.disabled);
+  camposFuera.forEach((el) => { el.disabled = true; });
   function restaurar() { // deja la ficha y la página exactamente donde estaban
     const poner = () => { if (panel && panel.isConnected) panel.scrollTop = guardado.panelTop; window.scrollTo(guardado.x, guardado.y); };
     poner(); requestAnimationFrame(() => { poner(); requestAnimationFrame(poner); });
@@ -101,6 +107,7 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     capa.remove();
     inertes.forEach(({ el, inert, aria }) => { if (!inert) el.removeAttribute('inert'); if (aria === null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', aria); });
     document.documentElement.classList.remove('loc-capa-abierta');
+    camposFuera.forEach((el) => { if (el.isConnected) el.disabled = false; });
     Object.assign(bs, bodyPrevio); // fin del bloqueo del fondo (el scrollY se repone en restaurar())
     alCerrar();
     if (restaurarScroll) restaurar();
