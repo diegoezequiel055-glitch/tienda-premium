@@ -31,13 +31,29 @@ export function filtrarLocalidades(envios, texto) {
 // Mismo texto que tenía cada opción del selector anterior.
 export const textoFila = (e) => `${e.localidad} — ${e.estimado ? '≈' : ''}$${fmt(e.precio)}`;
 
-// cont: elemento vacío donde se arma. opciones: { envios, seleccionId, alElegir(id) }
-export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = null, alElegir = () => {} } = {}) {
+// ¿Usar la capa a pantalla completa (capa-localidades.js)? Solo en iPhone/iPad: iOS no achica la página al abrir el teclado
+// y mueve los paneles fijos. ?capa=1 la fuerza (para probar en otros navegadores) y ?capa=0 la desactiva.
+// El parámetro se lee al cargar el módulo y se recuerda en la pestaña (la ficha cambia la URL a ?p=… y se perdería).
+try { const u = new URLSearchParams(location.search).get('capa'); if (u === '1' || u === '0') sessionStorage.setItem('capa', u); } catch {}
+export function usaCapa() {
+  try {
+    let q = null; try { q = sessionStorage.getItem('capa'); } catch {}
+    if (q === '1') return true;
+    if (q === '0') return false;
+    const ua = navigator.userAgent || '';
+    return /iP(hone|ad|od)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  } catch { return false; }
+}
+
+// cont: elemento vacío donde se arma. opciones: { envios, seleccionId, alElegir(id), capa }
+// capa: función abrirCapaLocalidades (opcional). Si se pasa y usaCapa() es true, el campo es solo un botón que abre la capa.
+export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = null, alElegir = () => {}, capa = null } = {}) {
+  const modoCapa = typeof capa === 'function' && usaCapa();
   let lista = envios, elegido = seleccionId, activo = -1, buscando = !seleccionId, filas = [];
   const uid = 'loc' + Math.random().toString(36).slice(2, 7);
   cont.innerHTML = `<div class="loc">
       <div class="loc-campo">
-        <input type="text" class="loc-input" id="${uid}-in" role="combobox" aria-expanded="true" aria-controls="${uid}-ul" aria-autocomplete="list" aria-label="Buscá tu localidad" placeholder="Buscá tu localidad" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
+        <input type="text" class="loc-input" id="${uid}-in" role="combobox" aria-expanded="true" aria-controls="${uid}-ul" aria-autocomplete="list" aria-label="Buscá tu localidad" placeholder="Buscá tu localidad" name="loc-buscar-${uid}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="search" enterkeyhint="done" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
         <button type="button" class="loc-cambiar" hidden>Cambiar</button>
       </div>
       <div class="loc-res">
@@ -53,6 +69,14 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
 
   function pintar() {
     const e = sel();
+    if (modoCapa) { // el campo es un botón: vacío ("Buscá tu localidad") o con la localidad elegida + "Cambiar"
+      $caja.classList.toggle('loc-elegida', !!e);
+      $in.readOnly = true;
+      $in.value = e ? textoFila(e) : '';
+      $cambiar.hidden = !e;
+      $res.hidden = true; $vacio.hidden = true; $ul.innerHTML = ''; filas = [];
+      return;
+    }
     const modoElegida = !buscando && !!e;
     $caja.classList.toggle('loc-elegida', modoElegida);
     $in.readOnly = modoElegida;
@@ -94,7 +118,7 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
   $in.addEventListener('keydown', (ev) => {
     if (ev.key === 'ArrowDown') { ev.preventDefault(); mover(1); }
     else if (ev.key === 'ArrowUp') { ev.preventDefault(); mover(-1); }
-    else if (ev.key === 'Enter') { ev.preventDefault(); if (!$in.readOnly && filas[activo]) elegir(filas[activo].id); }
+    else if (ev.key === 'Enter') { ev.preventDefault(); if (modoCapa) abrirLaCapa(); else if (!$in.readOnly && filas[activo]) elegir(filas[activo].id); }
     else if (ev.key === 'Escape') {
       if ($in.value) { $in.value = ''; activo = -1; pintar(); }
       else if (sel()) { buscando = false; pintar(); $cambiar.focus(); }
@@ -106,8 +130,12 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
   $in.addEventListener('focus', () => { setTimeout(() => { if (document.activeElement === $in && !$in.readOnly && $caja.scrollIntoView) $caja.scrollIntoView({ block: 'start' }); }, 300); });
   // Tocar una fila no debe sacar el foco del campo (si no, el botón reaparece y la lista se mueve antes de elegir).
   $ul.addEventListener('mousedown', (ev) => ev.preventDefault());
-  $in.addEventListener('click', () => { if ($in.readOnly) abrirBusqueda(); });
-  $cambiar.addEventListener('click', abrirBusqueda);
+  // Modo capa: el toque abre la capa a pantalla completa (el campo se enfoca DENTRO de ese toque, ver capa-localidades.js).
+  function abrirLaCapa() {
+    capa({ envios: lista, seleccionId: elegido, alElegir: (id) => elegir(id), alCerrar: () => { if (!$cambiar.hidden) $cambiar.focus(); } });
+  }
+  $in.addEventListener('click', () => { if (modoCapa) abrirLaCapa(); else if ($in.readOnly) abrirBusqueda(); });
+  $cambiar.addEventListener('click', modoCapa ? abrirLaCapa : abrirBusqueda);
   $ul.addEventListener('click', (ev) => { const li = ev.target.closest('.loc-fila'); if (li) elegir(li.dataset.id); });
   $ul.addEventListener('mousemove', (ev) => {
     const li = ev.target.closest('.loc-fila'); if (!li) return;
@@ -116,6 +144,7 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
     activo = i; li.classList.add('activa'); $in.setAttribute('aria-activedescendant', li.id);
   });
 
+  if (modoCapa) { $caja.classList.add('loc-capa-modo'); $in.setAttribute('role', 'button'); $in.setAttribute('aria-haspopup', 'dialog'); $in.removeAttribute('aria-controls'); $in.removeAttribute('aria-autocomplete'); $in.setAttribute('aria-expanded', 'false'); }
   pintar();
   return {
     // La tabla de envíos cambió en vivo (Firestore) o la ficha eligió otra localidad.
