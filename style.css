@@ -59,8 +59,8 @@ button{font-family:inherit}
 .destacados{padding:34px 0 10px;display:flex;flex-direction:column;gap:14px}
 .destacados-strip{display:flex;gap:16px;overflow-x:auto;padding:2px 20px 10px;scroll-snap-type:x mandatory;scroll-padding-left:20px}
 .destacados-strip::-webkit-scrollbar{display:none}
-.destacados-strip .card{flex:0 0 180px;scroll-snap-align:start}
-@media(min-width:700px){.destacados-strip{padding:2px 32px 10px;scroll-padding-left:32px}.destacados-strip .card{flex-basis:230px}}
+.destacados-strip .card{flex:0 0 180px;width:180px;scroll-snap-align:start} /* ancho fijo propio: la tarjeta NUNCA depende del tamaño de su foto (ni del texto alt) */
+@media(min-width:700px){.destacados-strip{padding:2px 32px 10px;scroll-padding-left:32px}.destacados-strip .card{flex-basis:230px;width:230px}}
 
 .modo-selector{display:inline-flex;background:var(--surface2);border:1px solid var(--border2);border-radius:999px;padding:4px;gap:2px}
 .modo-btn{background:none;border:none;color:var(--text2);padding:8px 16px;border-radius:999px;font-family:inherit;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap}
@@ -79,13 +79,15 @@ button{font-family:inherit}
 /* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px 14px;padding:4px 20px 30px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 22px;padding:4px 32px 50px}}
-.card{cursor:pointer;display:flex;flex-direction:column;gap:9px;padding-bottom:26px}
+.card{cursor:pointer;display:flex;flex-direction:column;gap:9px;padding-bottom:26px;min-width:0}
 .card-foto{position:relative;width:100%;aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
 .card:hover .card-foto{opacity:.9}
 .card-foto img{width:100%;height:100%;object-fit:cover;display:block}
-.card-foto-scroll{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory}
+.card-foto>img{position:absolute;inset:0} /* una sola foto: llena el recuadro (4/5) sin depender de su tamaño natural */
+/* Varias fotos: el carril llena EXACTAMENTE el recuadro 4/5 (absolute + inset:0), nunca por porcentajes ni por el tamaño de las fotos. */
+.card-foto-scroll{display:flex;position:absolute;inset:0;overflow-x:auto;scroll-snap-type:x mandatory}
 .card-foto-scroll::-webkit-scrollbar{display:none}
-.card-foto-scroll img{flex:0 0 100%;scroll-snap-align:start}
+.card-foto-scroll img{flex:0 0 100%;min-width:0;scroll-snap-align:start}
 .card-foto-contador{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.64rem;padding:2px 8px;border-radius:999px;pointer-events:none}
 .sin-foto{font-size:.72rem;color:var(--muted)}
 .card-cat{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}

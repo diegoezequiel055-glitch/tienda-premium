@@ -14,8 +14,10 @@ export function activarFotos(carril) {
   let n = 0;
   carril.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }); // también la primera, por si se desliza antes de que cargue
   carril.querySelectorAll('img[data-src]').forEach((img) => {
+    img.alt = img.dataset.alt || ''; // el alt se pone recién ahora: sin src, un <img> con alt se dibuja como texto y agranda la tarjeta
     img.src = img.dataset.src;
     img.removeAttribute('data-src');
+    img.removeAttribute('data-alt');
     n++;
   });
   return n;
