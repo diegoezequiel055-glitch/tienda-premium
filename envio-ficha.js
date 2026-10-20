@@ -1,4 +1,5 @@
 import { datosNegocio } from './datos-negocio.js';
+import { montarBuscadorLocalidades } from './buscador-localidades.js';
 
 // ══════════════════════════════════════════
 // "Calcular envío" en la ficha del producto. Usa el mismo estado y la misma
@@ -22,6 +23,7 @@ const OPCIONES = [
 let abierto = false;
 let productoId = null;
 let conStock = false;
+let buscador = null; // instancia del buscador de localidades montada en la ficha
 
 function detalleTexto(e) {
   if (e.tipoEntrega === 'retiro') {
@@ -30,12 +32,8 @@ function detalleTexto(e) {
       <p class="envio-nota">${esc(d.showroomTexto)}</p>`;
   }
   if (e.tipoEntrega === 'motomensajeria') {
-    const ordenadas = [...e.envios].sort((a, b) => a.localidad.localeCompare(b.localidad, 'es'));
     const sel = e.envios.find((x) => x.id === e.envioId);
-    const select = `<select id="ficha-envio-select" onchange="fichaEnvioLocalidad(this.value)">
-        <option value="">Elegí tu localidad...</option>
-        ${ordenadas.map((x) => `<option value="${esc(x.id)}"${x.id === e.envioId ? ' selected' : ''}>${esc(x.localidad)} — ${x.estimado ? '≈' : ''}$${fmt(x.precio)}</option>`).join('')}
-      </select>`;
+    const select = '<div id="ficha-envio-buscador"></div>'; // buscador de localidades (buscador-localidades.js), el mismo del carrito
     if (!sel) return select;
     return select + `<p class="envio-res"><b>Motomensajería a ${esc(sel.localidad)}: ${sel.estimado ? '≈' : ''}$${fmt(sel.precio)}</b> · Pedí hoy, te llega mañana (lunes a viernes)</p>`
       + (sel.estimado ? '<p class="envio-nota">Precio estimado — tarifa por horario, se confirma por WhatsApp.</p>' : '');
@@ -61,6 +59,12 @@ function render() {
       </div>
       ${detalleTexto(e)}
     </div>`;
+  const caja = $('ficha-envio-buscador');
+  buscador = caja ? montarBuscadorLocalidades(caja, {
+    envios: e.envios,
+    seleccionId: e.envioId,
+    alElegir: (id) => window.fichaEnvioLocalidad(id), // misma vía de siempre: guarda la elección y precarga el carrito
+  }) : null;
 }
 
 window.fichaEnvioToggle = function () { abierto = !abierto; render(); };
@@ -80,4 +84,9 @@ document.addEventListener('detalle-pintado', (ev) => {
   conStock = (p.talles || []).length > 0;
   render();
 });
-document.addEventListener('entrega-cambiada', () => { if (productoId) render(); });
+document.addEventListener('entrega-cambiada', () => {
+  if (!productoId) return;
+  // Si se está escribiendo en el buscador, solo se refresca su lista (no se pierde lo escrito).
+  if (buscador && document.querySelector('#ficha-envio-buscador .loc-input:not([readonly])')) buscador.actualizar(window.getEntrega().envios);
+  else render();
+});

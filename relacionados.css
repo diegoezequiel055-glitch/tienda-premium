@@ -1,5 +1,5 @@
 /* Productos relacionados en la ficha (relacionados.js). */
-.rel{margin-top:22px;padding-top:6px;display:flex;flex-direction:column;gap:22px;border-top:1px solid var(--border)}
+.rel{margin-top:30px;padding-top:16px;display:flex;flex-direction:column;gap:22px;border-top:1px solid var(--border)}
 .rel-titulo{font-family:'Anton',sans-serif;font-weight:400;font-size:1.05rem;letter-spacing:.4px;text-transform:uppercase;color:var(--ink);margin:14px 0 10px}
 .rel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
 .rel-carril{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:22px;margin:0 -22px;padding:0 22px 6px;scrollbar-width:none}

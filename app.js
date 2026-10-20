@@ -405,7 +405,7 @@ function pintarDetalle() {
   }
   $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(fotoCloudinary(f, 'carrito'))}"></button>`).join('') : '';
   actualizarUIFotoDetalle();
-  $('detalle-cat').textContent = p.categoria;
+  $('detalle-cat').textContent = p.categoria || ''; // sin categoría: queda vacío y se oculta (style.css)
   $('detalle-nombre').textContent = p.nombre;
   $('detalle-precio').textContent = '$' + fmt(precioLista(p));
   $('detalle-precio-nota').innerHTML = extrasPrecioHtml(p, 'ficha');
