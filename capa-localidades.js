@@ -8,6 +8,7 @@ import { filtrarLocalidades, textoFila, MENSAJE_SIN_RESULTADOS } from './buscado
 //   · position:fixed pegada al área VISIBLE: top = visualViewport.offsetTop, alto = visualViewport.height
 //     (--vv-top y --vv-h; se actualizan SOLO cuando el visor cambia: teclado abre/cierra, giro de pantalla;
 //     nunca por tecla). La lista usa el resto del alto (flex) y se desplaza por dentro.
+//   · el <body> se fija (position:fixed; top:-scrollY) y los gestos fuera de la lista / al pasar del tope o del final se cancelan.
 //   · TODO lo de atrás se oculta y queda inerte mientras está abierta (clase loc-capa-abierta en <html>, inert + aria-hidden en el resto
 //     del <body>), fondo de html/body blanco, sin scroll del fondo. Al cerrar se restaura el scroll de la ficha tal como estaba.
 //   · sin scrollIntoView. El campo se enfoca dentro del mismo toque que la abre (si no, iOS no abre el teclado).
@@ -80,6 +81,11 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     inertes.push({ el, inert: el.hasAttribute('inert'), aria: el.getAttribute('aria-hidden') });
     el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true');
   });
+  // Bloqueo REAL del fondo (en iOS overflow:hidden no alcanza): el <body> pasa a position:fixed con top:-scrollY (la portada queda
+  // visualmente quieta y no puede desplazarse). Al cerrar se quita y se vuelve al scrollY exacto.
+  const bs = document.body.style;
+  const bodyPrevio = { position: bs.position, top: bs.top, left: bs.left, right: bs.right, width: bs.width };
+  bs.position = 'fixed'; bs.top = `-${guardado.y}px`; bs.left = '0'; bs.right = '0'; bs.width = '100%';
   function restaurar() { // deja la ficha y la página exactamente donde estaban
     const poner = () => { if (panel && panel.isConnected) panel.scrollTop = guardado.panelTop; window.scrollTo(guardado.x, guardado.y); };
     poner(); requestAnimationFrame(() => { poner(); requestAnimationFrame(poner); });
@@ -95,6 +101,7 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     capa.remove();
     inertes.forEach(({ el, inert, aria }) => { if (!inert) el.removeAttribute('inert'); if (aria === null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', aria); });
     document.documentElement.classList.remove('loc-capa-abierta');
+    Object.assign(bs, bodyPrevio); // fin del bloqueo del fondo (el scrollY se repone en restaurar())
     alCerrar();
     if (restaurarScroll) restaurar();
   }
@@ -119,7 +126,19 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
   $ul.addEventListener('click', (ev) => { const li = ev.target.closest('.loc-capa-fila'); if (li) elegir(li.dataset.id); });
   capa.querySelector('.loc-capa-atras').addEventListener('click', () => cerrar());
   // el fondo no se mueve: solo la lista puede desplazarse
-  capa.addEventListener('touchmove', (ev) => { if (!ev.target.closest('.loc-capa-lista')) ev.preventDefault(); }, { passive: false });
+  // Solo la lista puede desplazarse, y sin "pasarse" al fondo: se bloquea todo toque fuera de la lista y, dentro de ella,
+  // el arrastre que intenta pasar del tope (hacia abajo) o del final (hacia arriba), o cualquiera si la lista no tiene scroll.
+  let yPrev = 0;
+  capa.addEventListener('touchstart', (ev) => { if (ev.touches[0]) yPrev = ev.touches[0].clientY; }, { passive: true });
+  capa.addEventListener('touchmove', (ev) => {
+    const t = ev.touches[0]; if (!t) return;
+    const dy = t.clientY - yPrev; yPrev = t.clientY;
+    const lista = ev.target.closest && ev.target.closest('.loc-capa-lista');
+    if (!lista) { ev.preventDefault(); return; }
+    const enTope = lista.scrollTop <= 0, enFin = lista.scrollTop + lista.clientHeight >= lista.scrollHeight - 1;
+    const sinScroll = lista.scrollHeight <= lista.clientHeight + 1;
+    if (sinScroll || (dy > 0 && enTope) || (dy < 0 && enFin)) ev.preventDefault();
+  }, { passive: false });
   document.addEventListener('keydown', alTeclado, true);
 
   pintarLista();
