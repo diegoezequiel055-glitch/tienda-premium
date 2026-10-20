@@ -549,18 +549,21 @@ body.visor-abierto{overflow:hidden}
 /* ── capa-localidades.css ── */
 /* Capa de búsqueda de localidades a pantalla completa (capa-localidades.js). Solo iPhone/iPad en la ficha.
    --vv-top / --vv-h los pone el JS con el área visible real (visualViewport); el respaldo es toda la pantalla. */
-.loc-capa{position:fixed;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-h,100dvh);z-index:600;background:#fff;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:none}
+.loc-capa{position:fixed;inset:0;z-index:600;background:#fff;overflow:hidden;overscroll-behavior:contain;touch-action:none;visibility:visible}
+/* El contenido ocupa EXACTAMENTE el área visible (visualViewport); lo que sobre de la capa (inset:0) es blanco opaco. */
+.loc-capa-int{position:absolute;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-h,100%);display:flex;flex-direction:column;background:#fff}
 .loc-capa-barra{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border2);background:#fff}
 .loc-capa-atras{flex:0 0 44px;width:44px;height:44px;border:none;border-radius:50%;background:var(--surface2);color:var(--ink);font-family:inherit;font-size:1.9rem;line-height:1;padding:0 0 4px;cursor:pointer}
 .loc-capa-input{flex:1;min-width:0;min-height:46px;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:16px;-webkit-appearance:none;appearance:none}
 .loc-capa-input:focus{outline:2px solid var(--ink);outline-offset:1px}
-.loc-capa-lista{flex:1 1 auto;min-height:0;list-style:none;margin:0;padding:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.loc-capa-lista{flex:1 1 auto;min-height:0;list-style:none;margin:0;padding:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
 .loc-capa-fila{min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:.95rem;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border)}
 .loc-capa-fila.activa{background:var(--surface3)}
 .loc-capa-fila.elegida{font-weight:700}
 .loc-capa-vacio{flex:0 0 auto;margin:12px;padding:12px;font-size:.88rem;line-height:1.5;color:var(--text2);background:var(--surface2);border-radius:10px}
 .loc-capa-vacio[hidden]{display:none}
-/* El fondo no se desplaza mientras la capa está abierta. */
-html.loc-capa-abierta,html.loc-capa-abierta body{overflow:hidden;overscroll-behavior:none}
+/* Capa abierta: fondo blanco liso, sin scroll, y todo lo demás oculto (respaldo visual del inert que pone el JS). */
+html.loc-capa-abierta,html.loc-capa-abierta body{overflow:hidden;overscroll-behavior:none;background:#fff}
+html.loc-capa-abierta body>*:not(.loc-capa){visibility:hidden}
 /* En la ficha (modo capa) el campo funciona como un botón: no muestra cursor de texto ni teclado. */
 .loc-capa-modo .loc-input{cursor:pointer;caret-color:transparent}
