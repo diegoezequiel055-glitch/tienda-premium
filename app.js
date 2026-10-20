@@ -211,11 +211,11 @@ function cardFotoHtml(p) {
   const fotos = p.fotos || [];
   if (!fotos.length) return '<div class="card-foto"><span class="sin-foto">Sin foto</span></div>';
   if (fotos.length === 1) {
-    return `<div class="card-foto"><img src="${esc(fotoCloudinary(fotos[0], 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'"></div>`;
+    return `<div class="card-foto"><img src="${esc(fotoCloudinary(fotos[0], 'tarjeta'))}" width="400" height="500" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'"></div>`;
   }
   return `<div class="card-foto">
       <div class="card-foto-scroll" onscroll="actualizarContadorCard(this)">
-        ${fotos.map((f, i) => `<img ${i === 0 ? 'src' : 'data-src'}="${esc(fotoCloudinary(f, 'tarjeta'))}" loading="lazy" alt="${esc(p.nombre)}">`).join('')}
+        ${fotos.map((f, i) => i === 0 ? `<img src="${esc(fotoCloudinary(f, 'tarjeta'))}" width="400" height="500" loading="lazy" alt="${esc(p.nombre)}">` : `<img data-src="${esc(fotoCloudinary(f, 'tarjeta'))}" data-alt="${esc(p.nombre)}" width="400" height="500" loading="lazy" alt="">`).join('')}
       </div>
       <span class="card-foto-contador">1/${fotos.length}</span>
     </div>`;
