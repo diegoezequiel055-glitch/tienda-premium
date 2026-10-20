@@ -169,7 +169,8 @@ button{font-family:inherit}
 .mini-foto.active{border-color:var(--ink)}
 .mini-foto img{width:100%;height:100%;object-fit:cover;display:block}
 .detalle-body{padding:4px 22px 26px;display:flex;flex-direction:column;gap:10px}
-.detalle-cat{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+.detalle-cat{font-size:.63rem;line-height:1.2;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:-4px} /* categoría sobre el nombre: mismo estilo chico que en el hero (.hero-rot-cat) */
+.detalle-cat:empty{display:none} /* sin categoría: sin hueco */
 .detalle-nombre{font-family:'Anton',sans-serif;font-weight:400;font-size:1.4rem;line-height:1.2;color:var(--ink)}
 .detalle-precio{font-family:'Anton',sans-serif;font-size:1.7rem;color:var(--ink)}
 .detalle-precio span{font-size:.78rem;color:var(--muted);font-family:'Outfit',sans-serif;display:block;margin-top:2px}
@@ -433,7 +434,7 @@ body.visor-abierto{overflow:hidden}
 
 /* ── relacionados.css ── */
 /* Productos relacionados en la ficha (relacionados.js). */
-.rel{margin-top:22px;padding-top:6px;display:flex;flex-direction:column;gap:22px;border-top:1px solid var(--border)}
+.rel{margin-top:30px;padding-top:16px;display:flex;flex-direction:column;gap:22px;border-top:1px solid var(--border)}
 .rel-titulo{font-family:'Anton',sans-serif;font-weight:400;font-size:1.05rem;letter-spacing:.4px;text-transform:uppercase;color:var(--ink);margin:14px 0 10px}
 .rel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
 .rel-carril{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:22px;margin:0 -22px;padding:0 22px 6px;scrollbar-width:none}
