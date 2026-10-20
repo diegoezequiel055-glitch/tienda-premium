@@ -6,6 +6,7 @@ import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 import './fotos-tarjeta.js';
+import { montarBuscadorLocalidades } from './buscador-localidades.js';
 import { paginar, textoVerMas, TAMANO_PAGINA } from './paginacion.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
 
@@ -115,15 +116,10 @@ onSnapshot(collection(db, 'envios_publico'), (snap) => {
   avisarEntrega();
 }, () => {});
 
+// Buscador de localidades del carrito (buscador-localidades.js): se actualiza cuando cambia la tabla de envíos.
+let buscadorEnvio = null;
 function pintarSelectEnvio() {
-  const sel = $('envio-select'); if (!sel) return;
-  if (sel.dataset.n == envios.length) return;
-  sel.dataset.n = envios.length;
-  const valorPrevio = sel.value || envioId || '';
-  const ordenadas = [...envios].sort((a, b) => a.localidad.localeCompare(b.localidad, 'es'));
-  sel.innerHTML = '<option value="">Elegí tu localidad...</option>' +
-    ordenadas.map((e) => `<option value="${esc(e.id)}">${esc(e.localidad)} — ${e.estimado ? '≈' : ''}$${fmt(e.precio)}</option>`).join('');
-  if (valorPrevio) sel.value = valorPrevio;
+  if (buscadorEnvio && $('envio-buscador')) buscadorEnvio.actualizar(envios);
 }
 
 // ── hero: tríptico. Si Diego eligió fotos a mano, esas ganan siempre.
@@ -515,8 +511,8 @@ function renderEntregaDetalle() {
   if (tipoEntrega === 'retiro') {
     cont.innerHTML = `<p class="modo-nota" style="margin:8px 0 0;text-align:left">${esc(datosNegocio.showroomTexto)}. Sin costo.</p>`;
   } else if (tipoEntrega === 'motomensajeria') {
-    cont.innerHTML = `<select id="envio-select" onchange="setEnvio(this.value)" style="margin-top:8px"><option value="">Elegí tu localidad...</option></select><p class="modo-nota" id="envio-nota" style="margin-top:6px"></p>`;
-    pintarSelectEnvio();
+    cont.innerHTML = `<div id="envio-buscador" style="margin-top:8px"></div><p class="modo-nota" id="envio-nota" style="margin-top:6px"></p>`;
+    buscadorEnvio = montarBuscadorLocalidades($('envio-buscador'), { envios, seleccionId: envioId, alElegir: (id) => window.setEnvio(id) });
   } else if (tipoEntrega === 'correo') {
     cont.innerHTML = `
       <select id="correo-provincia" onchange="setCorreoProvincia(this.value)" style="margin-top:8px">

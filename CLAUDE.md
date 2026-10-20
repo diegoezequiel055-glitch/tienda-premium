@@ -178,3 +178,8 @@ Documentación de referencia para cualquier sesión nueva. Revisado contra el c�
 - `--muted` = #6b6b6b (contraste 5,3:1 sobre blanco). Enlaces legales del pie: 44 px de alto táctil.
 - **No se publican** `CLAUDE.md`, `*.md`, `test-*.mjs` ni `build-*.mjs`: lo define `_config.yml` (`exclude` de Jekyll/GitHub Pages). Un archivo interno nuevo se agrega ahí.
 - Pendiente: favicon / apple-touch-icon (no hay un logo en forma de ícono; el único logo del repo es el texto "TIENDAPREMIUM.OK").
+
+## Buscador de localidades del carrito (rama `tienda-buscador-localidades`) — `buscador-localidades.js` + `.css`
+- Motomensajería ya no usa un `<select>` de ~150 localidades: hay un campo "Buscá tu localidad" y debajo una lista (rol listbox, máx. 240 px con scroll interno, filas de 44 px). Ignora mayúsculas y acentos; primero las que EMPIEZAN con lo escrito y después las que lo CONTIENEN; sin texto, todas A-Z; sin resultados: "No encontramos esa localidad. Elegí la más cercana o consultanos por WhatsApp".
+- Al elegir, el campo muestra "Localidad — $precio" y el botón "Cambiar". El módulo solo avisa `alElegir(id)`: `app.js` llama a `setEnvio(id)` como siempre, así que costo, total, mensaje de WhatsApp y `begin_checkout` (`shipping_tier`) no cambian. Teclado: ↑↓ mueven, Enter elige, Esc limpia o vuelve a la elegida.
+- La ficha ("Calcular envío", `envio-ficha.js`) y Correo (provincia + localidad escrita + CP) NO se tocaron. Pruebas: `node test-buscador-localidades.mjs`.
