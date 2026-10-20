@@ -1,6 +1,6 @@
 /* Capa de búsqueda de localidades a pantalla completa (capa-localidades.js). Solo iPhone/iPad en la ficha.
    --vv-top / --vv-h los pone el JS con el área visible real (visualViewport); el respaldo es toda la pantalla. */
-.loc-capa{position:fixed;inset:0;z-index:600;background:#fff;overflow:hidden;overscroll-behavior:contain;touch-action:none;visibility:visible}
+.loc-capa{position:fixed;top:0;left:0;right:0;bottom:0;min-height:100vh;min-height:100lvh;z-index:600;background:#fff;overflow:hidden;overscroll-behavior:contain;touch-action:none;visibility:visible}
 /* El contenido ocupa EXACTAMENTE el área visible (visualViewport); lo que sobre de la capa (inset:0) es blanco opaco. */
 .loc-capa-int{position:absolute;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-h,100%);display:flex;flex-direction:column;background:#fff}
 .loc-capa-barra{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border2);background:#fff}
@@ -14,7 +14,10 @@
 .loc-capa-vacio{flex:0 0 auto;margin:12px;padding:12px;font-size:.88rem;line-height:1.5;color:var(--text2);background:var(--surface2);border-radius:10px}
 .loc-capa-vacio[hidden]{display:none}
 /* Capa abierta: fondo blanco liso, sin scroll, y todo lo demás oculto (respaldo visual del inert que pone el JS). */
-html.loc-capa-abierta,html.loc-capa-abierta body{overflow:hidden;overscroll-behavior:none;background:#fff}
-html.loc-capa-abierta body>*:not(.loc-capa){visibility:hidden}
+html.loc-capa-abierta,html.loc-capa-abierta body{overflow:hidden;overscroll-behavior:contain;background:#fff !important}
+html.loc-capa-abierta{height:100%}
+/* TODO lo demás del documento deja de dibujarse (display:none: nada puede asomar por ningún hueco, tampoco en Safari). Al cerrar se
+   restaura el scroll del panel de la ficha (capa-localidades.js › restaurar). */
+html.loc-capa-abierta body>*:not(.loc-capa){display:none !important}
 /* En la ficha (modo capa) el campo funciona como un botón: no muestra cursor de texto ni teclado. */
 .loc-capa-modo .loc-input{cursor:pointer;caret-color:transparent}
