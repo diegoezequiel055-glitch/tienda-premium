@@ -147,7 +147,7 @@ button{font-family:inherit}
 .cerrar{background:none;border:none;color:var(--text2);font-size:1.1rem;cursor:pointer;padding:4px 8px}
 
 /* FICHA DE PRODUCTO */
-.detalle-panel{background:var(--bg);width:100%;max-width:480px;max-height:92vh;border-radius:var(--radius) var(--radius) 0 0;overflow-y:auto;border:1px solid var(--border);position:relative}
+.detalle-panel{background:var(--bg);width:100%;max-width:480px;max-height:92vh;max-height:92dvh;border-radius:var(--radius) var(--radius) 0 0;overflow-y:auto;border:1px solid var(--border);position:relative}
 @media(min-width:640px){.detalle-panel{border-radius:var(--radius)}}
 .cerrar-flot{position:sticky;top:10px;float:right;margin-right:10px;z-index:5;background:rgba(255,255,255,.85);border:1px solid var(--border);border-radius:50%;width:32px;height:32px}
 /* La foto se ve completa (contain). Altura estable = proporción de la primera foto (--ficha-ratio, ficha-foto.js), tope: 70 % de la pantalla y lo que deja el precio visible sin scroll (alto de pantalla − 340 px), nunca menos de 240 px. */
@@ -184,7 +184,7 @@ button{font-family:inherit}
 .detalle-stock-bajo{font-size:.82rem}
 
 /* CARRITO */
-.carrito-panel{background:var(--bg);width:100%;max-width:460px;max-height:94vh;border-radius:var(--radius) var(--radius) 0 0;display:flex;flex-direction:column;border:1px solid var(--border);overflow:hidden}
+.carrito-panel{background:var(--bg);width:100%;max-width:460px;max-height:94vh;max-height:94dvh;border-radius:var(--radius) var(--radius) 0 0;display:flex;flex-direction:column;border:1px solid var(--border);overflow:hidden}
 @media(min-width:640px){.carrito-panel{border-radius:var(--radius)}}
 .carrito-head{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--border)}
 .carrito-head h2{font-family:'Anton',sans-serif;font-weight:400;font-size:1.15rem;color:var(--ink)}
@@ -369,8 +369,8 @@ body.menu-abierto{overflow:hidden}
    justo debajo de la barra (--hdr-bottom la mide header-menu.js) y la página de fondo no se mueve. */
 .hdr{z-index:250}
 .overlay{padding-top:var(--hdr-bottom,0px)}
-.detalle-panel{max-height:min(92vh,100%)}
-.carrito-panel{max-height:min(94vh,100%)}
+.detalle-panel{max-height:min(92vh,100%);max-height:min(92dvh,100%)} /* dvh = alto visible real en iOS Safari (barra de direcciones); vh queda de respaldo */
+.carrito-panel{max-height:min(94vh,100%);max-height:min(94dvh,100%)}
 body:has(.overlay.open){overflow:hidden}
 
 /* ── envio-ficha.css ── */

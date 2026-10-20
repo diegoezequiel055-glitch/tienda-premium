@@ -45,6 +45,6 @@ body.menu-abierto{overflow:hidden}
    justo debajo de la barra (--hdr-bottom la mide header-menu.js) y la página de fondo no se mueve. */
 .hdr{z-index:250}
 .overlay{padding-top:var(--hdr-bottom,0px)}
-.detalle-panel{max-height:min(92vh,100%)}
-.carrito-panel{max-height:min(94vh,100%)}
+.detalle-panel{max-height:min(92vh,100%);max-height:min(92dvh,100%)} /* dvh = alto visible real en iOS Safari (barra de direcciones); vh queda de respaldo */
+.carrito-panel{max-height:min(94vh,100%);max-height:min(94dvh,100%)}
 body:has(.overlay.open){overflow:hidden}
