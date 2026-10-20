@@ -8,7 +8,8 @@ import { filtrarLocalidades, textoFila, MENSAJE_SIN_RESULTADOS } from './buscado
 //   · position:fixed pegada al área VISIBLE: top = visualViewport.offsetTop, alto = visualViewport.height
 //     (--vv-top y --vv-h; se actualizan SOLO cuando el visor cambia: teclado abre/cierra, giro de pantalla;
 //     nunca por tecla). La lista usa el resto del alto (flex) y se desplaza por dentro.
-//   · el fondo no se desplaza mientras está abierta (clase loc-capa-abierta en <html> + touchmove bloqueado).
+//   · TODO lo de atrás se oculta y queda inerte mientras está abierta (clase loc-capa-abierta en <html>, inert + aria-hidden en el resto
+//     del <body>), fondo de html/body blanco, sin scroll del fondo. Al cerrar se restaura el scroll de la ficha tal como estaba.
 //   · sin scrollIntoView. El campo se enfoca dentro del mismo toque que la abre (si no, iOS no abre el teclado).
 //   · al elegir una localidad (o tocar ‹ / Esc) se cierra y quien la abrió sigue igual que siempre.
 // La abre buscador-localidades.js (opción `capa`) cuando usaCapa() es true. Ver capa-localidades.css.
@@ -22,7 +23,7 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
   capa.setAttribute('role', 'dialog');
   capa.setAttribute('aria-modal', 'true');
   capa.setAttribute('aria-label', 'Buscá tu localidad');
-  capa.innerHTML = `
+  capa.innerHTML = `<div class="loc-capa-int">
     <div class="loc-capa-barra">
       <button type="button" class="loc-capa-atras" aria-label="Cerrar búsqueda">&#8249;</button>
       <input type="text" class="loc-capa-input" role="combobox" aria-expanded="true" aria-controls="${uid}-ul" aria-autocomplete="list" aria-label="Buscá tu localidad" placeholder="Buscá tu localidad"
@@ -31,7 +32,8 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     </div>
     <ul class="loc-capa-lista" id="${uid}-ul" role="listbox" aria-label="Localidades"></ul>
     <p class="loc-capa-vacio" hidden></p>
-    <span class="solo-lectores" role="status" aria-live="polite"></span>`;
+    <span class="solo-lectores" role="status" aria-live="polite"></span>
+    </div>`;
   capa.querySelector('.loc-capa-vacio').textContent = MENSAJE_SIN_RESULTADOS;
   const $in = capa.querySelector('.loc-capa-input'), $ul = capa.querySelector('.loc-capa-lista'), $vacio = capa.querySelector('.loc-capa-vacio'), $estado = capa.querySelector('.solo-lectores');
   let filas = [], activo = -1, cerrada = false;
@@ -68,7 +70,22 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     $estado.textContent = filas.length ? `${filas.length} localidades` : 'Sin resultados';
   }
 
-  function cerrar() {
+  // Mientras la capa está abierta TODO lo demás se oculta y se vuelve inerte (ficha, portada, carrito...): nada se ve por un hueco
+  // y Safari no encuentra otros campos de formulario (si no, muestra su barra gris con flechas y tilde).
+  const panel = document.querySelector('.detalle-panel');
+  const guardado = { panelTop: panel ? panel.scrollTop : 0, x: window.scrollX, y: window.scrollY };
+  const inertes = [];
+  [...document.body.children].forEach((el) => {
+    if (el === capa) return;
+    inertes.push({ el, inert: el.hasAttribute('inert'), aria: el.getAttribute('aria-hidden') });
+    el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true');
+  });
+  function restaurar() { // deja la ficha y la página exactamente donde estaban
+    const poner = () => { if (panel && panel.isConnected) panel.scrollTop = guardado.panelTop; window.scrollTo(guardado.x, guardado.y); };
+    poner(); requestAnimationFrame(() => { poner(); requestAnimationFrame(poner); });
+  }
+
+  function cerrar(restaurarScroll = true) {
     if (cerrada) return; cerrada = true;
     if (vv) { vv.removeEventListener('resize', pedirAjuste); vv.removeEventListener('scroll', pedirAjuste); }
     window.removeEventListener('orientationchange', pedirAjuste);
@@ -76,10 +93,12 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
     if (pendiente) cancelAnimationFrame(pendiente);
     document.removeEventListener('keydown', alTeclado, true);
     capa.remove();
+    inertes.forEach(({ el, inert, aria }) => { if (!inert) el.removeAttribute('inert'); if (aria === null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', aria); });
     document.documentElement.classList.remove('loc-capa-abierta');
     alCerrar();
+    if (restaurarScroll) restaurar();
   }
-  function elegir(id) { cerrar(); alElegir(id); }
+  function elegir(id) { cerrar(false); alElegir(id); restaurar(); } // el scroll se restaura DESPUÉS de que la ficha se vuelve a dibujar
   function mover(d) {
     if (!filas.length) return;
     activo = activo < 0 ? (d > 0 ? 0 : filas.length - 1) : (activo + d + filas.length) % filas.length;
@@ -98,7 +117,7 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
   });
   $ul.addEventListener('mousedown', (ev) => ev.preventDefault()); // tocar una fila no saca el foco del campo
   $ul.addEventListener('click', (ev) => { const li = ev.target.closest('.loc-capa-fila'); if (li) elegir(li.dataset.id); });
-  capa.querySelector('.loc-capa-atras').addEventListener('click', cerrar);
+  capa.querySelector('.loc-capa-atras').addEventListener('click', () => cerrar());
   // el fondo no se mueve: solo la lista puede desplazarse
   capa.addEventListener('touchmove', (ev) => { if (!ev.target.closest('.loc-capa-lista')) ev.preventDefault(); }, { passive: false });
   document.addEventListener('keydown', alTeclado, true);
@@ -107,5 +126,5 @@ export function abrirCapaLocalidades({ envios = [], seleccionId = null, alElegir
   document.documentElement.classList.add('loc-capa-abierta');
   document.body.appendChild(capa);
   $in.focus(); // dentro del mismo toque: iOS abre el teclado
-  return { cerrar };
+  return { cerrar: () => cerrar() };
 }
