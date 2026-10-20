@@ -14,3 +14,11 @@
 .loc-vacio{font-size:.82rem;line-height:1.5;color:var(--text2);padding:10px 12px;background:var(--surface2);border-radius:10px}
 /* Celular: con el teclado abierto (campo con foco) el botón "Hacer pedido" del carrito no tapa la lista. Vuelve al elegir o salir del campo. */
 @media (max-width:700px){.carrito-panel:has(.loc-input:focus:not([readonly])) .carrito-foot{display:none}}
+/* Ficha: el alto de la zona de resultados no cambia mientras se escribe (si no, el panel sube y baja con cada letra en productos con poco contenido). */
+.loc-res[hidden]{display:none}
+.detalle-panel .loc-res{min-height:min(240px,34vh)}
+/* Al enfocar (una sola vez), deja a la vista lo de arriba en vez de cortarlo contra el borde del panel: en la ficha las opciones de entrega
+   (Motomensajería y la de abajo); en el carrito, el selector de entrega. */
+.loc{scroll-margin-top:60px}
+.detalle-panel .loc{scroll-margin-top:104px}
+#ficha-envio-buscador{margin-top:8px} /* el aire que tenía el selector anterior bajo las opciones */

@@ -40,12 +40,14 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
         <input type="text" class="loc-input" id="${uid}-in" role="combobox" aria-expanded="true" aria-controls="${uid}-ul" aria-autocomplete="list" aria-label="Buscá tu localidad" placeholder="Buscá tu localidad" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
         <button type="button" class="loc-cambiar" hidden>Cambiar</button>
       </div>
-      <ul class="loc-lista" id="${uid}-ul" role="listbox" aria-label="Localidades"></ul>
-      <p class="loc-vacio" hidden>${esc(MENSAJE_SIN_RESULTADOS)}</p>
+      <div class="loc-res">
+        <ul class="loc-lista" id="${uid}-ul" role="listbox" aria-label="Localidades"></ul>
+        <p class="loc-vacio" hidden>${esc(MENSAJE_SIN_RESULTADOS)}</p>
+      </div>
       <span class="solo-lectores" role="status" aria-live="polite"></span>
     </div>`;
   const $in = cont.querySelector('.loc-input'), $ul = cont.querySelector('.loc-lista'), $vacio = cont.querySelector('.loc-vacio');
-  const $cambiar = cont.querySelector('.loc-cambiar'), $estado = cont.querySelector('.solo-lectores'), $caja = cont.querySelector('.loc');
+  const $cambiar = cont.querySelector('.loc-cambiar'), $res = cont.querySelector('.loc-res'), $estado = cont.querySelector('.solo-lectores'), $caja = cont.querySelector('.loc');
 
   const sel = () => lista.find((e) => e.id === elegido) || null;
 
@@ -55,6 +57,7 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
     $caja.classList.toggle('loc-elegida', modoElegida);
     $in.readOnly = modoElegida;
     $cambiar.hidden = !modoElegida;
+    $res.hidden = modoElegida;
     $in.setAttribute('aria-expanded', String(!modoElegida));
     if (modoElegida) {
       $in.value = textoFila(e);
@@ -97,15 +100,10 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
       else if (sel()) { buscando = false; pintar(); $cambiar.focus(); }
     }
   });
-  // En celular, al tocar el campo se sube al tope del panel para que el teclado no tape la lista. Se repite cuando el
-  // teclado termina de abrirse (cambia el alto visible), porque en iOS eso pasa después del foco.
+  // Al enfocar se acomoda UNA sola vez (nunca por tecla). El scroll-margin
+  // (buscador-localidades.css) deja a la vista la fila de arriba. Escribir solo redibuja la LISTA, nunca el campo.
   // Mientras el campo tiene el foco el botón "Hacer pedido" del carrito se oculta (buscador-localidades.css).
-  const alinear = () => { if (document.activeElement === $in && !$in.readOnly && $in.scrollIntoView) $in.scrollIntoView({ block: 'start' }); };
-  $in.addEventListener('focus', () => { setTimeout(alinear, 250); });
-  if (window.visualViewport) {
-    const alCambiarVisor = () => { if (!$in.isConnected) { window.visualViewport.removeEventListener('resize', alCambiarVisor); return; } alinear(); };
-    window.visualViewport.addEventListener('resize', alCambiarVisor);
-  }
+  $in.addEventListener('focus', () => { setTimeout(() => { if (document.activeElement === $in && !$in.readOnly && $caja.scrollIntoView) $caja.scrollIntoView({ block: 'start' }); }, 300); });
   // Tocar una fila no debe sacar el foco del campo (si no, el botón reaparece y la lista se mueve antes de elegir).
   $ul.addEventListener('mousedown', (ev) => ev.preventDefault());
   $in.addEventListener('click', () => { if ($in.readOnly) abrirBusqueda(); });
