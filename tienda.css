@@ -518,3 +518,19 @@ body.visor-abierto{overflow:hidden}
 .ver-mas-btn{min-height:48px;padding:0 32px;border-radius:999px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);font-family:inherit;font-weight:600;font-size:.92rem;cursor:pointer}
 .ver-mas-btn:hover{background:var(--ink);color:#fff}
 @media(min-width:700px){.ver-mas-caja{padding:0 32px 56px}}
+
+/* ── buscador-localidades.css ── */
+/* Buscador de localidades del carrito (buscador-localidades.js). Filas de 44 px, lista con scroll interno. */
+.loc{display:flex;flex-direction:column;gap:6px}
+.loc-campo{position:relative;display:flex}
+.loc-input{width:100%;min-height:46px;padding:11px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;font-size:16px}
+.loc-input:focus{outline:2px solid var(--ink);outline-offset:1px}
+.loc-elegida .loc-input{padding-right:92px;font-weight:600;background:#fff;border-color:var(--ink);cursor:pointer;text-overflow:ellipsis}
+.loc-cambiar{position:absolute;right:4px;top:4px;bottom:4px;min-width:44px;padding:0 12px;border:none;border-radius:8px;background:var(--ink);color:#fff;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+.loc-cambiar[hidden],.loc-lista[hidden],.loc-vacio[hidden]{display:none}
+.loc-lista{list-style:none;margin:0;padding:0;max-height:min(240px,34vh);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border2);border-radius:10px;background:#fff;-webkit-overflow-scrolling:touch}
+.loc-fila{min-height:44px;display:flex;align-items:center;padding:0 14px;font-size:.88rem;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border)}
+.loc-fila:last-child{border-bottom:none}
+.loc-fila.activa{background:var(--surface3)}
+.loc-fila.elegida{font-weight:700}
+.loc-vacio{font-size:.82rem;line-height:1.5;color:var(--text2);padding:10px 12px;background:var(--surface2);border-radius:10px}
