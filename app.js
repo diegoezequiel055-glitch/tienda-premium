@@ -403,7 +403,7 @@ function pintarDetalle() {
     if (el) el.scrollTo({ left: detalleFotoIdx * el.clientWidth, behavior: 'auto' });
     cargarFotosDetalle(detalleFotoIdx);
   }
-  $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})"><img src="${esc(fotoCloudinary(f, 'carrito'))}"></button>`).join('') : '';
+  $('detalle-miniaturas').innerHTML = fotos.length > 1 ? fotos.map((f, i) => { const txt = esc(`Foto ${i + 1} de ${fotos.length} de ${p.nombre}`); return `<button class="mini-foto${i === detalleFotoIdx ? ' active' : ''}" onclick="elegirFotoDetalle(${i})" aria-label="${txt}"><img src="${esc(fotoCloudinary(f, 'carrito'))}" alt="${txt}"></button>`; }).join('') : '';
   actualizarUIFotoDetalle();
   $('detalle-cat').textContent = p.categoria || ''; // sin categoría: queda vacío y se oculta (style.css)
   $('detalle-nombre').textContent = p.nombre;
