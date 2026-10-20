@@ -97,8 +97,17 @@ export function montarBuscadorLocalidades(cont, { envios = [], seleccionId = nul
       else if (sel()) { buscando = false; pintar(); $cambiar.focus(); }
     }
   });
-  // En celular, al tocar el campo se sube al tope del carrito para que el teclado no tape la lista.
-  $in.addEventListener('focus', () => { if (!$in.readOnly) setTimeout(() => { if ($in.scrollIntoView) $in.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 250); });
+  // En celular, al tocar el campo se sube al tope del panel para que el teclado no tape la lista. Se repite cuando el
+  // teclado termina de abrirse (cambia el alto visible), porque en iOS eso pasa después del foco.
+  // Mientras el campo tiene el foco el botón "Hacer pedido" del carrito se oculta (buscador-localidades.css).
+  const alinear = () => { if (document.activeElement === $in && !$in.readOnly && $in.scrollIntoView) $in.scrollIntoView({ block: 'start' }); };
+  $in.addEventListener('focus', () => { setTimeout(alinear, 250); });
+  if (window.visualViewport) {
+    const alCambiarVisor = () => { if (!$in.isConnected) { window.visualViewport.removeEventListener('resize', alCambiarVisor); return; } alinear(); };
+    window.visualViewport.addEventListener('resize', alCambiarVisor);
+  }
+  // Tocar una fila no debe sacar el foco del campo (si no, el botón reaparece y la lista se mueve antes de elegir).
+  $ul.addEventListener('mousedown', (ev) => ev.preventDefault());
   $in.addEventListener('click', () => { if ($in.readOnly) abrirBusqueda(); });
   $cambiar.addEventListener('click', abrirBusqueda);
   $ul.addEventListener('click', (ev) => { const li = ev.target.closest('.loc-fila'); if (li) elegir(li.dataset.id); });
