@@ -1,0 +1,12 @@
+/* Menú lateral: "Todos los productos" desplegable (menu-desplegable.js). */
+.menu-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:52px;padding:0 20px;background:none;border:none;border-bottom:1px solid var(--border);font-family:inherit;font-size:.95rem;font-weight:600;color:var(--ink);text-align:left;cursor:pointer}
+.menu-toggle.con-activa{background:var(--surface2)}
+.menu-toggle:focus-visible,.menu-cat:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.menu-flecha{flex:0 0 auto;font-size:1rem;line-height:1;transition:transform .2s ease}
+/* Desplegable con animación corta: la altura va de 0fr a 1fr; cerrado, las opciones no se ven ni reciben foco. */
+.menu-sub{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .2s ease,visibility 0s linear .2s}
+.menu-sub.abierto{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .2s ease,visibility 0s}
+.menu-sub-in{min-height:0;overflow:hidden}
+.menu-sub .menu-cat{display:flex;align-items:center;width:100%;min-height:48px;padding-left:36px;background:var(--surface)}
+.menu-sub .menu-cat.active{background:var(--surface2);font-weight:700;color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
+@media (prefers-reduced-motion:reduce){.menu-sub,.menu-sub.abierto,.menu-flecha{transition:none}}

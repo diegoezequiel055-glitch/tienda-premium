@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { itemsHtml, ETIQUETA_VER_TODOS } from './menu-desplegable.js';
+let ok = 0; const t = (n, f) => { f(); ok++; console.log('ok', n); };
+const cats = [{ clave: 'camisetas', nombre: 'Camisetas' }, { clave: 'conjuntos', nombre: 'Conjuntos' }, { clave: 'chombas', nombre: 'Chombas' }, { clave: 'remeras', nombre: 'Remeras' }];
+const cuenta = (h, re) => (h.match(re) || []).length;
+t('la primera opción es "Ver todos los productos" (clave vacía)', () => { const h = itemsHtml(cats, ''); assert.match(h, new RegExp('^<button type="button" class="menu-cat active" data-clave="" aria-current="true">' + ETIQUETA_VER_TODOS)); });
+t('una opción por categoría, en el orden de los datos', () => { const h = itemsHtml(cats, ''); assert.equal(cuenta(h, /class="menu-cat/g), 5); assert.ok(h.indexOf('Camisetas') < h.indexOf('Conjuntos') && h.indexOf('Conjuntos') < h.indexOf('Chombas') && h.indexOf('Chombas') < h.indexOf('Remeras')); });
+t('con "todos" activo solo "Ver todos" está marcada', () => { const h = itemsHtml(cats, ''); assert.equal(cuenta(h, /menu-cat active/g), 1); assert.equal(cuenta(h, /aria-current="true"/g), 1); });
+t('con una categoría activa solo esa está marcada', () => { const h = itemsHtml(cats, 'conjuntos'); assert.equal(cuenta(h, /menu-cat active/g), 1); assert.match(h, /class="menu-cat active" data-clave="conjuntos" aria-current="true">Conjuntos/); });
+t('una categoría NUEVA aparece sola (sin tocar el código)', () => { const h = itemsHtml([...cats, { clave: 'buzos', nombre: 'Buzos' }], ''); assert.match(h, /data-clave="buzos">Buzos/); assert.equal(cuenta(h, /class="menu-cat/g), 6); });
+t('sin categorías solo queda "Ver todos"', () => { assert.equal(cuenta(itemsHtml([], ''), /class="menu-cat/g), 1); assert.equal(cuenta(itemsHtml(undefined, ''), /class="menu-cat/g), 1); });
+t('escapa nombres y claves (sin inyectar HTML)', () => { const h = itemsHtml([{ clave: 'a"b', nombre: '<b>x</b>' }], ''); assert.ok(!h.includes('<b>x</b>')); assert.ok(h.includes('&lt;b&gt;x&lt;/b&gt;')); assert.ok(h.includes('data-clave="a&quot;b"')); });
+console.log(`\n${ok} pruebas OK`);

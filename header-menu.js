@@ -1,5 +1,6 @@
 import { datosNegocio } from './datos-negocio.js';
 import { categoriasDisponibles, resolverClave } from './categorias-config.js';
+import { pintarMenuCategorias, fijarDesplegado } from './menu-desplegable.js';
 
 // ══════════════════════════════════════════
 // HEADER: menú lateral ☰ con categorías (el buscador está en buscador.js).
@@ -42,12 +43,11 @@ function pintarLinks() {
 }
 
 function pintarCategorias() {
-  $('menu-cats').innerHTML =
-    `<button class="menu-cat${claveActiva === '' ? ' active' : ''}" data-clave="">Todos los productos</button>` +
-    disponibles.map((c) => `<button class="menu-cat${c.clave === claveActiva ? ' active' : ''}" data-clave="${esc(c.clave)}">${esc(c.nombre)}</button>`).join('');
+  pintarMenuCategorias($('menu-cats'), { disponibles, claveActiva }); // "Todos los productos" desplegable (menu-desplegable.js)
 }
 
 function abrirMenu() {
+  fijarDesplegado($('menu-cats'), claveActiva !== ''); // cerrado, salvo que haya una categoría activa (queda desplegada y marcada)
   drawer.classList.add('open');
   document.body.classList.add('menu-abierto');
   $('btn-menu').setAttribute('aria-expanded', 'true');
