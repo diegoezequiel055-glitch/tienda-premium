@@ -1,5 +1,6 @@
 import { datosNegocio } from './datos-negocio.js';
 import { montarBuscadorLocalidades } from './buscador-localidades.js';
+import { abrirCapaLocalidades } from './capa-localidades.js';
 
 // ══════════════════════════════════════════
 // "Calcular envío" en la ficha del producto. Usa el mismo estado y la misma
@@ -64,6 +65,7 @@ function render() {
     envios: e.envios,
     seleccionId: e.envioId,
     alElegir: (id) => window.fichaEnvioLocalidad(id), // misma vía de siempre: guarda la elección y precarga el carrito
+    capa: abrirCapaLocalidades, // en iPhone/iPad la búsqueda se hace en una capa a pantalla completa (ver capa-localidades.js)
   }) : null;
 }
 
