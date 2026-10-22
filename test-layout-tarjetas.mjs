@@ -8,8 +8,10 @@
 //   (d) el CLS (saltos de diseño) es bajo.
 // Falla (exit 1) si algo se rompe. CORRERLA ANTES DE PUBLICAR cualquier cambio que toque la portada, las tarjetas o el CSS.
 //
-// Uso:   node test-layout-tarjetas.mjs            (sirve este repo solo; lee el catálogo real de Firestore, solo lectura)
-//        BASE_URL=https://tiendapremium.com.ar node test-layout-tarjetas.mjs   (prueba un sitio ya publicado)
+// NO LEE EL FIRESTORE REAL (ni siquiera con BASE_URL de producción): firebase-config.js se reemplaza por el doble de test-doble-firebase.mjs
+// (73 productos de mentira) y las fotos de Cloudinary se sirven desde la prueba.
+// Uso:   node test-layout-tarjetas.mjs            (sirve este repo solo)
+//        BASE_URL=https://tiendapremium.com.ar node test-layout-tarjetas.mjs   (prueba el código ya publicado, con datos de mentira)
 //        RAPIDO=1 node test-layout-tarjetas.mjs   (solo 360, 414 y 1366 px, sin imágenes tardías)
 // Necesita Playwright y Google Chrome instalado. Playwright NO es parte del repo: instalarlo en otra carpeta
 // (npm i playwright) y apuntar PLAYWRIGHT_DIR=<esa carpeta> (o instalarlo globalmente / en un node_modules superior).
@@ -19,6 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { dobleFirebase, guion, PNG } from './test-doble-firebase.mjs';
 
 const RAIZ = path.dirname(fileURLToPath(import.meta.url));
 const RAPIDO = !!process.env.RAPIDO;
@@ -59,13 +62,17 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   const ctx = await browser.newContext(movil ? { ...devices['Pixel 7'], viewport: { width: w, height: h } } : { viewport: { width: w, height: h } });
   const page = await ctx.newPage();
   const fallos = [];
+  await page.route('**/firebase-config.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: dobleFirebase() }));
+  await page.addInitScript(guion(73, 152));
+  await page.addInitScript(() => { window.__MOCK = { config: null }; });
   if (escenario === 'lenta' || escenario === 'imagenes-tardias') {
     const cdp = await ctx.newCDPSession(page);
     await cdp.send('Network.enable');
     await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   }
-  if (escenario === 'imagenes-tardias') await page.route(/res\.cloudinary\.com/, (r) => setTimeout(() => r.continue().catch(() => {}), 6000));
+  if (escenario === 'imagenes-tardias') await page.route(/res\.cloudinary\.com/, (r) => setTimeout(() => r.fulfill({ status: 200, contentType: 'image/png', body: PNG }).catch(() => {}), 6000));
+  else if (escenario !== 'imagenes-bloqueadas') await page.route(/res\.cloudinary\.com/, (r) => r.fulfill({ status: 200, contentType: 'image/png', body: PNG }));
   if (escenario === 'imagenes-bloqueadas') await page.route(/res\.cloudinary\.com/, (r) => r.abort());
   await page.addInitScript(() => { window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); });
   await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });

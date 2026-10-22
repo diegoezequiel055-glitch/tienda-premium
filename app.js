@@ -7,6 +7,7 @@ import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from 
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 import './fotos-tarjeta.js';
 import { recibirConfig, decisionPendiente, estaBloqueado, alCambiarMantenimiento } from './mantenimiento.js';
+import { escucharPublico } from './catalogo-bundle.js';
 import { montarBuscadorLocalidades } from './buscador-localidades.js';
 import { paginar, textoVerMas, TAMANO_PAGINA } from './paginacion.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
@@ -59,14 +60,20 @@ window.toast = function (msg) {
 // Modo mantenimiento (mantenimiento.js): mientras la decisión está pendiente o la tienda está bloqueada, el catálogo NO se dibuja
 // (se guarda el último snapshot y se dibuja si la tienda se abre). Si Firestore falla o tarda, la tienda queda abierta.
 let catalogoPendiente = null;
-onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
-  if (decisionPendiente() || estaBloqueado()) { catalogoPendiente = snap; return; }
-  procesarCatalogo(snap);
-}, () => {
-  if (estaBloqueado()) return;
-  liberarReservas();
-  document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
-  $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
+// El catálogo se lee como UN documento (config_sitio/catalogo, 1 lectura) y, si no existe o falla, de la colección de respaldo
+// catalogo_publico (catalogo-bundle.js). Las dos entregan lo mismo.
+escucharPublico({
+  base: 'catalogo', coleccion: 'catalogo_publico', fb: { db, collection, doc, onSnapshot },
+  alSnap: (snap) => {
+    if (decisionPendiente() || estaBloqueado()) { catalogoPendiente = snap; return; }
+    procesarCatalogo(snap);
+  },
+  alError: () => {
+    if (estaBloqueado()) return;
+    liberarReservas();
+    document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
+    $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
+  },
 });
 alCambiarMantenimiento(() => {
   if (!decisionPendiente() && !estaBloqueado() && catalogoPendiente) { const s = catalogoPendiente; catalogoPendiente = null; procesarCatalogo(s); }
@@ -125,11 +132,15 @@ function aplicarDatosNegocio() {
 }
 
 // ── envíos (motomensajería) en vivo ──
-onSnapshot(collection(db, 'envios_publico'), (snap) => {
-  envios = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  pintarSelectEnvio();
-  avisarEntrega();
-}, () => {});
+// Igual que el catálogo: documento único config_sitio/envios (1 lectura) con respaldo en la colección envios_publico.
+escucharPublico({
+  base: 'envios', coleccion: 'envios_publico', fb: { db, collection, doc, onSnapshot },
+  alSnap: (snap) => {
+    envios = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    pintarSelectEnvio();
+    avisarEntrega();
+  },
+});
 
 // Buscador de localidades del carrito (buscador-localidades.js): se actualiza cuando cambia la tabla de envíos.
 let buscadorEnvio = null;
