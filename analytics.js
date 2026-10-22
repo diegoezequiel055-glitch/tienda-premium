@@ -93,24 +93,29 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   // gtag.js: asíncrono y después de que la página terminó de cargar (no bloquea nada).
   window.dataLayer = window.dataLayer || [];
   function gtag() { window.dataLayer.push(arguments); }
+  // Modo mantenimiento (mantenimiento.js): no se registran visitas a la pantalla de mantenimiento. La carga de gtag espera esa decisión.
+  const enMantenimiento = () => !!(window.__mantenimiento && window.__mantenimiento.bloqueado());
+  const decisionMant = (window.__mantenimiento && window.__mantenimiento.listo) || Promise.resolve();
   if (enviar) {
     gtag('js', new Date());
-    gtag('config', ID_MEDICION, { allow_google_signals: false, allow_ad_personalization_signals: false });
+    gtag('config', ID_MEDICION, { allow_google_signals: false, allow_ad_personalization_signals: false }); // queda en cola; solo se envía si se carga gtag.js
     const cargar = () => {
+      if (enMantenimiento()) return; // en mantenimiento gtag.js no se carga: no se registra ninguna visita
       const s = document.createElement('script');
       s.async = true;
       s.src = `https://www.googletagmanager.com/gtag/js?id=${ID_MEDICION}`;
       document.head.appendChild(s);
     };
-    const tarde = () => (window.requestIdleCallback ? requestIdleCallback(cargar, { timeout: 4000 }) : setTimeout(cargar, 1500));
+    const tarde = () => decisionMant.then(() => (window.requestIdleCallback ? requestIdleCallback(cargar, { timeout: 4000 }) : setTimeout(cargar, 1500)));
     if (document.readyState === 'complete') tarde(); else window.addEventListener('load', tarde, { once: true });
   }
 
   function registrar(nombre, params) {
     if (debug) console.log(`[analytics] ${nombre}`, params, enviar ? '→ se enviaría' : (interno ? '→ NO se envía (visita interna)' : '→ NO se envía (modo debug / no es tiendapremium.com.ar)'));
+    if (enMantenimiento()) return;
     if (enviar) gtag('event', nombre, params);
   }
-  if (debug) console.log('[analytics] page_view', { page_location: location.href, page_title: document.title }, enviar ? '' : '→ NO se envía');
+  if (debug) decisionMant.then(() => { if (!enMantenimiento()) console.log('[analytics] page_view', { page_location: location.href, page_title: document.title }, enviar ? '' : '→ NO se envía'); });
 
   document.addEventListener('catalogo-actualizado', (e) => { productos = e.detail || []; });
   document.addEventListener('detalle-abierto', (e) => {

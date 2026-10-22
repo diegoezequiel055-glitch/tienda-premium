@@ -586,3 +586,25 @@ html.loc-capa-abierta body>*:not(.loc-capa){display:none !important}
 .menu-sub .menu-cat{display:flex;align-items:center;width:100%;min-height:48px;padding-left:36px;background:var(--surface)}
 .menu-sub .menu-cat.active{background:var(--surface2);font-weight:700;color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
 @media (prefers-reduced-motion:reduce){.menu-sub,.menu-sub.abierto,.menu-flecha{transition:none}}
+
+/* ── mantenimiento.css ── */
+/* Modo mantenimiento (mantenimiento.js): pantalla negra a pantalla completa y barra de aviso del dueño. */
+.mant-pantalla{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  min-height:100vh;min-height:100lvh;padding:max(28px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));font-family:'Outfit',sans-serif}
+.mant-int{width:100%;max-width:440px;margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px}
+.mant-marca{font-family:'Anton',sans-serif;font-size:clamp(1.5rem,7.4vw,2.2rem);letter-spacing:1.5px;line-height:1.1}
+.mant-titulo{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(1.05rem,4.6vw,1.35rem);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.72);padding-top:18px;border-top:1px solid rgba(255,255,255,.25);width:100%}
+.mant-msg{font-size:clamp(1rem,4.2vw,1.12rem);line-height:1.55;color:#fff;max-width:34ch;overflow-wrap:anywhere}
+.mant-acciones{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:6px}
+.mant-btn{display:flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;font-weight:700;font-size:1rem;text-decoration:none;text-align:center;-webkit-tap-highlight-color:transparent}
+.mant-btn-wa{background:#25d366;color:#04230f}
+.mant-btn-ig{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7)}
+.mant-btn:focus-visible,.mant-legal a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.mant-legal{font-size:.76rem;line-height:1.7;color:rgba(255,255,255,.62);margin-top:10px}
+.mant-legal a{color:inherit;text-decoration:underline;display:inline-block;padding:8px 4px}
+/* Mientras hay pantalla: se oculta TODO lo demás (catálogo, carrito, menú...) y el fondo es negro liso. */
+html.mant-bloqueado,html.mant-bloqueado body{background:#000 !important;overflow:hidden;overscroll-behavior:none}
+html.mant-bloqueado body>*:not(.mant-pantalla){display:none !important}
+/* Barra fina del dueño (modo mantenimiento activo, solo la ve quien entró con la clave). */
+.mant-aviso{background:#f0c14b;color:#1a1300;font-size:.74rem;font-weight:700;line-height:1;text-align:center;padding:7px 12px;letter-spacing:.2px}
+@media (max-height:520px){.mant-int{gap:12px}.mant-titulo{padding-top:12px}}
