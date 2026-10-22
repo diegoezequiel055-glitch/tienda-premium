@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { dobleFirebase, guion, PNG } from './test-doble-firebase.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -54,33 +55,9 @@ if (!process.env.SOLO_PURAS) {
       r.writeHead(200, { 'Content-Type': T[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); r.end(fs.readFileSync(f)); }).listen(0, '127.0.0.1', () => okp(s)); });
   const BASE = `http://127.0.0.1:${servidor.address().port}`;
 
-  // Doble de firebase-config.js: no habla con Firebase. Lee window.__MOCK (lo pone cada prueba antes de que cargue la página).
-  const STUB = `
-const PRODUCTOS = Array.from({ length: 6 }, (_, i) => ({ id: 'camiseta|prueba ' + (i + 1) + '|', nombre: 'Prueba ' + (i + 1), categoria: 'Camisetas', color: 'Negro', precio: 30000 + i * 1000, precioTarjeta: 38000 + i * 1000,
-  fotos: ['https://res.cloudinary.com/d5fzjp10/image/upload/v1/prueba' + (i + 1) + '.jpg'], talles: [{ talle: 'M', stock: 3 }, { talle: 'L', stock: 2 }], creadoEn: Date.now() - i * 1000, destacado: i < 3, actualizado: Date.now() }));
-const ENVIOS = [{ id: 'ciudadela', localidad: 'Ciudadela', precio: 10500 }, { id: 'loma-hermosa', localidad: 'Loma Hermosa', precio: 13000 }];
-const M = () => window.__MOCK || {};
-const oyentes = [];
-export const db = {};
-export const collection = (_d, name) => ({ name });
-export const doc = (_d, name, id) => ({ name, id });
-export const onSnapshot = (ref, okf, errf) => {
-  const m = M();
-  if (ref.name === 'config_sitio') {
-    const entregar = () => okf({ exists: () => M().config != null, data: () => M().config });
-    if (m.configModo === 'error') setTimeout(() => errf && errf(new Error('mock: sin permiso')), m.configDemora ?? 20);
-    else if (m.configModo !== 'silencio') setTimeout(entregar, m.configDemora ?? 20);
-    oyentes.push((cfg) => { window.__MOCK.config = cfg; entregar(); });
-    window.__EMITIR_CONFIG = (cfg) => oyentes.forEach((f) => f(cfg));
-  } else if (ref.name === 'catalogo_publico') {
-    setTimeout(() => okf({ docs: PRODUCTOS.map((p) => ({ id: p.id, data: () => { const { id, ...r } = p; return r; } })) }), m.catalogoDemora ?? 20);
-  } else if (ref.name === 'envios_publico') {
-    setTimeout(() => okf({ docs: ENVIOS.map((e) => ({ id: e.id, data: () => { const { id, ...r } = e; return r; } })) }), 20);
-  }
-  return () => {};
-};
-`;
-  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  // Doble compartido de firebase-config.js (test-doble-firebase.mjs): no habla con Firebase y cuenta las lecturas.
+  const STUB = dobleFirebase();
+  const DATOS = guion(6, 2);
   const browser = await chromium.launch({ channel: process.env.CHROME_CHANNEL || 'chrome', headless: true }).catch(() => chromium.launch({ headless: true }));
   const esp = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -99,6 +76,7 @@ export const onSnapshot = (ref, okf, errf) => {
     });
     page.on('pageerror', (e) => errores.push(e.message));
     page.on('console', (m) => { logs.push(m.text()); });
+    await page.addInitScript(DATOS);
     await page.addInitScript((mk) => { window.__MOCK = mk; window.__tarjetasVistas = 0; new MutationObserver(() => { window.__tarjetasVistas = Math.max(window.__tarjetasVistas, document.querySelectorAll('.card').length); }).observe(document, { childList: true, subtree: true }); }, mock);
     if (preparar) await page.addInitScript(preparar);
     await page.goto(BASE + url, { waitUntil: 'load' });
@@ -205,9 +183,9 @@ export const onSnapshot = (ref, okf, errf) => {
   await ta('EN VIVO: se activa y se desactiva con la página abierta (el catálogo reaparece al desactivar)', async () => {
     const { page, ctx } = await abrir({ mock: { config: { mantenimiento: false } } });
     await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
-    await page.evaluate((c) => window.__EMITIR_CONFIG(c), CFG()); await page.waitForSelector('#mant-pantalla', { timeout: 4000 });
+    await page.evaluate((c) => window.__SERVIDOR.emitirConfig(c), CFG()); await page.waitForSelector('#mant-pantalla', { timeout: 4000 });
     assert.equal(await hayPantalla(page), true); assert.deepEqual(await visibleFuera(page), []);
-    await page.evaluate(() => window.__EMITIR_CONFIG({ mantenimiento: false })); await page.waitForFunction(() => !document.getElementById('mant-pantalla'), null, { timeout: 4000 });
+    await page.evaluate(() => window.__SERVIDOR.emitirConfig({ mantenimiento: false })); await page.waitForFunction(() => !document.getElementById('mant-pantalla'), null, { timeout: 4000 });
     assert.ok((await tarjetas(page)) > 0); assert.equal(await page.evaluate(() => !!document.querySelector('meta[name="robots"]')), false); await ctx.close();
   });
 
