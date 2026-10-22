@@ -6,6 +6,7 @@ import { categoriasDisponibles, claveDe } from './categorias-config.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 import './fotos-tarjeta.js';
+import { recibirConfig, decisionPendiente, estaBloqueado, alCambiarMantenimiento } from './mantenimiento.js';
 import { montarBuscadorLocalidades } from './buscador-localidades.js';
 import { paginar, textoVerMas, TAMANO_PAGINA } from './paginacion.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
@@ -55,7 +56,23 @@ window.toast = function (msg) {
 };
 
 // ── catálogo en vivo (ya viene filtrado: solo lo publicable con foto, precio y stock) ──
+// Modo mantenimiento (mantenimiento.js): mientras la decisión está pendiente o la tienda está bloqueada, el catálogo NO se dibuja
+// (se guarda el último snapshot y se dibuja si la tienda se abre). Si Firestore falla o tarda, la tienda queda abierta.
+let catalogoPendiente = null;
 onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
+  if (decisionPendiente() || estaBloqueado()) { catalogoPendiente = snap; return; }
+  procesarCatalogo(snap);
+}, () => {
+  if (estaBloqueado()) return;
+  liberarReservas();
+  document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
+  $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
+});
+alCambiarMantenimiento(() => {
+  if (!decisionPendiente() && !estaBloqueado() && catalogoPendiente) { const s = catalogoPendiente; catalogoPendiente = null; procesarCatalogo(s); }
+});
+
+function procesarCatalogo(snap) {
   productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   const rc = resolverCarrito(carrito, productos); // carritos guardados (incluso viejos): precios al día por ID
   if (rc.cambio) { carrito = rc.carrito; guardarCarrito(); renderCarrito(); }
@@ -66,11 +83,7 @@ onSnapshot(collection(db, 'catalogo_publico'), (snap) => {
   pintarHeroRotativo(productos, { alFallback: mostrarTriptico });
   renderDestacados();
   renderNuevos();
-}, () => {
-  liberarReservas();
-  document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
-  $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
-});
+}
 
 // Quita el espacio reservado (esqueletos.css) cuando ya hay contenido real o se decidió no mostrar la sección.
 function liberarReservas() {
@@ -80,8 +93,10 @@ function liberarReservas() {
 // ── configuración del sitio en vivo (textos y fotos editables desde el panel) ──
 let heroFotosManual = null; // [url|null, url|null, url|null] elegidas a mano, o null si Diego no configuró ninguna
 onSnapshot(doc(db, 'config_sitio', 'config'), (snap) => {
-  aplicarConfigSitio(snap.exists() ? snap.data() : {});
-}, () => {});
+  const cfg = snap.exists() ? snap.data() : {};
+  recibirConfig(cfg); // modo mantenimiento (mantenimiento.js)
+  aplicarConfigSitio(cfg);
+}, (e) => { recibirConfig(null, e || new Error('config')); }); // si falla la lectura, la tienda queda abierta
 
 function aplicarConfigSitio(cfg) {
   if (cfg.heroTitulo) $('hero-titulo').textContent = cfg.heroTitulo;
