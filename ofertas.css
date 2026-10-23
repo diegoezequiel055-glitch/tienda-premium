@@ -1,0 +1,50 @@
+/* ══ OFERTAS (ofertas.js / ofertas-ui.js / app.js) — rojo #e5252a con texto blanco ══ */
+/* Etiqueta "-15%" arriba a la izquierda sobre la foto (tarjetas y relacionados). */
+.badge-oferta{position:absolute;top:8px;left:8px;z-index:2;display:inline-flex;align-items:center;background:#e5252a;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.74rem;line-height:1;letter-spacing:.2px;padding:5px 9px;border-radius:999px;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.28)}
+.rel-foto{position:relative}
+.rel-foto .badge-oferta{top:6px;left:6px;font-size:.66rem;padding:4px 7px}
+/* Precio anterior tachado (gris) encima del precio nuevo grande. */
+.card-precio-ant,.rel-precio-ant{font-size:.8rem;line-height:1.1;color:#8a8a8a;margin-top:2px;margin-bottom:-6px}
+.rel-precio-ant{display:block;font-size:.7rem;margin-bottom:-4px}
+.card-precio-ant s,.rel-precio-ant s,.detalle-precio-ant s{text-decoration-thickness:1px}
+.card-precio-ant+.card-precio{margin-top:0}
+.card-precio-ant,.rel-precio-ant,.detalle-precio-ant{position:relative} /* el texto para lectores (.solo-lectores, absolute) queda dentro de su caja: dentro de un carrusel no puede estirar la página */
+/* Ficha: etiqueta en línea + precio anterior. */
+.detalle-oferta{display:flex;align-items:center;gap:10px;margin-bottom:-8px}
+.detalle-oferta:empty{display:none}
+.detalle-oferta .badge-oferta{position:static;pointer-events:auto;font-size:.8rem;padding:5px 10px;box-shadow:none}
+.detalle-precio-ant{font-size:1rem;color:#8a8a8a}
+/* Sección "OFERTAS" (debajo del hero, arriba de Nuevos ingresos). */
+.ofertas-cab{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 20px}
+.ofertas-cab .section-title{padding:0}
+.ofertas-ver{font-size:.82rem;font-weight:600;color:var(--ink);white-space:nowrap;min-height:24px}
+.ofertas-ver:hover{text-decoration:underline}
+/* Carrusel: en celular se ven 2 tarjetas y un pedazo de la tercera; en PC ~4 y un pedazo de la quinta. */
+.ofertas-strip{gap:12px}
+.ofertas-strip .card{flex:0 0 clamp(140px,calc((100vw - 44px) / 2.35),230px);width:clamp(140px,calc((100vw - 44px) / 2.35),230px)}
+@media(min-width:700px){
+  .ofertas-cab{padding:0 32px}
+  .ofertas-strip{gap:16px}
+  .ofertas-strip .card{flex-basis:clamp(150px,calc((100vw - 80px) / 4.35),320px);width:clamp(150px,calc((100vw - 80px) / 4.35),320px)}
+}
+/* Sin saltos: salvo que la última visita NO haya tenido ofertas (tpOfertas=0), el lugar de la sección se reserva antes de que llegue el catálogo (primera visita: sin título hasta saber si hay ofertas), el lugar de la sección se reserva (index.html + esqueletos.css) con su alto real medido (~530 px celular, 580–720 px PC). */
+section.destacados.ofertas-section.reservando{min-height:530px}
+section.destacados.ofertas-section.reservando .ofertas-strip:empty{min-height:430px;background:
+  linear-gradient(var(--surface2),var(--surface2)) 20px 2px/calc((100vw - 44px) / 2.35) 184px no-repeat,
+  linear-gradient(var(--surface2),var(--surface2)) calc(32px + (100vw - 44px) / 2.35) 2px/calc((100vw - 44px) / 2.35) 184px no-repeat}
+@media(min-width:700px){
+  section.destacados.ofertas-section.reservando{min-height:clamp(580px,calc(42vw + 110px),720px)}
+  section.destacados.ofertas-section.reservando .ofertas-strip:empty{min-height:480px;background:
+    linear-gradient(var(--surface2),var(--surface2)) 32px 2px/clamp(150px,calc((100vw - 80px) / 4.35),320px) 300px no-repeat,
+    linear-gradient(var(--surface2),var(--surface2)) calc(48px + clamp(150px,calc((100vw - 80px) / 4.35),320px)) 2px/clamp(150px,calc((100vw - 80px) / 4.35),320px) 300px no-repeat}
+}
+/* Ítem "Ofertas" de la barra (PC): píldora roja (margen negativo: no agranda la barra, así no empuja nada al aparecer). */
+.hdr-nav a.nav-ofertas{background:#e5252a;color:#fff;font-weight:700;padding:6px 14px;margin:-7px 0;border-radius:999px;letter-spacing:.3px;line-height:1.2}
+.hdr-nav a.nav-ofertas:hover{background:#c91e23}
+/* Ítem "Ofertas" del menú lateral (celular): píldora roja a todo el ancho útil, área táctil de 44 px. */
+.menu-ofertas{padding:12px 20px 4px}
+.menu-ofertas[hidden]{display:none}
+.menu-ofertas-btn{display:flex;align-items:center;justify-content:center;min-height:44px;background:#e5252a;color:#fff;font-weight:700;font-size:.92rem;letter-spacing:.3px;border-radius:999px;padding:0 20px}
+.menu-ofertas.activa .menu-ofertas-btn{box-shadow:0 0 0 3px rgba(229,37,42,.25)}
+
+.ofertas-section.incierta .ofertas-cab{visibility:hidden}

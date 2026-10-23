@@ -29,6 +29,7 @@ const TAMANOS = (RAPIDO ? [[360, 740], [414, 896], [1366, 768]] : [[360, 740], [
 const ESCENARIOS = RAPIDO ? ['lenta', 'imagenes-bloqueadas'] : ['lenta', 'imagenes-tardias', 'imagenes-bloqueadas'];
 const LIMITES = { // ancho de tarjeta permitido (px) y alto máximo
   strip: { min: 150, max: 260, altoMin: 250, altoMax: 620 },
+  ofertas: { min: 130, max: 330, altoMin: 250, altoMax: 680 }, // carrusel de Ofertas: 2 tarjetas + un pedazo en celular, ~4 en PC
   grid: { min: 140, max: 360, altoMin: 250, altoMax: 700 },
   relacionados: { min: 120, max: 260, altoMin: 200, altoMax: 620 },
 };
@@ -64,7 +65,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   const fallos = [];
   await page.route('**/firebase-config.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: dobleFirebase() }));
   await page.addInitScript(guion(73, 152));
-  await page.addInitScript(() => { window.__MOCK = { config: null }; });
+  await page.addInitScript(() => { window.__MOCK = { config: null, catalogoDemora: 400 }; /* como Firestore real: con 20 ms el catálogo llega antes de que carguen los módulos del final */ });
   if (escenario === 'lenta' || escenario === 'imagenes-tardias') {
     const cdp = await ctx.newCDPSession(page);
     await cdp.send('Network.enable');
@@ -85,6 +86,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
     const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto'); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
     const visible = (id) => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none'; };
     return {
+      ofertas: visible('ofertas-section') ? leer('#ofertas-strip .card') : null,
       nuevos: visible('nuevos-section') ? leer('#nuevos-strip .card') : null,
       destacados: visible('destacados-section') ? leer('#destacados-strip .card') : null,
       grid: leer('#grid > .card'),
@@ -121,6 +123,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
     const hs = tarjetas.map((t) => t.h);
     if (Math.max(...hs) > lim.altoMax || Math.min(...hs) < lim.altoMin) fallos.push(`${nombre}: alto fuera de rango [${lim.altoMin}–${lim.altoMax}]: ${Math.round(Math.min(...hs))}–${Math.round(Math.max(...hs))} px`);
   };
+  chequeo('Ofertas', filas.ofertas, LIMITES.ofertas);
   chequeo('Nuevos ingresos', filas.nuevos, LIMITES.strip);
   chequeo('Destacados', filas.destacados, LIMITES.strip);
   chequeo('Catálogo', filas.grid, LIMITES.grid);
@@ -128,7 +131,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   if (rel) { chequeo('Relacionados (cuadrícula)', rel.grid, LIMITES.relacionados); chequeo('Relacionados (Completá tu look)', rel.carril, LIMITES.relacionados); }
   if (filas.desborde > 1) fallos.push(`desborde horizontal de la página: ${filas.desborde} px`);
   if (filas.cls > CLS_MAX) fallos.push(`CLS alto: ${filas.cls.toFixed(3)} (máximo ${CLS_MAX})`);
-  return { w, escenario, fallos, resumen: `nuevos=${filas.nuevos ? filas.nuevos.length : '-'} destacados=${filas.destacados ? filas.destacados.length : '-'} catálogo=${filas.grid.length} cls=${filas.cls.toFixed(3)}` };
+  return { w, escenario, fallos, resumen: `ofertas=${filas.ofertas ? filas.ofertas.length : '-'} nuevos=${filas.nuevos ? filas.nuevos.length : '-'} destacados=${filas.destacados ? filas.destacados.length : '-'} catálogo=${filas.grid.length} cls=${filas.cls.toFixed(3)}` };
 }
 
 const { chromium, devices } = await cargarPlaywright();

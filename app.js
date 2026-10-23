@@ -8,6 +8,7 @@ import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 import './fotos-tarjeta.js';
 import { recibirConfig, decisionPendiente, estaBloqueado, alCambiarMantenimiento } from './mantenimiento.js';
 import { escucharPublico } from './catalogo-bundle.js';
+import { aplicarOferta, CLAVE_OFERTAS, enOferta, ofertasList, etiquetaHtml, anteriorHtml } from './ofertas.js';
 import { montarBuscadorLocalidades } from './buscador-localidades.js';
 import { paginar, textoVerMas, TAMANO_PAGINA } from './paginacion.js';
 import { precioLista, extrasPrecioHtml, preciosParaCarrito, resolverCarrito, precioUnitario, usaPrecioTarjeta } from './precios.js';
@@ -80,14 +81,15 @@ alCambiarMantenimiento(() => {
 });
 
 function procesarCatalogo(snap) {
-  productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  productos = snap.docs.map((d) => aplicarOferta({ id: d.id, ...d.data() })); // ofertas.js: con oferta válida, precio/precioTarjeta pasan a ser los de la oferta
   const rc = resolverCarrito(carrito, productos); // carritos guardados (incluso viejos): precios al día por ID
   if (rc.cambio) { carrito = rc.carrito; guardarCarrito(); renderCarrito(); }
-  if (categoria && !categoriasDisponibles(productos).some((c) => c.clave === categoria)) window.setCategoria('');
+  if (categoria === CLAVE_OFERTAS ? !ofertasList(productos).length : (categoria && !categoriasDisponibles(productos).some((c) => c.clave === categoria))) window.setCategoria('');
   renderCatPills();
   document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
   renderGrid();
   pintarHeroRotativo(productos, { alFallback: mostrarTriptico });
+  renderOfertas();
   renderDestacados();
   renderNuevos();
 }
@@ -235,15 +237,16 @@ window.actualizarContadorCard = function (scrollEl) {
 };
 function cardFotoHtml(p) {
   const fotos = p.fotos || [];
-  if (!fotos.length) return '<div class="card-foto"><span class="sin-foto">Sin foto</span></div>';
+  if (!fotos.length) return `<div class="card-foto"><span class="sin-foto">Sin foto</span>${etiquetaHtml(p)}</div>`;
   if (fotos.length === 1) {
-    return `<div class="card-foto"><img src="${esc(fotoCloudinary(fotos[0], 'tarjeta'))}" width="400" height="500" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').innerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'"></div>`;
+    return `<div class="card-foto"><img src="${esc(fotoCloudinary(fotos[0], 'tarjeta'))}" width="400" height="500" loading="lazy" alt="${esc(p.nombre)}" onerror="this.closest('.card-foto').querySelector('img').outerHTML='<span class=&quot;sin-foto&quot;>Sin foto</span>'">${etiquetaHtml(p)}</div>`;
   }
   return `<div class="card-foto">
       <div class="card-foto-scroll" onscroll="actualizarContadorCard(this)">
         ${fotos.map((f, i) => i === 0 ? `<img src="${esc(fotoCloudinary(f, 'tarjeta'))}" width="400" height="500" loading="lazy" alt="${esc(p.nombre)}">` : `<img data-src="${esc(fotoCloudinary(f, 'tarjeta'))}" data-alt="${esc(p.nombre)}" width="400" height="500" loading="lazy" alt="">`).join('')}
       </div>
       <span class="card-foto-contador">1/${fotos.length}</span>
+      ${etiquetaHtml(p)}
     </div>`;
 }
 
@@ -253,6 +256,7 @@ function tarjetaHtml(p) {
       ${cardFotoHtml(p)}
       <div class="card-cat">${esc(p.categoria)}</div>
       <div class="card-nombre">${esc(p.nombre)}</div>
+      ${anteriorHtml(p)}
       <div class="card-precio">$${fmt(precioLista(p))}</div>
       ${extrasPrecioHtml(p, 'card')}
       <div class="card-talles">${(p.talles || []).length ? 'Talles: ' + p.talles.map((t) => esc(t.talle)).join(' · ') : 'Sin stock'}</div>
@@ -266,7 +270,7 @@ function renderGrid() {
   liberarReservas();
   if (!productos.length) { filtradosActuales = []; pintarVerMas(0); actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
   const palabras = palabrasDe(busqueda);
-  const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || claveDe(p.categoria) === categoria))
+  const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || (categoria === CLAVE_OFERTAS ? enOferta(p) : claveDe(p.categoria) === categoria)))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
   actualizarInfoBusqueda(palabras.length ? busqueda : '', filtrados.length);
   filtradosActuales = filtrados;
@@ -289,6 +293,27 @@ window.verMasProductos = function () {
   const { visibles, restantes } = paginar(filtradosActuales, mostrados);
   grid.insertAdjacentHTML('beforeend', visibles.slice(ya).map(tarjetaHtml).join(''));
   pintarVerMas(restantes);
+};
+
+// ── ofertas (productos con "Precio en oferta" cargado en StockMGR) — se oculta (sección y ítem del menú) si no hay ninguna ──
+function renderOfertas() {
+  const sec = $('ofertas-section'), strip = $('ofertas-strip'); if (!sec || !strip) return;
+  const lista = ofertasList(productos).sort((a, b) => (b.pctOferta - a.pctOferta) || a.nombre.localeCompare(b.nombre, 'es'));
+  sec.classList.remove('reservando', 'incierta'); sec.style.display = lista.length ? '' : 'none';
+  strip.innerHTML = lista.map(tarjetaHtml).join('');
+  try { localStorage.setItem('tpOfertas', lista.length ? '1' : '0'); } catch {} // la próxima visita reserva el lugar de la sección antes de que llegue el catálogo (sin saltos)
+  window.__cantidadOfertas = lista.length; // por si ofertas-ui.js (carga al final) todavía no estaba escuchando cuando llegó el catálogo
+  document.dispatchEvent(new CustomEvent('ofertas-actualizadas', { detail: lista.length })); // ofertas-ui.js: ítem del menú y link #cat=ofertas
+}
+window.irAOfertas = function (ev) {
+  if (ev) ev.preventDefault();
+  const sec = $('ofertas-section');
+  (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+window.verOfertas = function (ev) { // "Ver todas →": misma vista que una categoría, filtrada por ofertas
+  if (ev) ev.preventDefault();
+  window.setCategoria(CLAVE_OFERTAS);
+  $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 // ── destacados (productos tildados ⭐ desde el panel) — se oculta con menos de 2 ──

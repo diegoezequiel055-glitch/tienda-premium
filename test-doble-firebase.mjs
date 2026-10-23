@@ -19,6 +19,7 @@ export const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA
 
 const CATS = ['Camisetas', 'Conjuntos', 'Chombas', 'Remeras'];
 const NOMBRES = ['Boca Juniors', 'River Plate Titular 26/27 Versión Jugador', 'Arsenal', 'Real Madrid Suplente', 'Nike Dri-Fit Remera y Short (Negro)', 'Manchester City x Abeja', 'Retro Milan G5', 'Icon Bayern Múnich'];
+// Cada 6.º producto (i % 6 === 3) está en oferta (~15 % menos, con su precio de tarjeta), como lo arma StockMGR.
 export function productosPrueba(n = 73) {
   return Array.from({ length: n }, (_, i) => {
     const cat = CATS[i % CATS.length], fotos = 1 + (i % 4), precio = 25000 + (i % 9) * 5000;
@@ -26,6 +27,7 @@ export function productosPrueba(n = 73) {
       fotos: Array.from({ length: fotos }, (_, j) => `https://res.cloudinary.com/d5fzjp10/image/upload/v1/prueba${i + 1}_${j + 1}.jpg`),
       talles: [{ talle: 'S', stock: 3 }, { talle: 'M', stock: 4 }, { talle: 'L', stock: 2 }], destacado: i % 11 === 0 || i < 3, creadoEn: 1700000000000 - i * 86400000 * 3 };
     if (i % 7 === 0) f.stockBajo = 2;
+    if (i % 6 === 3) { f.precioOferta = Math.round(precio * 0.85 / 500) * 500; f.precioOfertaTarjeta = Math.ceil(f.precioOferta * 1.27 / 500) * 500; }
     return f;
   });
 }

@@ -37,6 +37,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
 import { precioLista, extrasPrecioHtml } from './precios.js';
+import { etiquetaHtml, anteriorHtml } from './ofertas.js';
 
 const publicable = (p) => p.precio > 0 && (p.talles || []).some((t) => t.stock > 0) && (p.fotos || [])[0];
 const palabrasClave = (nombre) => new Set(normalizar(nombre).split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !/\d/.test(w) && !GENERICAS.has(w)));
@@ -63,8 +64,9 @@ export function completaTuLook(actual, lista) {
 }
 
 const tarjeta = (p) => `<button type="button" class="rel-card" data-id="${esc(p.id)}" aria-label="${esc(p.nombre)}, $${fmt(precioLista(p))}">
-    <span class="rel-foto"><img src="${esc(fotoCloudinary(p.fotos[0], 'tarjeta'))}" alt="" loading="lazy"></span>
+    <span class="rel-foto"><img src="${esc(fotoCloudinary(p.fotos[0], 'tarjeta'))}" alt="" loading="lazy">${etiquetaHtml(p)}</span>
     <span class="rel-nombre">${esc(p.nombre)}</span>
+    ${anteriorHtml(p, 'rel-precio-ant', 'span')}
     <span class="rel-precio">$${fmt(precioLista(p))}</span>
     ${extrasPrecioHtml(p, 'rel')}
   </button>`;
