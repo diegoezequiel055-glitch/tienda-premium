@@ -77,7 +77,7 @@
   <div class="ofertas-cab"><h2 class="section-title">Ofertas</h2><a href="#" class="ofertas-ver" onclick="verOfertas(event)">Ver todas →</a></div>
   <div class="destacados-strip ofertas-strip" id="ofertas-strip"></div>
 </section>
-<script>try{var h=localStorage.getItem('tpOfertas');if(h!=='0'){var s=document.getElementById('ofertas-section');s.style.display='';s.classList.add('reservando');if(h!=='1')s.classList.add('incierta')}}catch(e){}</script>
+<script>try{if(localStorage.getItem('tpOfertas')==='1'){var s=document.getElementById('ofertas-section');s.style.display='';s.classList.add('reservando')}}catch(e){}</script>
 
 <section class="destacados reservando" id="nuevos-section">
   <h2 class="section-title">Nuevos ingresos</h2>

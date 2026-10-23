@@ -27,7 +27,7 @@
   .ofertas-strip{gap:16px}
   .ofertas-strip .card{flex-basis:clamp(150px,calc((100vw - 80px) / 4.35),320px);width:clamp(150px,calc((100vw - 80px) / 4.35),320px)}
 }
-/* Sin saltos: salvo que la última visita NO haya tenido ofertas (tpOfertas=0), el lugar de la sección se reserva antes de que llegue el catálogo (primera visita: sin título hasta saber si hay ofertas), el lugar de la sección se reserva (index.html + esqueletos.css) con su alto real medido (~530 px celular, 580–720 px PC). */
+/* Sin saltos: SOLO si la última visita tuvo ofertas (tpOfertas=1) el lugar de la sección se reserva antes de que llegue el catálogo; si no hay ofertas conocidas no se reserva nada (sin hueco), el lugar de la sección se reserva (index.html + esqueletos.css) con su alto real medido (~530 px celular, 580–720 px PC). */
 section.destacados.ofertas-section.reservando{min-height:530px}
 section.destacados.ofertas-section.reservando .ofertas-strip:empty{min-height:430px;background:
   linear-gradient(var(--surface2),var(--surface2)) 20px 2px/calc((100vw - 44px) / 2.35) 184px no-repeat,
@@ -47,4 +47,3 @@ section.destacados.ofertas-section.reservando .ofertas-strip:empty{min-height:43
 .menu-ofertas-btn{display:flex;align-items:center;justify-content:center;min-height:44px;background:#e5252a;color:#fff;font-weight:700;font-size:.92rem;letter-spacing:.3px;border-radius:999px;padding:0 20px}
 .menu-ofertas.activa .menu-ofertas-btn{box-shadow:0 0 0 3px rgba(229,37,42,.25)}
 
-.ofertas-section.incierta .ofertas-cab{visibility:hidden}

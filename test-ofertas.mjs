@@ -325,7 +325,7 @@ if (!process.env.SOLO_PURAS) {
     await page.evaluate((items) => window.__SERVIDOR.publicarCatalogo(items), CON.map((p, i) => (i === 3 ? { ...p, precioOferta: 30000 } : p))); await esp(400);
     const l2 = await page.evaluate(() => ({ ...window.__LECT })); assert.equal(l2.catalogo_unico - l.catalogo_unico, 1); await ctx.close();
   });
-  await t('LAYOUT: sin desborde horizontal ni saltos de diseño (CLS): el lugar de la sección se reserva (salvo si la visita anterior no tuvo ofertas) (iPhone, Android y PC)', async () => {
+  await t('LAYOUT: sin desborde horizontal ni saltos de diseño (CLS): el lugar se reserva solo si la visita anterior tuvo ofertas (sin ofertas conocidas no hay hueco) (iPhone, Android y PC)', async () => {
     const cls = (page) => page.evaluate(() => window.__cls);
     for (const perfil of ['iphone', 'android', 'pc']) for (const [pista, sinOfertas] of [[null, false], ['1', false], ['0', true], [null, true]]) {
       const ctx = await browser.newContext(PERFILES[perfil]);
@@ -335,19 +335,19 @@ if (!process.env.SOLO_PURAS) {
       await page.addInitScript(guion(24, 152));
       await page.addInitScript(({ pista, sinOfertas }) => { window.__MOCK = { config: null, catalogoDemora: 700, ...(sinOfertas ? { catalogo: window.__PRODUCTOS_DEF.map(({ precioOferta, precioOfertaTarjeta, ...r }) => r) } : {}) }; if (pista) localStorage.setItem('tpOfertas', pista); window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); }, { pista, sinOfertas });
       await page.goto(BASE + '/index.html', { waitUntil: 'load' });
-      if (pista !== '0') assert.equal(await visible(page, 'ofertas-section'), true, perfil + ': el lugar ya está reservado antes de que llegue el catálogo');
-      else assert.equal(await visible(page, 'ofertas-section'), false, perfil + ': si la visita anterior no tuvo ofertas no se reserva nada');
+      if (pista === '1') assert.equal(await visible(page, 'ofertas-section'), true, perfil + ': el lugar ya está reservado antes de que llegue el catálogo');
+      else assert.equal(await visible(page, 'ofertas-section'), false, perfil + ': sin ofertas conocidas no se reserva nada (sin hueco)');
       await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 }); await esp(900);
       const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       assert.ok(d <= 1, perfil + ' desborde ' + d); assert.equal(errores.length, 0, errores.join(' | '));
       const v = await cls(page); const nombre = `${sinOfertas ? 'SIN ofertas' : 'con ofertas'}, ${pista === null ? 'primera visita' : pista === '1' ? 'visita anterior con ofertas' : 'visita anterior sin ofertas'}`;
       if (process.env.DEBUG) console.log(`   ${perfil} ${nombre}: CLS ${v.toFixed(3)}`);
-      // Única combinación con salto: primera visita a una tienda SIN ofertas (se reservó el lugar y se libera al llegar el catálogo).
-      assert.ok(v <= (sinOfertas && pista === null ? 0.3 : 0.03), `${perfil} ${nombre}: CLS ${v.toFixed(3)}`);
+      // Única combinación con salto: primera visita (sin pista) a una tienda CON ofertas: no se reserva nada porque todavía no se sabe que hay ofertas (decisión de Diego: sin hueco si no hay).
+      assert.ok(v <= (!sinOfertas && pista === null ? 0.3 : 0.03), `${perfil} ${nombre}: CLS ${v.toFixed(3)}`);
       await ctx.close();
     }
   });
-  await t('la pista se guarda sola: con ofertas deja tpOfertas=1 y sin ofertas tpOfertas=0 (y no queda nada reservado)', async () => {
+  await t('la pista se guarda sola: con ofertas deja tpOfertas=1 y sin ofertas tpOfertas=0 (y sin ofertas no queda nada reservado)', async () => {
     const a = await abrir({ perfil: 'iphone' }); assert.equal(await a.page.evaluate(() => localStorage.getItem('tpOfertas')), '1'); await a.ctx.close();
     const b = await abrir({ perfil: 'iphone', catalogo: SIN_OFERTAS() }); assert.equal(await b.page.evaluate(() => localStorage.getItem('tpOfertas')), '0');
     assert.equal(await b.page.evaluate(() => document.getElementById('ofertas-section').classList.contains('reservando')), false); await b.ctx.close();

@@ -65,7 +65,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   const fallos = [];
   await page.route('**/firebase-config.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: dobleFirebase() }));
   await page.addInitScript(guion(73, 152));
-  await page.addInitScript(() => { window.__MOCK = { config: null, catalogoDemora: 400 }; /* como Firestore real: con 20 ms el catálogo llega antes de que carguen los módulos del final */ });
+  await page.addInitScript(() => { localStorage.setItem('tpOfertas', '1'); /* visitante que ya volvió: la sección de Ofertas reserva su lugar (la primera visita con ofertas se mide en test-ofertas.mjs) */ window.__MOCK = { config: null, catalogoDemora: 1500 }; /* como Firestore real: con 20 ms el catálogo llega antes de que carguen los módulos del final */ });
   if (escenario === 'lenta' || escenario === 'imagenes-tardias') {
     const cdp = await ctx.newCDPSession(page);
     await cdp.send('Network.enable');

@@ -299,7 +299,7 @@ window.verMasProductos = function () {
 function renderOfertas() {
   const sec = $('ofertas-section'), strip = $('ofertas-strip'); if (!sec || !strip) return;
   const lista = ofertasList(productos).sort((a, b) => (b.pctOferta - a.pctOferta) || a.nombre.localeCompare(b.nombre, 'es'));
-  sec.classList.remove('reservando', 'incierta'); sec.style.display = lista.length ? '' : 'none';
+  sec.classList.remove('reservando'); sec.style.display = lista.length ? '' : 'none';
   strip.innerHTML = lista.map(tarjetaHtml).join('');
   try { localStorage.setItem('tpOfertas', lista.length ? '1' : '0'); } catch {} // la próxima visita reserva el lugar de la sección antes de que llegue el catálogo (sin saltos)
   window.__cantidadOfertas = lista.length; // por si ofertas-ui.js (carga al final) todavía no estaba escuchando cuando llegó el catálogo
