@@ -170,7 +170,7 @@ if (!process.env.SOLO_PURAS) {
   });
   await ta('LINK ?p=ID: abre la ficha del producto (también con el documento único)', async () => {
     const id = productosPrueba(1)[0].id;
-    const { page, ctx } = await abrir({ url: '/index.html?p=' + encodeURIComponent(id) });
+    const { page, ctx } = await abrir({ url: '/index.html?p=' + encodeURIComponent(id), mock: { catalogoDemora: 400 } }) /* Firestore real tarda cientos de ms: con 20 ms el catálogo llega antes de que cargue compartir.js */;
     await page.waitForFunction(() => document.getElementById('detalle-overlay').classList.contains('open'), null, { timeout: 5000 });
     assert.ok((await page.evaluate(() => document.getElementById('detalle-overlay').innerText)).includes('Boca Juniors 1')); await ctx.close();
   });
