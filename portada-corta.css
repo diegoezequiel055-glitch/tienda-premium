@@ -1,0 +1,21 @@
+/* ══ PORTADA CORTA (vistas.js / app.js): la portada y las vistas de catálogo se alternan con la clase `en-vista` de <html> ══ */
+/* En una vista (Todo el catálogo, una categoría u ofertas) la portada no se ve; en la portada no se ve el catálogo. */
+html.en-vista .portada-solo{display:none !important}
+html:not(.en-vista) .vista-solo{display:none !important}
+/* Fila de categorías de la portada (chips): chica, con scroll horizontal. Reserva su alto antes de que llegue el catálogo (sin saltos). */
+.chips-cat{display:flex;gap:8px;overflow-x:auto;padding:12px 20px;min-height:60px;box-sizing:border-box;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips-cat::-webkit-scrollbar{display:none}
+.chips-cat[hidden]{display:none}
+.chip-cat{flex:0 0 auto;min-height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--ink);font-family:inherit;font-size:.82rem;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer}
+.chip-cat:hover{border-color:var(--ink)}
+.chip-cat:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media(min-width:700px){.chips-cat{padding:14px 32px}}
+/* Botón grande de ancho completo "Ver todo el catálogo (N productos)", con el estilo del botón "Ver más productos". */
+.ver-todo-caja{padding:28px 20px 12px}
+.ver-todo-caja[hidden]{display:none}
+.ver-todo-caja .ver-todo-btn{display:block;width:100%;min-height:54px;padding:0 24px;font-size:1rem}
+@media(min-width:700px){.ver-todo-caja{padding:36px 32px 16px}}
+/* Entrando directo a una vista, el texto, los datos de envío y el footer esperan (invisibles) a que llegue el catálogo: así no se ven saltar cuando la grilla se llena. */
+html.en-vista:not([data-catalogo-listo]) :is(.inicio-texto,.info-franja,.mayorista-bloque,#pie-root){visibility:hidden}
+/* Las pills de categoría reservan su alto antes de que llegue el catálogo (sin saltos al entrar directo a una vista). */
+.cat-pills{min-height:37px}

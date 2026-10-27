@@ -32,6 +32,7 @@
 <script type="module" src="mantenimiento.js"></script>
 </head>
 <body>
+<script>try{if(/^#cat=.+/.test(location.hash))document.documentElement.classList.add('en-vista')}catch(e){}</script>
 
 <div class="promo-bar" id="promo-bar-texto" aria-live="off"></div>
 
@@ -65,49 +66,55 @@
   </div>
 </header>
 
-<div class="hero-rot" id="hero-rot"></div>
+<div class="hero-rot portada-solo" id="hero-rot"></div>
 
-<div class="hero-triptych" id="hero-triptych" style="display:none">
+<div class="hero-triptych portada-solo" id="hero-triptych" style="display:none">
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
   <div class="htr-ph htr-ph-mid"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
 </div>
 
-<section class="destacados reservando" id="nuevos-section">
+<nav class="chips-cat portada-solo" id="chips-cat" aria-label="Categorías"></nav>
+
+<section class="destacados reservando portada-solo" id="nuevos-section">
   <h2 class="section-title">Nuevos ingresos</h2>
   <div class="destacados-strip" id="nuevos-strip"></div>
 </section>
 
-<section class="destacados reservando" id="destacados-section">
+<section class="destacados reservando portada-solo" id="destacados-section">
   <h2 class="section-title">Destacados</h2>
   <div class="destacados-strip" id="destacados-strip"></div>
 </section>
 
-<h2 class="section-title section-title-grid" id="grid-titulo">Catálogo completo</h2>
+<h2 class="section-title section-title-grid vista-solo" id="grid-titulo">Todo el catálogo</h2>
 
-<div class="filtros">
+<div class="filtros vista-solo">
   <div class="cat-pills" id="cat-pills"></div>
 </div>
 
-<div class="busqueda-info" id="busqueda-info" style="display:none"></div>
+<div class="busqueda-info vista-solo" id="busqueda-info" style="display:none"></div>
 
-<main id="grid" class="grid grid-reservando" aria-busy="true">
+<main id="grid" class="grid grid-reservando vista-solo" aria-busy="true">
   <div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div><div class="card-esqueleto" aria-hidden="true"></div>
   <p class="solo-lectores" role="status">Cargando catálogo…</p>
 </main>
-<div class="ver-mas-caja" id="ver-mas-caja" hidden>
+<div class="ver-mas-caja vista-solo" id="ver-mas-caja" hidden>
   <button type="button" class="ver-mas-btn" id="ver-mas-btn" onclick="verMasProductos()">Ver más productos</button>
 </div>
 
-<section class="ofertas-fin" id="ofertas-section" style="display:none" aria-label="Ofertas">
+<section class="ofertas-fin portada-solo" id="ofertas-section" style="display:none" aria-label="Ofertas">
   <div class="ofertas-cab"><h2 class="section-title">Ofertas</h2><a href="#" class="ofertas-ver" onclick="verOfertas(event)">Ver todas →</a></div>
   <div class="ofertas-carril" id="ofertas-strip"></div>
 </section>
 
-<section class="videos-fin" id="videos-section" style="display:none" aria-label="Nuestros videos">
+<section class="videos-fin portada-solo" id="videos-section" style="display:none" aria-label="Nuestros videos">
   <div class="videos-cab"><h2 class="section-title">Nuestros videos</h2><a href="https://www.tiktok.com/@tiendapremium.ok" class="videos-ver-mas" data-tiktok="ver_mas" target="_blank" rel="noopener noreferrer">Ver más en TikTok →</a></div>
   <div class="videos-carril" id="videos-strip"></div>
 </section>
+
+<div class="ver-todo-caja portada-solo" id="ver-todo-caja" hidden>
+  <button type="button" class="ver-mas-btn ver-todo-btn" id="ver-todo-btn" onclick="setCategoria('todos')">Ver todo el catálogo</button>
+</div>
 
 <section class="inicio-texto">
   <h1 id="hero-titulo">Indumentaria deportiva, al mejor precio</h1>

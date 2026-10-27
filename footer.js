@@ -8,7 +8,7 @@ import { datosNegocio } from './datos-negocio.js';
 
 const NAV_AYUDA = [
   { label: 'Inicio', href: 'index.html' },
-  { label: 'Productos', href: 'index.html#grid-titulo' },
+  { label: 'Productos', href: 'index.html#cat=todos' },
   { label: 'Contacto', href: 'contacto.html' },
   { label: 'Cambios y devoluciones', href: 'cambios-y-devoluciones.html' },
   { label: 'Cómo comprar', href: 'como-comprar.html' },

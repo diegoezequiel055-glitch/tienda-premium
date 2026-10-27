@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
 // CONTROL DE CALIDAD DE LAS TARJETAS DE LA PORTADA (prueba de navegador real).
 // Abre la portada en Chrome con emulación de celular/PC en 360, 375, 390, 414, 768 y 1366 px, con red lenta (Slow 4G) + CPU lenta,
-// y con imágenes tardías (6 s) y bloqueadas, y verifica en "Nuevos ingresos", "Destacados", "Catálogo" y "Relacionados":
+// y con imágenes tardías (6 s) y bloqueadas, y verifica en la portada (fila de categorías, "Nuevos ingresos", "Destacados", "Ofertas", "Nuestros videos", botón "Ver todo el catálogo"), en la vista "Todo el catálogo" y en "Relacionados":
 //   (a) todas las tarjetas de cada fila tienen el mismo ancho (±1 px) y la misma proporción de foto (4/5),
 //   (b) ninguna mide más que un máximo razonable ni menos que un mínimo,
 //   (c) la página no tiene desborde horizontal,
@@ -79,8 +79,8 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   await page.addInitScript(() => { window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); });
   await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
   // esperar al catálogo (hasta 40 s con la red lenta) y dejar que terminen de cargar/fallar las fotos
-  try { await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 40000 }); }
-  catch { fallos.push('el catálogo no cargó (no hay tarjetas en #grid)'); }
+  try { await page.waitForSelector('html[data-catalogo-listo]', { timeout: 40000 }); await page.waitForFunction(() => document.querySelectorAll('#nuevos-strip .card').length > 0, null, { timeout: 40000 }); }
+  catch { fallos.push('el catálogo no cargó (no hay tarjetas en la portada)'); }
   await esp(escenario === 'imagenes-tardias' ? 9000 : 3000);
 
   const filas = await page.evaluate(() => {
@@ -91,11 +91,18 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
       videos: visible('videos-section') ? leer('#videos-strip .vt-card') : null,
       nuevos: visible('nuevos-section') ? leer('#nuevos-strip .card') : null,
       destacados: visible('destacados-section') ? leer('#destacados-strip .card') : null,
-      grid: leer('#grid > .card'),
+      chips: (() => { const f = document.getElementById('chips-cat'); const c = [...f.querySelectorAll('.chip-cat')]; const r = f.getBoundingClientRect(); return { n: c.length, alto: r.height, altoChip: c[0] ? c[0].getBoundingClientRect().height : 0 }; })(),
+      boton: (() => { const b = document.getElementById('ver-todo-btn'); const r = b.getBoundingClientRect(); return { ancho: r.width, alto: r.height, texto: b.textContent.trim(), grid: document.querySelectorAll('#grid > .card').length }; })(),
       desborde: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       cls: window.__cls,
     };
   });
+  // El catálogo completo ya no está en la portada: se abre la vista "Todo el catálogo" y se miden sus tarjetas.
+  await page.evaluate(() => window.setCategoria('todos'));
+  try { await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 20000 }); } catch { fallos.push('la vista "Todo el catálogo" no dibujó tarjetas'); }
+  await esp(1500);
+  const vista = await page.evaluate(() => { const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto'); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; }); return { grid: leer('#grid > .card'), desborde: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
+  filas.grid = vista.grid; filas.desbordeVista = vista.desborde;
   let rel = null;
   if (escenario === 'lenta') { // fichas: relacionados (cuadrícula y carril "Completá tu look")
     rel = await page.evaluate(async () => {
@@ -129,7 +136,11 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   chequeo('Videos de TikTok', filas.videos, LIMITES.videos);
   chequeo('Nuevos ingresos', filas.nuevos, LIMITES.strip);
   chequeo('Destacados', filas.destacados, LIMITES.strip);
-  chequeo('Catálogo', filas.grid, LIMITES.grid);
+  chequeo('Catálogo (vista Todo el catálogo)', filas.grid, LIMITES.grid);
+  if (!filas.chips.n || filas.chips.alto > 64 || filas.chips.altoChip > 40) fallos.push(`fila de categorías: ${filas.chips.n} chips, alto ${filas.chips.alto}/${filas.chips.altoChip} (máx. 64/40)`);
+  if (filas.boton.grid !== 0) fallos.push('la portada tiene tarjetas de la grilla del catálogo: ' + filas.boton.grid);
+  if (!/^Ver todo el catálogo \(\d+ productos\)$/.test(filas.boton.texto)) fallos.push('texto del botón: ' + filas.boton.texto);
+  if (filas.desbordeVista > 1) fallos.push('desborde horizontal en la vista de catálogo: ' + filas.desbordeVista + ' px');
   if (escenario === 'lenta' && !rel) fallos.push('no se encontró ninguna ficha con productos relacionados para probar');
   if (rel) { chequeo('Relacionados (cuadrícula)', rel.grid, LIMITES.relacionados); chequeo('Relacionados (Completá tu look)', rel.carril, LIMITES.relacionados); }
   if (filas.desborde > 1) fallos.push(`desborde horizontal de la página: ${filas.desborde} px`);

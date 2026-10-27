@@ -11,7 +11,6 @@ import { fotoCloudinary } from './fotos-cloudinary.js';
 //   • ficha: etiqueta "-15%" y precio anterior tachado, arriba del precio (lo dibuja al recibir 'detalle-pintado').
 // ══════════════════════════════════════════
 const $ = (id) => document.getElementById(id);
-const TITULO_NORMAL = ($('grid-titulo') && $('grid-titulo').textContent) || 'Catálogo completo';
 const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
 
 // Menú lateral (lo crea header-menu.js, que carga antes que este archivo): fila con el mismo estilo que "Todos los productos".
@@ -28,7 +27,6 @@ if (cats && cats.parentNode) {
   });
 }
 
-let hashPendiente = true; // #cat=ofertas se aplica cuando llega el catálogo
 let hayOfertas = false;
 let categoriaActual = window.__categoriaActual || ''; // '' = portada normal
 let buscando = window.__buscando === true; // hay una búsqueda por texto activa
@@ -45,10 +43,6 @@ function alCambiarOfertas(lista) {
   }
   const barra = $('nav-ofertas'); if (barra) barra.style.display = hay ? '' : 'none';
   const menu = $('menu-ofertas'); if (menu) menu.hidden = !hay;
-  if (hashPendiente) {
-    hashPendiente = false;
-    if (hay && location.hash === '#cat=' + CLAVE_OFERTAS) { window.setCategoria(CLAVE_OFERTAS); setTimeout(() => $('grid-titulo').scrollIntoView({ block: 'start' }), 60); }
-  }
 }
 document.addEventListener('ofertas-actualizadas', (e) => alCambiarOfertas(e.detail || []));
 if (Array.isArray(window.__ofertas)) alCambiarOfertas(window.__ofertas); // el catálogo llegó antes que este archivo
@@ -60,7 +54,6 @@ if (carrilOfertas) carrilOfertas.addEventListener('click', (e) => { const c = e.
 document.addEventListener('categoria-cambiada', (e) => {
   const activa = e.detail === CLAVE_OFERTAS;
   categoriaActual = e.detail || ''; mostrarSeccion();
-  const t = $('grid-titulo'); if (t) t.textContent = activa ? 'Ofertas' : TITULO_NORMAL;
   const fila = $('menu-ofertas-fila'); if (fila) { fila.classList.toggle('con-activa', activa); if (activa) fila.setAttribute('aria-current', 'true'); else fila.removeAttribute('aria-current'); }
 });
 

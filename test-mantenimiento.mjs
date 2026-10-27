@@ -82,14 +82,14 @@ if (!process.env.SOLO_PURAS) {
     await page.goto(BASE + url, { waitUntil: 'load' });
     return { page, ctx, pedidosAnalytics, logs, errores };
   }
-  const tarjetas = (p) => p.evaluate(() => document.querySelectorAll('#grid > .card').length);
+  const tarjetas = (p) => p.evaluate(() => document.querySelectorAll('.card').length);
   const hayPantalla = (p) => p.evaluate(() => { const e = document.getElementById('mant-pantalla'); return !!e && getComputedStyle(e).display !== 'none'; });
   const visibleFuera = (p) => p.evaluate(() => [...document.body.children].filter((el) => el.id !== 'mant-pantalla' && el.tagName !== 'SCRIPT' && getComputedStyle(el).display !== 'none').map((e) => e.id || e.className || e.tagName));
   const CFG = (extra) => ({ mantenimiento: true, mantenimientoMensaje: 'Estamos actualizando la tienda. Volvemos en breve.', mantenimientoClave: 'clave-correcta-123', ...extra });
 
   await ta('mantenimiento=false: tienda normal (catálogo, sin pantalla ni aviso ni noindex)', async () => {
     const { page, ctx, errores } = await abrir({ mock: { config: { mantenimiento: false, mantenimientoClave: 'x' } } });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     assert.equal(await hayPantalla(page), false);
     assert.equal(await page.evaluate(() => !!document.getElementById('mant-aviso') || !!document.querySelector('meta[name="robots"]')), false);
     assert.equal(await page.evaluate(() => typeof window.abrirCarrito), 'function');
@@ -98,7 +98,7 @@ if (!process.env.SOLO_PURAS) {
 
   await ta('sin el campo mantenimiento (config vieja): tienda normal', async () => {
     const { page, ctx } = await abrir({ mock: { config: { heroTitulo: 'Hola' } } });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     assert.equal(await hayPantalla(page), false); await ctx.close();
   });
 
@@ -125,7 +125,7 @@ if (!process.env.SOLO_PURAS) {
 
   await ta('con mantenimiento y la clave CORRECTA: tienda normal + barra de aviso, noindex, la clave sale de la URL y se recuerda en la sesión', async () => {
     const { page, ctx, errores } = await abrir({ mock: { config: CFG() }, url: '/index.html?acceso=clave-correcta-123' });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     assert.equal(await hayPantalla(page), false);
     assert.equal(await page.evaluate(() => document.getElementById('mant-aviso') && document.getElementById('mant-aviso').textContent), 'Modo mantenimiento activo (solo vos lo ves)');
     assert.equal(await page.evaluate(() => document.body.firstElementChild.id), 'mant-aviso', 'la barra va arriba de todo');
@@ -133,7 +133,7 @@ if (!process.env.SOLO_PURAS) {
     assert.equal(await page.evaluate(() => location.search.includes('acceso')), false, 'la clave no debe quedar en la URL');
     assert.equal(await page.evaluate(() => sessionStorage.getItem('mantenimientoAcceso')), 'clave-correcta-123');
     await page.goto(BASE + '/index.html', { waitUntil: 'load' }); // recarga SIN la clave: sigue autorizado en esa pestaña
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     assert.equal(await hayPantalla(page), false); assert.equal(await page.evaluate(() => !!document.getElementById('mant-aviso')), true);
     assert.equal(errores.length, 0, errores.join(' | ')); await ctx.close();
   });
@@ -153,7 +153,7 @@ if (!process.env.SOLO_PURAS) {
 
   await ta('error de lectura de Firestore: la tienda queda ABIERTA (sin pantalla)', async () => {
     const { page, ctx, errores } = await abrir({ mock: { configModo: 'error' } });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     assert.equal(await hayPantalla(page), false); assert.equal(await page.evaluate(() => window.__mantenimiento.estado()), 'abierto');
     assert.equal(errores.length, 0, errores.join(' | ')); await ctx.close();
   });
@@ -161,7 +161,7 @@ if (!process.env.SOLO_PURAS) {
   await ta('Firestore no responde: tras ~1,5 s la tienda queda ABIERTA', async () => {
     const t0 = Date.now();
     const { page, ctx } = await abrir({ mock: { configModo: 'silencio' } });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     const ms = Date.now() - t0;
     assert.equal(await hayPantalla(page), false); assert.ok(ms >= 1300 && ms < 4000, `se abrió a los ${ms} ms (esperado ≈1500)`); await ctx.close();
   });
@@ -176,13 +176,13 @@ if (!process.env.SOLO_PURAS) {
     const { page, ctx } = await abrir({ mock: { config: { mantenimiento: false }, configDemora: 900 }, preparar: () => { try { localStorage.setItem('mantenimientoUltimo', '1'); } catch {} } });
     await esp(250);
     assert.equal(await hayPantalla(page), true, 'la pantalla debía verse desde el principio');
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     assert.equal(await hayPantalla(page), false); await ctx.close();
   });
 
   await ta('EN VIVO: se activa y se desactiva con la página abierta (el catálogo reaparece al desactivar)', async () => {
     const { page, ctx } = await abrir({ mock: { config: { mantenimiento: false } } });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 });
     await page.evaluate((c) => window.__SERVIDOR.emitirConfig(c), CFG()); await page.waitForSelector('#mant-pantalla', { timeout: 4000 });
     assert.equal(await hayPantalla(page), true); assert.deepEqual(await visibleFuera(page), []);
     await page.evaluate(() => window.__SERVIDOR.emitirConfig({ mantenimiento: false })); await page.waitForFunction(() => !document.getElementById('mant-pantalla'), null, { timeout: 4000 });
@@ -191,7 +191,7 @@ if (!process.env.SOLO_PURAS) {
 
   await ta('Analytics: con la tienda abierta sí registra (page_view en modo debug)', async () => {
     const { page, ctx, logs } = await abrir({ mock: { config: { mantenimiento: false } }, url: '/index.html?analytics_debug=1' });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 }); await esp(400);
+    await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 8000 }); await esp(400);
     assert.ok(logs.some((l) => l.includes('[analytics] page_view')), 'no salió page_view'); await ctx.close();
   });
 

@@ -2,7 +2,8 @@ import { db, collection, doc, onSnapshot } from './firebase-config.js';
 import { datosNegocio } from './datos-negocio.js';
 import { fotoCloudinary } from './fotos-cloudinary.js';
 import { pintarHeroRotativo, esperarHeroRotativo, idsHero } from './hero-rotativo.js';
-import { categoriasDisponibles, claveDe } from './categorias-config.js';
+import { categoriasDisponibles, claveDe, resolverClave } from './categorias-config.js';
+import { claveDeHash, hashDeClave, tituloVista, textoBotonCatalogo, CLAVE_TODOS } from './vistas.js';
 import { palabrasDe, coincide, actualizarInfoBusqueda, htmlSinResultados } from './buscador.js';
 import { armarMensaje, notaPago, totalesHtml } from './pedido-mensaje.js';
 import './fotos-tarjeta.js';
@@ -23,7 +24,13 @@ const validarCP = (cp) => { const v = cp.trim().toUpperCase(); return /^\d{4}$/.
 let productos = [];
 let envios = [];
 let busqueda = '';
-let categoria = '';
+// Vista actual: '' = portada (corta); 'todos' = Todo el catálogo; 'ofertas' = todas las ofertas; '<clave>' = una categoría. Ver vistas.js.
+// Si se entra directo por un link (#cat=...) arranca en esa vista (el HTML ya puso la clase en-vista, así la portada no parpadea).
+let categoria = claveDeHash(location.hash) || '';
+window.__categoriaActual = categoria;
+document.documentElement.classList.toggle('en-vista', categoria !== '');
+let scrollPortada = 0; // dónde estaba la portada al entrar a una vista (se restaura al volver)
+let empujado = !!(history.state && history.state.tpVista); // este documento agregó una entrada de historial al entrar a la vista (Atrás vuelve a la portada)
 let mostrados = TAMANO_PAGINA; // cuántos productos del catálogo filtrado se ven ("Ver más" suma otra tanda)
 let filtradosActuales = [];
 let formaPago = null;
@@ -74,6 +81,8 @@ escucharPublico({
     liberarReservas();
     document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
     $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
+    const ch = $('chips-cat'); if (ch) ch.hidden = true;
+    document.documentElement.dataset.catalogoListo = '1'; // (también sin catálogo: el texto y el footer no quedan ocultos)
   },
 });
 alCambiarMantenimiento(() => {
@@ -84,14 +93,18 @@ function procesarCatalogo(snap) {
   productos = snap.docs.map((d) => aplicarOferta({ id: d.id, ...d.data() })); // ofertas.js: con oferta válida, precio/precioTarjeta pasan a ser los de la oferta
   const rc = resolverCarrito(carrito, productos); // carritos guardados (incluso viejos): precios al día por ID
   if (rc.cambio) { carrito = rc.carrito; guardarCarrito(); renderCarrito(); }
-  if (categoria === CLAVE_OFERTAS ? !ofertasList(productos).length : (categoria && !categoriasDisponibles(productos).some((c) => c.clave === categoria))) window.setCategoria('');
+  if (categoria !== '') { const n = normalizarClave(categoria); if (n !== categoria) window.setCategoria(n); } // vista que ya no existe (o link viejo) → Todo el catálogo
   renderCatPills();
+  renderChips();
+  renderBotonCatalogo();
   document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
   renderGrid();
+  if (categoria !== '') anunciarVista(); // título, pills y menú según la vista (también al entrar directo por un link)
   pintarHeroRotativo(productos, { alFallback: mostrarTriptico });
   renderOfertas();
   renderDestacados();
   renderNuevos();
+  document.documentElement.dataset.catalogoListo = '1'; // para las pruebas: ya llegó el catálogo
 }
 
 // Quita el espacio reservado (esqueletos.css) cuando ya hay contenido real o se decidió no mostrar la sección.
@@ -187,7 +200,7 @@ function pintarHeroTriptico() {
 // ── botón "Comprar ahora" sobre el tríptico: baja hasta el catálogo completo ──
 window.irACatalogo = function (ev) {
   if (ev) ev.preventDefault();
-  $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  window.setCategoria(CLAVE_TODOS);
 };
 
 // ── categorías (pills) ──
@@ -197,33 +210,94 @@ function renderCatPills() {
   const firma = cats.map((c) => c.clave).join('|');
   if (cont.dataset.firma === firma) return;
   cont.dataset.firma = firma;
-  cont.innerHTML = `<button class="cat-pill" onclick="setCategoria('')" data-cat="">Todas</button>` +
+  cont.innerHTML = `<button class="cat-pill" onclick="setCategoria('todos')" data-cat="todos">Todas</button>` +
     cats.map((c) => `<button class="cat-pill" onclick="setCategoria('${esc(c.clave)}')" data-cat="${esc(c.clave)}">${esc(c.nombre)}</button>`).join('');
   marcarPill();
 }
 function marcarPill() {
   document.querySelectorAll('.cat-pill').forEach((b) => b.classList.toggle('active', (b.dataset.cat || '') === categoria));
 }
+// ── vistas: portada ('') o vista de catálogo ('todos' / 'ofertas' / una categoría) ──
+const fichaAbierta = () => $('detalle-overlay').classList.contains('open');
+function nombreDeCategoria(clave) { const c = categoriasDisponibles(productos).find((x) => x.clave === clave); return c ? c.nombre : ''; }
+// Una clave de vista (puede venir de un link viejo, en singular, o de unas ofertas que ya no están) → la que corresponde hoy.
+function normalizarClave(c) {
+  if (!c || c === CLAVE_TODOS) return c || '';
+  if (c === CLAVE_OFERTAS) return ofertasList(productos).length ? CLAVE_OFERTAS : CLAVE_TODOS;
+  if (!productos.length) return c; // todavía no llegó el catálogo: se resuelve cuando llegue
+  return resolverClave(c, categoriasDisponibles(productos)) || CLAVE_TODOS;
+}
+function anunciarVista() {
+  const t = $('grid-titulo'); if (t) t.textContent = tituloVista(categoria, nombreDeCategoria(categoria));
+  marcarPill();
+  document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: categoria }));
+}
+function vaciarGrid() { const g = $('grid'); g.replaceChildren(); filtradosActuales = []; pintarVerMas(0); actualizarInfoBusqueda('', 0); }
+function restaurarScroll(y) { // el navegador puede mover el scroll solo al volver atrás: se reubica varias veces
+  const ir = () => window.scrollTo({ top: y, behavior: 'instant' });
+  ir(); requestAnimationFrame(ir); setTimeout(ir, 120); setTimeout(ir, 400);
+}
+// Historial: portada → vista agrega UNA entrada (Atrás vuelve a la portada); vista → vista la reemplaza.
+function historialAlCambiar(antes, v) {
+  try {
+    if (antes === '' && v !== '') { history.pushState({ tpVista: 1 }, '', hashDeClave(v)); empujado = true; }
+    else if (antes !== '' && v !== '') history.replaceState(history.state, '', hashDeClave(v));
+    else if (antes !== '' && v === '') {
+      if (empujado && history.state && history.state.tpVista) { empujado = false; history.back(); }
+      else { empujado = false; history.replaceState(null, '', location.pathname + location.search); }
+    }
+  } catch {}
+}
 window.setBusqueda = function (v) {
   busqueda = v;
-  window.__buscando = palabrasDe(v).length > 0; // ofertas-ui.js: con una búsqueda activa la sección compacta de Ofertas se oculta
+  window.__buscando = palabrasDe(v).length > 0; // ofertas-ui.js / videos: con una búsqueda activa las secciones de la portada no se ven
   document.dispatchEvent(new CustomEvent('busqueda-cambiada', { detail: window.__buscando }));
-  // Al buscar se busca en todo el catálogo: se limpia el filtro de categoría.
-  if (palabrasDe(v).length && categoria) {
-    categoria = ''; window.__categoriaActual = '';
-    marcarPill();
-    document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: '' }));
+  // Buscar es mirar el catálogo: se abre "Todo el catálogo" (se busca en todo, sin filtro de categoría).
+  if (window.__buscando && categoria !== CLAVE_TODOS) { window.setCategoria(CLAVE_TODOS); return; }
+  mostrados = TAMANO_PAGINA;
+  renderGrid();
+};
+window.setCategoria = function (v, opciones = {}) {
+  const { desdeHistorial = false, sinScroll = false } = opciones;
+  v = v || '';
+  if (!desdeHistorial && fichaAbierta()) { window.cerrarDetalle(); setTimeout(() => window.setCategoria(v, opciones), 220); return; } // la ficha vuelve atrás en el historial: se espera a que termine
+  if (v === categoria) { if (v !== '') { mostrados = TAMANO_PAGINA; renderGrid(); } return; }
+  const antes = categoria;
+  if (antes === '') scrollPortada = window.scrollY;
+  categoria = v; window.__categoriaActual = v;
+  document.documentElement.classList.toggle('en-vista', v !== '');
+  mostrados = TAMANO_PAGINA;
+  if (!desdeHistorial) historialAlCambiar(antes, v);
+  if (v === '') {
+    if (busqueda && window.reiniciarBusqueda) window.reiniciarBusqueda(); // al volver a la portada se limpia la búsqueda
+    vaciarGrid();
+    if (!sinScroll) restaurarScroll(scrollPortada);
+  } else {
+    renderGrid();
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
-  mostrados = TAMANO_PAGINA;
-  renderGrid();
+  anunciarVista();
 };
-window.setCategoria = function (v) {
-  categoria = v; window.__categoriaActual = v; // ofertas-ui.js: la sección compacta solo se ve en la portada normal (sin categoría)
-  mostrados = TAMANO_PAGINA;
-  marcarPill();
-  renderGrid();
-  document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: v }));
+// Logo: vuelve a la portada (en una vista, restaura la posición de scroll de la portada; si ya está en la portada, sube).
+window.irAPortada = function () {
+  if (categoria !== '') { window.setCategoria(''); return; }
+  if (fichaAbierta()) window.cerrarDetalle();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  // cerrar la ficha puede volver atrás en el historial (asíncrono): se deja la URL limpia después también
+  const limpiarUrl = () => { try { history.replaceState(null, '', location.pathname); } catch {} };
+  limpiarUrl();
+  setTimeout(() => { limpiarUrl(); window.scrollTo({ top: 0, behavior: 'instant' }); }, 120);
+  setTimeout(limpiarUrl, 400);
 };
+// Botón Atrás/Adelante del navegador o un link con #cat=...: la vista acompaña a la URL.
+function sincronizarConUrl() {
+  const c = normalizarClave(claveDeHash(location.hash) || '');
+  if (c === categoria) return;
+  empujado = c !== '';
+  window.setCategoria(c, { desdeHistorial: true });
+}
+window.addEventListener('popstate', sincronizarConUrl);
+window.addEventListener('hashchange', sincronizarConUrl);
 
 // ── tarjeta de producto (la usan la grilla, Destacados y Nuevos ingresos) ──
 function textoStockBajo(p) {
@@ -268,13 +342,29 @@ function tarjetaHtml(p) {
     </div>`;
 }
 
+// ── portada: fila de categorías (chips) y botón "Ver todo el catálogo (N productos)" ──
+function renderChips() {
+  const cont = $('chips-cat'); if (!cont) return;
+  const cats = categoriasDisponibles(productos);
+  cont.innerHTML = cats.map((c) => `<button type="button" class="chip-cat" data-clave="${esc(c.clave)}">${esc(c.nombre)}</button>`).join('');
+  cont.hidden = !cats.length;
+}
+const chipsCont = $('chips-cat');
+if (chipsCont) chipsCont.addEventListener('click', (e) => { const b = e.target.closest('.chip-cat'); if (b) window.setCategoria(b.dataset.clave); });
+function renderBotonCatalogo() {
+  const caja = $('ver-todo-caja'), btn = $('ver-todo-btn'); if (!caja || !btn) return;
+  const texto = textoBotonCatalogo(productos.length);
+  btn.textContent = texto; caja.hidden = !texto;
+}
+
 // ── grilla ──
 function renderGrid() {
+  if (categoria === '') return; // la portada NO dibuja la grilla del catálogo (ni carga sus fotos): solo la vista de catálogo
   const grid = $('grid');
   liberarReservas();
   if (!productos.length) { filtradosActuales = []; pintarVerMas(0); actualizarInfoBusqueda('', 0); grid.innerHTML = `<div class="empty"><p>Todavía no hay productos cargados.<br>Volvé pronto 🙂</p></div>`; return; }
   const palabras = palabrasDe(busqueda);
-  const filtrados = productos.filter((p) => coincide(p, palabras) && (!categoria || (categoria === CLAVE_OFERTAS ? enOferta(p) : claveDe(p.categoria) === categoria)))
+  const filtrados = productos.filter((p) => coincide(p, palabras) && (categoria === CLAVE_TODOS || (categoria === CLAVE_OFERTAS ? enOferta(p) : claveDe(p.categoria) === categoria)))
     .sort((a, b) => a.categoria.localeCompare(b.categoria, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
   actualizarInfoBusqueda(palabras.length ? busqueda : '', filtrados.length);
   filtradosActuales = filtrados;
@@ -307,9 +397,7 @@ function renderOfertas() {
 }
 window.verOfertas = function (ev) { // "Ver todas →", ítem del menú y de la barra: misma vista que una categoría, filtrada por ofertas
   if (ev) ev.preventDefault();
-  if ($('detalle-overlay').classList.contains('open')) window.cerrarDetalle();
   window.setCategoria(CLAVE_OFERTAS);
-  $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 // ── destacados (productos tildados ⭐ desde el panel) — se oculta con menos de 2 ──
@@ -322,11 +410,7 @@ function renderDestacados() {
   sec.classList.remove('reservando'); sec.style.display = lista.length >= 2 ? '' : 'none';
   if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
-window.irADestacados = function (ev) {
-  if (ev) ev.preventDefault();
-  const sec = $('destacados-section');
-  (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
+window.irADestacados = function (ev) { irASeccion('destacados-section', ev); };
 
 // ── nuevos ingresos (automático, por fecha real de alta) — se oculta con menos de 2 ──
 const MAX_NUEVOS = 8;
@@ -340,11 +424,14 @@ function renderNuevos() {
   sec.classList.remove('reservando'); sec.style.display = lista.length >= 2 ? '' : 'none';
   if (lista.length >= 2) strip.innerHTML = lista.map(tarjetaHtml).join('');
 }
-window.irANuevos = function (ev) {
+window.irANuevos = function (ev) { irASeccion('nuevos-section', ev); };
+
+// Desde una vista de catálogo vuelve a la portada y baja a la sección; si no se ve, no se mueve.
+function irASeccion(id, ev) {
   if (ev) ev.preventDefault();
-  const sec = $('nuevos-section');
-  (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
+  const ir = () => { const sec = $(id); if (sec && sec.style.display !== 'none') sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  if (categoria !== '') { window.setCategoria('', { sinScroll: true }); setTimeout(ir, 250); } else ir();
+}
 
 // ── ficha de producto ──
 window.abrirDetalle = function (id) {
