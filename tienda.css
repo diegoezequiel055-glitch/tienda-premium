@@ -566,14 +566,6 @@ body.visor-abierto{overflow:hidden}
 /* En una vista (Todo el catálogo, una categoría u ofertas) la portada no se ve; en la portada no se ve el catálogo. */
 html.en-vista .portada-solo{display:none !important}
 html:not(.en-vista) .vista-solo{display:none !important}
-/* Fila de categorías de la portada (chips): chica, con scroll horizontal. Reserva su alto antes de que llegue el catálogo (sin saltos). */
-.chips-cat{display:flex;gap:8px;overflow-x:auto;padding:12px 20px;min-height:60px;box-sizing:border-box;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.chips-cat::-webkit-scrollbar{display:none}
-.chips-cat[hidden]{display:none}
-.chip-cat{flex:0 0 auto;min-height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--ink);font-family:inherit;font-size:.82rem;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer}
-.chip-cat:hover{border-color:var(--ink)}
-.chip-cat:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-@media(min-width:700px){.chips-cat{padding:14px 32px}}
 /* Botón grande de ancho completo "Ver todo el catálogo (N productos)", con el estilo del botón "Ver más productos". */
 .ver-todo-caja{padding:28px 20px 12px}
 .ver-todo-caja[hidden]{display:none}
@@ -583,6 +575,28 @@ html:not(.en-vista) .vista-solo{display:none !important}
 html.en-vista:not([data-catalogo-listo]) :is(.inicio-texto,.info-franja,.mayorista-bloque,#pie-root){visibility:hidden}
 /* Las pills de categoría reservan su alto antes de que llegue el catálogo (sin saltos al entrar directo a una vista). */
 .cat-pills{min-height:37px}
+
+/* ── categorias-foto.css ── */
+/* ══ COMPRAR POR CATEGORÍA (categorias-foto.js / categorias-foto-ui.js) — tarjetas con foto, después de "Nuevos ingresos" ══ */
+.cat-foto-sec{padding:34px 0 10px;display:flex;flex-direction:column;gap:14px}
+.cat-foto-sec[hidden]{display:none}
+.cat-foto-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 20px}
+/* Tarjeta horizontal 4:3 con la foto a pantalla completa (cover), esquinas redondeadas, degradé oscuro abajo y el nombre en blanco con una flecha. */
+.cat-foto{position:relative;display:block;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:var(--surface2);color:#fff;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.cat-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease}
+.cat-foto::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.74) 0%,rgba(0,0,0,.3) 36%,rgba(0,0,0,0) 62%);pointer-events:none}
+.cat-foto-nombre{position:absolute;left:12px;right:12px;bottom:10px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Anton',sans-serif;font-weight:400;font-size:1rem;line-height:1.1;letter-spacing:.5px;text-transform:uppercase;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.cat-foto-nombre>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-foto-flecha{flex:0 0 auto;font-family:'Outfit',sans-serif;font-weight:600}
+.cat-foto:hover img{transform:scale(1.04)}
+.cat-foto:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+/* Cantidad impar en celular (2 columnas): la última ocupa todo el ancho (más baja, para que la fila no se vea el doble de alta). */
+@media(max-width:699px){.cat-foto:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:8/3}}
+@media(min-width:700px){
+  .cat-foto-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:0 32px}
+  .cat-foto-nombre{font-size:1.1rem;left:14px;right:14px;bottom:12px}
+}
+@media(prefers-reduced-motion:reduce){.cat-foto img{transition:none}.cat-foto:hover img{transform:none}}
 
 /* ── deshacer-eliminar.css ── */
 /* Aviso "Producto eliminado · Deshacer" (deshacer-eliminar.js). Queda por encima del carrito y de su botón de pedir. */
