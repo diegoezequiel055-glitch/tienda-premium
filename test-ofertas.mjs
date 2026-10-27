@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { aplicarOferta, ofertaValida, enOferta, ofertasList, precioAnterior, etiquetaHtml, anteriorHtml, CLAVE_OFERTAS } from './ofertas.js';
+import { aplicarOferta, ofertaValida, enOferta, ofertasList, precioAnterior, etiquetaHtml, anteriorHtml, tarjetaCompactaHtml, CLAVE_OFERTAS } from './ofertas.js';
 import { precioLista, textoCuotas, textoEfectivoVerde, preciosParaCarrito, subtotalDe, precioUnitario, resolverCarrito, extrasPrecioHtml } from './precios.js';
 import { armarMensaje } from './pedido-mensaje.js';
 import { eventos } from './analytics.js';
@@ -75,6 +75,14 @@ await t('etiqueta y precio anterior: HTML con -15%, tachado y texto para lectore
   assert.match(etiquetaHtml(p), /class="badge-oferta"[^>]*>-15%</); assert.match(anteriorHtml(p), /<s>\$51\.000<\/s>/);
   const chico = aplicarOferta(crudo({ precio: 100000, precioOferta: 99800, precioTarjeta: undefined, precioOfertaTarjeta: undefined }));
   assert.equal(etiquetaHtml(chico), ''); assert.match(anteriorHtml(chico), /<s>\$100\.000<\/s>/);
+});
+await t('tarjeta compacta (pura): foto, etiqueta, nombre, precio anterior tachado y precio nuevo; SIN cuotas, talles ni línea de efectivo; sin foto dice "Sin foto"', () => {
+  const p = aplicarOferta(crudo()); const h = tarjetaCompactaHtml(p, 'https://x/f.jpg');
+  assert.match(h, /class="of-card" data-id="remera\|x\|negro"/); assert.match(h, /<img src="https:\/\/x\/f\.jpg"[^>]*loading="lazy"/); assert.match(h, />-15%</); assert.match(h, /<s>\$51\.000<\/s>/); assert.match(h, /of-precio">\$44\.000</); assert.match(h, /Remera X/);
+  for (const prohibido of [/cuotas/i, /interés/i, /Talles/i, /transferencia/i, /efectivo/i, /px-extras/]) assert.equal(prohibido.test(h), false, String(prohibido));
+  assert.match(tarjetaCompactaHtml(p, ''), /Sin foto/); assert.equal(/<img/.test(tarjetaCompactaHtml(p, '')), false);
+  const sinT = aplicarOferta(crudo({ precioTarjeta: undefined, precioOfertaTarjeta: undefined })); assert.match(tarjetaCompactaHtml(sinT, 'f'), /<s>\$40\.000<\/s>/); assert.match(tarjetaCompactaHtml(sinT, 'f'), /of-precio">\$34\.000</);
+  assert.match(tarjetaCompactaHtml(aplicarOferta(crudo({ nombre: 'A "B" <i>' })), 'f'), /A &quot;B&quot; &lt;i&gt;/);
 });
 await t('ofertasList: solo los que están en oferta', () => assert.deepEqual(ofertasList([aplicarOferta(crudo()), aplicarOferta(normal)]).map((p) => p.id), ['remera|x|negro']));
 await t('CARRITO: con y sin oferta mezclados — efectivo: 34.000 + 25.000; tarjeta: 44.000 + 32.000 (nunca los normales 40.000 / 51.000)', () => {
@@ -175,56 +183,63 @@ if (!process.env.SOLO_PURAS) {
     const { page, ctx } = await abrir({ catalogo: viejo }); assert.equal(await visible(page, 'ofertas-section'), false);
     assert.match(await txt(page, '#grid .card .card-precio'), /\$\d/); await ctx.close();
   });
-  await t('CON ofertas: la sección está debajo del hero y ARRIBA de "Nuevos ingresos"; título OFERTAS y enlace "Ver todas →"', async () => {
+  await t('CON ofertas: la sección "Ofertas" está AL FINAL (después de "Ver más productos" y de Nuevos ingresos/Destacados/catálogo, arriba del footer) y NO entre el hero y "Nuevos ingresos"', async () => {
     const { page, ctx } = await abrir({ perfil: 'pc' });
-    const pos = await page.evaluate(() => { const y = (id) => document.getElementById(id).getBoundingClientRect().top + scrollY; return { hero: document.getElementById('hero-rot').getBoundingClientRect().bottom + scrollY, ofertas: y('ofertas-section'), nuevos: y('nuevos-section'), destacados: y('destacados-section') }; });
-    assert.ok(pos.ofertas >= pos.hero - 2, 'debajo del hero'); assert.ok(pos.ofertas < pos.nuevos, 'arriba de Nuevos ingresos'); assert.ok(pos.nuevos < pos.destacados);
-    assert.equal((await txt(page, '#ofertas-section .section-title')).trim().toUpperCase(), 'OFERTAS');
-    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#ofertas-section .section-title')).fontFamily.includes('Anton')), true, 'título en Anton');
-    assert.match(await txt(page, '.ofertas-ver'), /Ver todas →/);
-    assert.equal(await page.evaluate(() => document.querySelectorAll('#ofertas-strip .card').length), OFERTAS.length); await ctx.close();
+    const pos = await page.evaluate(() => { const y = (el) => el.getBoundingClientRect().top + scrollY; const b = (el) => el.getBoundingClientRect().bottom + scrollY; const f = document.querySelector('footer, .footer, #footer');
+      return { hero: b(document.getElementById('hero-rot')), nuevos: y(document.getElementById('nuevos-section')), destacados: y(document.getElementById('destacados-section')), grid: b(document.getElementById('grid')), vermas: y(document.getElementById('ver-mas-caja')), ofertas: y(document.getElementById('ofertas-section')), footer: f ? y(f) : null, alto: document.documentElement.scrollHeight }; });
+    assert.ok(pos.ofertas > pos.nuevos && pos.ofertas > pos.destacados, 'después de Nuevos ingresos y Destacados'); assert.ok(pos.ofertas > pos.grid - 2, 'debajo de todos los productos del catálogo'); assert.ok(pos.ofertas >= pos.vermas, 'después del botón "Ver más productos"');
+    if (pos.footer) assert.ok(pos.ofertas < pos.footer, 'arriba del footer'); else assert.ok(pos.ofertas < pos.alto);
+    assert.ok(pos.nuevos - pos.hero < 120, 'Nuevos ingresos sigue pegado al hero (sin sección Ofertas en el medio): ' + (pos.nuevos - pos.hero));
+    assert.equal((await txt(page, '#ofertas-section .section-title')).trim().toUpperCase(), 'OFERTAS'); assert.match(await txt(page, '.ofertas-ver'), /Ver todas →/);
+    const f = await page.evaluate(() => ({ of: parseFloat(getComputedStyle(document.querySelector('#ofertas-section .section-title')).fontSize), otro: parseFloat(getComputedStyle(document.querySelector('#nuevos-section .section-title')).fontSize), anton: getComputedStyle(document.querySelector('#ofertas-section .section-title')).fontFamily.includes('Anton') }));
+    assert.ok(f.of <= f.otro, `título más chico o igual que el de las otras secciones (${f.of} vs ${f.otro})`); assert.ok(f.anton);
+    assert.equal(await page.evaluate(() => document.querySelectorAll('#ofertas-strip .of-card').length), OFERTAS.length); await ctx.close();
   });
-  await t('TARJETA en oferta: etiqueta roja "-15%" sobre la foto (arriba a la izquierda), precio anterior tachado gris, precio nuevo, cuotas y línea verde "Efectivo o transferencia"', async () => {
+  await t('TARJETA CHICA: foto 4:5 con etiqueta roja "-15%", nombre, precio anterior tachado y precio nuevo; SIN cuotas, SIN "Talles" y SIN la línea de efectivo', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone' });
-    const c = await page.evaluate(() => { const card = document.querySelector('#ofertas-strip .card'); const b = card.querySelector('.card-foto .badge-oferta'); const f = card.querySelector('.card-foto').getBoundingClientRect(); const br = b.getBoundingClientRect(); const cs = getComputedStyle(b);
-      return { badge: b.textContent, bg: cs.backgroundColor, color: cs.color, radio: parseFloat(cs.borderTopLeftRadius), izq: br.left - f.left, arriba: br.top - f.top, ant: card.querySelector('.card-precio-ant s').textContent, antTachado: getComputedStyle(card.querySelector('.card-precio-ant s')).textDecorationLine, antColor: getComputedStyle(card.querySelector('.card-precio-ant')).color,
-        nuevo: card.querySelector('.card-precio').textContent, cuotas: card.querySelector('.px-cuotas').textContent, verde: card.querySelector('.px-efectivo').textContent, cat: card.querySelector('.card-cat').textContent, nombre: card.querySelector('.card-nombre').textContent }; });
-    const o = OFERTAS.find((x) => x.nombre === c.nombre); assert.ok(o, 'la tarjeta es de un producto en oferta: ' + c.nombre); const fm = (n) => '$' + n.toLocaleString('es-AR');
-    assert.equal(c.badge, `-${Math.round((1 - o.precioOferta / o.precio) * 100)}%`); assert.equal(c.bg, 'rgb(229, 37, 42)'); assert.equal(c.color, 'rgb(255, 255, 255)'); assert.ok(c.radio >= 10); assert.ok(c.izq >= 0 && c.izq < 16 && c.arriba >= 0 && c.arriba < 16, `posición ${c.izq},${c.arriba}`);
-    assert.equal(c.ant, fm(o.precioTarjeta)); assert.equal(c.antTachado, 'line-through'); assert.match(c.antColor, /rgb\((1[0-9]{2}|[0-9]{2}), (1[0-9]{2}|[0-9]{2}), (1[0-9]{2}|[0-9]{2})\)/);
-    assert.equal(c.nuevo, fm(o.precioOfertaTarjeta)); assert.equal(c.cuotas, `3 cuotas de ${fm(Math.round(o.precioOfertaTarjeta / 3))} sin interés`); assert.equal(c.verde, fm(o.precioOferta) + ' con transferencia o efectivo'); assert.ok(c.cat); await ctx.close();
+    const c = await page.evaluate(() => { const card = document.querySelector('#ofertas-strip .of-card'); const f = card.querySelector('.of-foto').getBoundingClientRect(); const b = card.querySelector('.badge-oferta'); const br = b.getBoundingClientRect(); const cs = getComputedStyle(b);
+      return { badge: b.textContent, bg: cs.backgroundColor, color: cs.color, izq: br.left - f.left, arriba: br.top - f.top, prop: f.width / f.height, nombre: card.querySelector('.of-nombre').textContent, ant: card.querySelector('.of-ant s').textContent, antTach: getComputedStyle(card.querySelector('.of-ant s')).textDecorationLine, antColor: getComputedStyle(card.querySelector('.of-ant')).color, nuevo: card.querySelector('.of-precio').textContent, texto: card.innerText, img: card.querySelector('img') ? card.querySelector('img').getAttribute('loading') : null, tag: card.tagName, wCard: card.getBoundingClientRect().width }; });
+    const o = OFERTAS.find((x) => x.nombre === c.nombre); assert.ok(o, 'es un producto en oferta: ' + c.nombre); const fm = (n) => '$' + n.toLocaleString('es-AR');
+    assert.equal(c.badge, `-${Math.round((1 - o.precioOferta / o.precio) * 100)}%`); assert.equal(c.bg, 'rgb(229, 37, 42)'); assert.equal(c.color, 'rgb(255, 255, 255)'); assert.ok(c.izq >= 0 && c.izq < 12 && c.arriba >= 0 && c.arriba < 12, `etiqueta arriba a la izquierda: ${c.izq},${c.arriba}`);
+    assert.ok(Math.abs(c.prop - 0.8) < 0.02, 'foto 4:5: ' + c.prop); assert.equal(c.ant, fm(o.precioTarjeta)); assert.equal(c.antTach, 'line-through'); assert.equal(c.antColor, 'rgb(138, 138, 138)'); assert.equal(c.nuevo, fm(o.precioOfertaTarjeta));
+    assert.equal(/cuotas|interés/i.test(c.texto), false, 'sin línea de cuotas: ' + c.texto); assert.equal(/Talles/i.test(c.texto), false, 'sin talles'); assert.equal(/efectivo|transferencia/i.test(c.texto), false, 'sin línea de efectivo'); assert.equal(c.tag, 'BUTTON'); assert.equal(c.img, 'lazy'); assert.ok(c.wCard < 200, 'tarjeta chica: ' + c.wCard); await ctx.close();
   });
-  await t('la tarjeta en oferta mantiene la proporción 4:5 y el mismo ancho que sus vecinas (y la foto no se deforma)', async () => {
-    for (const perfil of ['iphone', 'pc']) {
-      const { page, ctx } = await abrir({ perfil });
-      const m = await page.evaluate(() => { const r = (el) => el.getBoundingClientRect(); const cs = [...document.querySelectorAll('#ofertas-strip .card')]; return { w: cs.map((c) => Math.round(r(c).width)), prop: cs.map((c) => r(c.querySelector('.card-foto')).width / r(c.querySelector('.card-foto')).height) }; });
-      assert.equal(new Set(m.w).size, 1, perfil + ' anchos distintos: ' + m.w); assert.ok(m.prop.every((x) => Math.abs(x - 0.8) < 0.02), perfil + ' proporción ' + m.prop); await ctx.close();
+  await t('al tocar una tarjeta del carrusel se abre la ficha de ese producto (con su precio de oferta y el link ?p=ID)', async () => {
+    const { page, ctx } = await abrir({ perfil: 'iphone' });
+    const o = OFERTAS[1]; await page.evaluate((id) => { document.querySelector(`#ofertas-strip .of-card[data-id="${id}"]`).click(); }, o.id); await esp(500);
+    assert.equal(await page.evaluate(() => document.getElementById('detalle-overlay').classList.contains('open')), true);
+    assert.equal(await page.evaluate(() => document.getElementById('detalle-nombre').textContent), o.nombre); assert.equal(await page.evaluate(() => document.getElementById('detalle-precio').textContent), '$' + o.precioOfertaTarjeta.toLocaleString('es-AR'));
+    assert.ok((await page.evaluate(() => location.search)).includes('p=')); await ctx.close();
+  });
+  await t('CARRUSEL: ~2,5 tarjetas por pantalla en celular (2 enteras + la mitad de la tercera) y ~6 en PC (con un pedazo de la siguiente), con scroll-snap y sin desborde', async () => {
+    const medir = (page) => page.evaluate(() => { const vw = innerWidth; const rs = [...document.querySelectorAll('#ofertas-strip .of-card')].map((c) => c.getBoundingClientRect()); const par = rs.find((r) => r.left < vw - 6 && r.right > vw + 6); return { enteras: rs.filter((r) => r.left >= -1 && r.right <= vw + 1).length, parcial: rs.filter((r) => r.left < vw - 6 && r.right > vw + 6).length, frac: par ? (vw - par.left) / par.width : 0, snap: getComputedStyle(document.getElementById('ofertas-strip')).scrollSnapType, sobra: document.documentElement.scrollWidth - document.documentElement.clientWidth, w: Math.round(rs[0].width) }; });
+    const prod = productosPrueba(72).map((p, i) => (i % 3 === 0 ? { ...p, precioOferta: Math.round(p.precio * 0.8 / 500) * 500, precioOfertaTarjeta: Math.round(p.precio * 0.8 * 1.27 / 500) * 500 } : p)); // 24 ofertas
+    for (const [perfil, enteras] of [['iphone', 2], ['android', 2], ['pc', 6]]) {
+      const { page, ctx } = await abrir({ perfil, catalogo: prod });
+      const m = await medir(page); assert.equal(m.enteras, enteras, `${perfil}: tarjetas enteras ${m.enteras} (ancho ${m.w})`); assert.equal(m.parcial, 1, `${perfil}: tiene que asomar un pedazo de la siguiente`); assert.match(m.snap, /x mandatory/); assert.ok(m.sobra <= 1, perfil + ' desborde ' + m.sobra);
+      if (perfil !== 'pc') assert.ok(m.frac > 0.25 && m.frac < 0.8, `${perfil}: se ve más o menos la mitad de la tercera (${m.frac.toFixed(2)})`); await ctx.close();
     }
   });
-  await t('CARRUSEL: en celular se ven 2 tarjetas y un pedazo de la tercera; en PC ~4 y un pedazo de la quinta (con scroll-snap)', async () => {
-    const medir = (page) => page.evaluate(() => { const vw = innerWidth; const rs = [...document.querySelectorAll('#ofertas-strip .card')].map((c) => c.getBoundingClientRect()); return { enteras: rs.filter((r) => r.left >= -1 && r.right <= vw + 1).length, parcial: rs.filter((r) => r.left < vw - 6 && r.right > vw + 6).length, snap: getComputedStyle(document.getElementById('ofertas-strip')).scrollSnapType, sobra: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
-    const prod = productosPrueba(48); // más de 5 ofertas para ver el "pedazo de la quinta"
-    for (const [perfil, enteras] of [['iphone', 2], ['android', 2], ['pc', 4]]) {
-      const { page, ctx } = await abrir({ perfil, catalogo: prod.map((p, i) => (i % 3 === 0 ? { ...p, precioOferta: Math.round(p.precio * 0.8 / 500) * 500, precioOfertaTarjeta: Math.round(p.precio * 0.8 * 1.27 / 500) * 500 } : p)) });
-      const m = await medir(page); assert.equal(m.enteras, enteras, `${perfil}: tarjetas enteras ${m.enteras}`); assert.equal(m.parcial, 1, `${perfil}: tiene que asomar un pedazo de la siguiente`); assert.match(m.snap, /x mandatory/); assert.ok(m.sobra <= 1, 'desborde de página'); await ctx.close();
-    }
-  });
-  await t('MENÚ de la barra (PC): "Ofertas" rojo #e5252a, texto blanco, píldora, junto a Nuevos ingresos y Destacados; al tocarlo baja a la sección', async () => {
+  await t('BARRA (PC): "Ofertas" es solo texto rojo (sin fondo de píldora), del mismo tamaño que los otros ítems; al tocarlo va a la vista de todas las ofertas', async () => {
     const { page, ctx } = await abrir({ perfil: 'pc' });
-    const n = await page.evaluate(() => { const a = document.getElementById('nav-ofertas'); const cs = getComputedStyle(a); const r = a.getBoundingClientRect(); const hermanos = [...a.parentNode.children].map((x) => x.textContent.trim()); return { bg: cs.backgroundColor, color: cs.color, radio: parseFloat(cs.borderTopLeftRadius), alto: r.height, visible: r.width > 0, hermanos }; });
-    assert.equal(n.bg, 'rgb(229, 37, 42)'); assert.equal(n.color, 'rgb(255, 255, 255)'); assert.ok(n.radio >= n.alto / 2 - 1, 'píldora'); assert.deepEqual(n.hermanos.slice(0, 3), ['Ofertas', 'Nuevos ingresos', 'Destacados']);
+    const n = await page.evaluate(() => { const a = document.getElementById('nav-ofertas'); const cs = getComputedStyle(a); const otro = getComputedStyle(document.querySelector('.hdr-nav a:not(.nav-ofertas):not(.btn-mayorista)')); return { bg: cs.backgroundColor, color: cs.color, radio: cs.borderTopLeftRadius, pad: cs.paddingLeft, fs: cs.fontSize, fsOtro: otro.fontSize, h: a.getBoundingClientRect().height, hOtro: document.querySelector('.hdr-nav a:not(.nav-ofertas):not(.btn-mayorista)').getBoundingClientRect().height, texto: a.textContent.trim() }; });
+    assert.equal(n.color, 'rgb(229, 37, 42)'); assert.equal(n.bg, 'rgba(0, 0, 0, 0)', 'sin fondo'); assert.equal(n.radio, '0px'); assert.equal(n.pad, '0px'); assert.equal(n.fs, n.fsOtro, 'mismo tamaño de letra'); assert.ok(Math.abs(n.h - n.hOtro) < 1, 'misma altura'); assert.equal(n.texto, 'Ofertas');
     await page.click('#nav-ofertas'); await esp(900);
-    const top = await page.evaluate(() => document.getElementById('ofertas-section').getBoundingClientRect().top); assert.ok(Math.abs(top) < 120, 'la sección quedó arriba: ' + top);
-    await ctx.close();
+    const v = await page.evaluate(() => ({ n: document.querySelectorAll('#grid > .card').length, todas: [...document.querySelectorAll('#grid > .card')].every((c) => c.querySelector('.badge-oferta')), titulo: document.getElementById('grid-titulo').textContent }));
+    assert.equal(v.n, OFERTAS.length); assert.ok(v.todas); assert.equal(v.titulo, 'Ofertas'); await ctx.close();
   });
-  await t('MENÚ LATERAL (celular): aparece "Ofertas" rojo arriba; al tocarlo se cierra el menú y baja a la sección', async () => {
+  await t('MENÚ LATERAL (celular): NO hay botón rojo; hay una fila "Ofertas" (rojo #e5252a, negrita, ›) justo debajo de "Todos los productos", con el mismo estilo; al tocarla se cierra el menú y abre la vista de ofertas', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone' });
-    await page.click('#btn-menu'); await esp(350);
-    const n = await page.evaluate(() => { const a = document.querySelector('#menu-ofertas .menu-ofertas-btn'); const cs = getComputedStyle(a); const r = a.getBoundingClientRect(); return { bg: cs.backgroundColor, color: cs.color, alto: r.height, ancho: r.width, visible: r.width > 0 && r.top < innerHeight }; });
-    assert.equal(n.bg, 'rgb(229, 37, 42)'); assert.equal(n.color, 'rgb(255, 255, 255)'); assert.ok(n.alto >= 44, 'alto ' + n.alto); assert.ok(n.visible);
-    await page.click('#menu-ofertas .menu-ofertas-btn'); await esp(1000);
-    assert.equal(await page.evaluate(() => document.getElementById('menu-overlay').classList.contains('open')), false);
-    const top = await page.evaluate(() => document.getElementById('ofertas-section').getBoundingClientRect().top); assert.ok(top < 160 && top > -60, 'la sección quedó a la vista: ' + top); await ctx.close();
+    await page.click('#btn-menu'); await esp(700);
+    const n = await page.evaluate(() => { const fila = document.getElementById('menu-ofertas-fila'); const tog = document.getElementById('menu-toggle'); const cs = getComputedStyle(fila), ct = getComputedStyle(tog); const r = fila.getBoundingClientRect(), rt = tog.getBoundingClientRect();
+      return { color: cs.color, peso: cs.fontWeight, bg: cs.backgroundColor, bgTog: ct.backgroundColor, fs: cs.fontSize, fsTog: ct.fontSize, alto: r.height, altoTog: rt.height, borde: cs.borderBottomWidth, bordeTog: ct.borderBottomWidth, pad: cs.paddingLeft, padTog: ct.paddingLeft, flecha: fila.querySelector('.menu-flecha').textContent, texto: fila.querySelector('span').textContent, debajo: r.top >= rt.bottom - 1, pegada: r.top - rt.bottom, visible: r.width > 0 && r.top < innerHeight, botonRojo: !!document.querySelector('.menu-ofertas-btn'), hermano: document.getElementById('menu-cats').nextElementSibling.id }; });
+    assert.equal(n.botonRojo, false, 'ya no existe el botón rojo grande'); assert.equal(n.color, 'rgb(229, 37, 42)'); assert.ok(Number(n.peso) >= 700, 'negrita'); assert.equal(n.bg, n.bgTog, 'sin fondo de color'); assert.equal(n.fs, n.fsTog); assert.equal(n.alto, n.altoTog, 'misma altura que "Todos los productos"'); assert.equal(n.borde, n.bordeTog); assert.equal(n.pad, n.padTog);
+    assert.equal(n.flecha, '›'); assert.equal(n.texto, 'Ofertas'); assert.ok(n.debajo && n.pegada < 20, 'justo debajo de "Todos los productos": ' + n.pegada); assert.ok(n.visible); assert.equal(n.hermano, 'menu-ofertas');
+    await page.click('#menu-ofertas-fila'); await esp(1000);
+    assert.equal(await page.evaluate(() => document.getElementById('menu-overlay').classList.contains('open')), false, 'el menú se cierra');
+    const v = await page.evaluate(() => ({ n: document.querySelectorAll('#grid > .card').length, todas: [...document.querySelectorAll('#grid > .card')].every((c) => c.querySelector('.badge-oferta')), titulo: document.getElementById('grid-titulo').textContent, hash: location.hash }));
+    assert.equal(v.n, OFERTAS.length); assert.ok(v.todas); assert.equal(v.titulo, 'Ofertas'); assert.equal(v.hash, '#cat=ofertas');
+    await ctx.close();
   });
   await t('"Ver todas →": vista con TODAS las ofertas (mismo mecanismo que una categoría: filtro, título y #cat=ofertas); el logo vuelve al catálogo completo', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone' });
@@ -325,39 +340,34 @@ if (!process.env.SOLO_PURAS) {
     await page.evaluate((items) => window.__SERVIDOR.publicarCatalogo(items), CON.map((p, i) => (i === 3 ? { ...p, precioOferta: 30000 } : p))); await esp(400);
     const l2 = await page.evaluate(() => ({ ...window.__LECT })); assert.equal(l2.catalogo_unico - l.catalogo_unico, 1); await ctx.close();
   });
-  await t('LAYOUT: sin desborde horizontal ni saltos de diseño (CLS): el lugar se reserva solo si la visita anterior tuvo ofertas (sin ofertas conocidas no hay hueco) (iPhone, Android y PC)', async () => {
-    const cls = (page) => page.evaluate(() => window.__cls);
-    for (const perfil of ['iphone', 'android', 'pc']) for (const [pista, sinOfertas] of [[null, false], ['1', false], ['0', true], [null, true]]) {
+  await t('LAYOUT: sin desborde horizontal y sin saltos de diseño (CLS ≈ 0) con y sin ofertas, en iPhone, Android y PC (la sección está al final: ya no empuja nada)', async () => {
+    for (const perfil of ['iphone', 'android', 'pc']) for (const sinOfertas of [false, true]) {
       const ctx = await browser.newContext(PERFILES[perfil]);
       await ctx.route('**/*', (r) => { const u = r.request().url(); if (u.startsWith(BASE)) { if (u.includes('/firebase-config.js')) return r.fulfill({ status: 200, contentType: 'text/javascript', body: dobleFirebase() }); return r.continue(); } if (/res\.cloudinary\.com/.test(u)) return r.fulfill({ status: 200, contentType: 'image/png', body: PNG }); return r.abort(); });
       const page = await ctx.newPage(); const errores = [];
       page.on('pageerror', (e) => errores.push(e.message));
       await page.addInitScript(guion(24, 152));
-      await page.addInitScript(({ pista, sinOfertas }) => { window.__MOCK = { config: null, catalogoDemora: 700, ...(sinOfertas ? { catalogo: window.__PRODUCTOS_DEF.map(({ precioOferta, precioOfertaTarjeta, ...r }) => r) } : {}) }; if (pista) localStorage.setItem('tpOfertas', pista); window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); }, { pista, sinOfertas });
+      await page.addInitScript(({ sinOfertas }) => { window.__MOCK = { config: null, catalogoDemora: 700, ...(sinOfertas ? { catalogo: window.__PRODUCTOS_DEF.map(({ precioOferta, precioOfertaTarjeta, ...r }) => r) } : {}) }; window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); }, { sinOfertas });
       await page.goto(BASE + '/index.html', { waitUntil: 'load' });
-      if (pista === '1') assert.equal(await visible(page, 'ofertas-section'), true, perfil + ': el lugar ya está reservado antes de que llegue el catálogo');
-      else assert.equal(await visible(page, 'ofertas-section'), false, perfil + ': sin ofertas conocidas no se reserva nada (sin hueco)');
       await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 }); await esp(900);
       const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       assert.ok(d <= 1, perfil + ' desborde ' + d); assert.equal(errores.length, 0, errores.join(' | '));
-      const v = await cls(page); const nombre = `${sinOfertas ? 'SIN ofertas' : 'con ofertas'}, ${pista === null ? 'primera visita' : pista === '1' ? 'visita anterior con ofertas' : 'visita anterior sin ofertas'}`;
-      if (process.env.DEBUG) console.log(`   ${perfil} ${nombre}: CLS ${v.toFixed(3)}`);
-      // Única combinación con salto: primera visita (sin pista) a una tienda CON ofertas: no se reserva nada porque todavía no se sabe que hay ofertas (decisión de Diego: sin hueco si no hay).
-      assert.ok(v <= (!sinOfertas && pista === null ? 0.3 : 0.03), `${perfil} ${nombre}: CLS ${v.toFixed(3)}`);
+      const v = await page.evaluate(() => window.__cls); if (process.env.DEBUG) console.log(`   ${perfil} ${sinOfertas ? 'sin' : 'con'} ofertas: CLS ${v.toFixed(3)}`);
+      assert.ok(v <= 0.03, `${perfil} ${sinOfertas ? 'sin' : 'con'} ofertas: CLS ${v.toFixed(3)}`);
       await ctx.close();
     }
   });
-  await t('la pista se guarda sola: con ofertas deja tpOfertas=1 y sin ofertas tpOfertas=0 (y sin ofertas no queda nada reservado)', async () => {
-    const a = await abrir({ perfil: 'iphone' }); assert.equal(await a.page.evaluate(() => localStorage.getItem('tpOfertas')), '1'); await a.ctx.close();
-    const b = await abrir({ perfil: 'iphone', catalogo: SIN_OFERTAS() }); assert.equal(await b.page.evaluate(() => localStorage.getItem('tpOfertas')), '0');
-    assert.equal(await b.page.evaluate(() => document.getElementById('ofertas-section').classList.contains('reservando')), false); await b.ctx.close();
+  await t('se quitó la reserva de lugar: no hay "reservando" en la sección de ofertas, ni pista en localStorage, ni script inline', async () => {
+    const { page, ctx } = await abrir({ perfil: 'iphone' });
+    assert.equal(await page.evaluate(() => document.getElementById('ofertas-section').classList.contains('reservando')), false); assert.equal(await page.evaluate(() => localStorage.getItem('tpOfertas')), null);
+    const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8'); assert.equal(/tpOfertas/.test(html), false); assert.equal(/tpOfertas|reservando/.test(fs.readFileSync(path.join(RAIZ, 'ofertas.css'), 'utf8')), false); await ctx.close();
   });
   if (process.env.CAPTURAS) {
-    await t('CAPTURAS (portada con la sección, ficha de un producto en oferta y carrito) en iPhone, Android y PC', async () => {
+    await t('CAPTURAS (portada con la sección al final, menú, barra, ficha y carrito) en iPhone, Android y PC', async () => {
       fs.mkdirSync(process.env.CAPTURAS, { recursive: true });
       for (const perfil of ['iphone', 'android', 'pc']) {
-        const { page, ctx } = await abrir({ perfil, catalogo: productosPrueba(48) }); // más productos: se ve el pedazo de la siguiente tarjeta
-        await page.evaluate(() => { const s = document.getElementById('ofertas-section'); window.scrollTo(0, Math.max(0, s.getBoundingClientRect().top + scrollY - 70)); }); await esp(600);
+        const { page, ctx } = await abrir({ perfil, catalogo: productosPrueba(48) });
+        await page.evaluate(() => { const s = document.getElementById('ofertas-section'); window.scrollTo({ top: Math.max(0, s.getBoundingClientRect().top + scrollY - 110), behavior: 'instant' }); }); await esp(900);
         await page.screenshot({ path: path.join(process.env.CAPTURAS, `tienda-portada-${perfil}.png`) });
         if (perfil === 'iphone') { await page.evaluate(() => window.scrollTo(0, 0)); await page.click('#btn-menu'); await esp(450); await page.screenshot({ path: path.join(process.env.CAPTURAS, `tienda-menu-${perfil}.png`) }); await page.click('#menu-cerrar'); await esp(300); }
         await abrirFicha(page, OFERTAS[0].id); await esp(500); await page.screenshot({ path: path.join(process.env.CAPTURAS, `tienda-ficha-${perfil}.png`) });

@@ -46,3 +46,12 @@ export const precioAnterior = (p) => (!enOferta(p) ? 0 : (p.precioTarjeta && p.p
 // Etiqueta roja sobre la foto ("-15%"). Sin porcentaje (menos de 1 %) no se muestra, pero el precio tachado sí.
 export const etiquetaHtml = (p) => (enOferta(p) && p.pctOferta >= 1 ? `<span class="badge-oferta" aria-label="${p.pctOferta} por ciento de descuento">-${p.pctOferta}%</span>` : '');
 export const anteriorHtml = (p, clase = 'card-precio-ant', tag = 'div') => (enOferta(p) ? `<${tag} class="${clase}"><span class="solo-lectores">Precio anterior </span><s>$${fmt(precioAnterior(p))}</s></${tag}>` : '');
+
+// Tarjeta chica del carrusel "Ofertas" (al final de la página): foto 4:5 con la etiqueta, nombre, precio anterior tachado y precio nuevo.
+// SIN cuotas, SIN talles y SIN la línea de efectivo (esos datos quedan para la ficha). Tocarla abre la ficha (ofertas-ui.js).
+// urlFoto: la foto ya achicada (fotos-cloudinary.js) o '' si no tiene.
+export const tarjetaCompactaHtml = (p, urlFoto) => `<button type="button" class="of-card" data-id="${esc(p.id)}" aria-label="${esc(p.nombre)}, $${fmt(p.precioTarjeta || p.precio)}">
+    <span class="of-foto">${urlFoto ? `<img src="${esc(urlFoto)}" width="400" height="500" loading="lazy" alt="">` : '<span class="sin-foto">Sin foto</span>'}${etiquetaHtml(p)}</span>
+    <span class="of-nombre">${esc(p.nombre)}</span>
+    <span class="of-precios"><span class="of-ant"><span class="solo-lectores">Precio anterior </span><s>$${fmt(precioAnterior(p))}</s></span><span class="of-precio">$${fmt(p.precioTarjeta || p.precio)}</span></span>
+  </button>`;
