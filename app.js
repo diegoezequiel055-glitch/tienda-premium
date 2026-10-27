@@ -204,6 +204,8 @@ function marcarPill() {
 }
 window.setBusqueda = function (v) {
   busqueda = v;
+  window.__buscando = palabrasDe(v).length > 0; // ofertas-ui.js: con una búsqueda activa la sección compacta de Ofertas se oculta
+  document.dispatchEvent(new CustomEvent('busqueda-cambiada', { detail: window.__buscando }));
   // Al buscar se busca en todo el catálogo: se limpia el filtro de categoría.
   if (palabrasDe(v).length && categoria) {
     categoria = ''; window.__categoriaActual = '';

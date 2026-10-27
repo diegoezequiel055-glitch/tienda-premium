@@ -31,8 +31,10 @@ if (cats && cats.parentNode) {
 let hashPendiente = true; // #cat=ofertas se aplica cuando llega el catálogo
 let hayOfertas = false;
 let categoriaActual = window.__categoriaActual || ''; // '' = portada normal
-// La sección compacta se ve SOLO en la portada normal (sin categoría): en la vista de ofertas sería un duplicado y en las otras categorías no corresponde.
-function mostrarSeccion() { const sec = $('ofertas-section'); if (sec) sec.style.display = hayOfertas && categoriaActual === '' ? '' : 'none'; }
+let buscando = window.__buscando === true; // hay una búsqueda por texto activa
+// La sección compacta se ve SOLO en la portada normal (sin categoría ni búsqueda): en la vista de ofertas sería un duplicado, en las otras categorías no corresponde y al buscar distrae de los resultados.
+function mostrarSeccion() { const sec = $('ofertas-section'); if (sec) sec.style.display = hayOfertas && categoriaActual === '' && !buscando ? '' : 'none'; }
+document.addEventListener('busqueda-cambiada', (e) => { buscando = e.detail === true; mostrarSeccion(); });
 function alCambiarOfertas(lista) {
   const hay = lista.length > 0;
   hayOfertas = hay;
