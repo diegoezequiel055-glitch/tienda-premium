@@ -379,6 +379,54 @@ if (!process.env.SOLO_PURAS) {
       }
     });
   }
+  await t('SIN DUPLICADO: la sección compacta se ve solo en la portada normal; en la vista de ofertas (#cat=ofertas, menú, barra, "Ver todas") y en las otras categorías NO; al volver a la portada reaparece sin recargar', async () => {
+    const seccion = (page) => visible(page, 'ofertas-section');
+    const { page, ctx } = await abrir({ perfil: 'pc' });
+    assert.equal(await seccion(page), true, 'portada: se ve');
+    assert.equal(await page.evaluate(() => document.querySelectorAll('#ofertas-strip .of-card').length), OFERTAS.length);
+    // "Ver todas →"
+    await page.click('.ofertas-ver'); await esp(700);
+    assert.equal(await page.evaluate(() => location.hash), '#cat=ofertas'); assert.equal(await seccion(page), false, 'vista de ofertas (Ver todas): NO se ve');
+    assert.equal(await page.evaluate(() => document.querySelectorAll('#grid > .card').length), OFERTAS.length);
+    // volver a la portada sin recargar (logo)
+    await page.evaluate(() => { window.__marca = 'sin recargar'; }); await page.click('#hdr-logo'); await esp(600);
+    assert.equal(await seccion(page), true, 'al volver a la portada reaparece'); assert.equal(await page.evaluate(() => window.__marca), 'sin recargar'); assert.equal(await page.evaluate(() => document.getElementById('grid-titulo').textContent), 'Catálogo completo');
+    // barra de PC
+    await page.click('#nav-ofertas'); await esp(700); assert.equal(await seccion(page), false, 'vista de ofertas (barra): NO se ve');
+    await page.evaluate(() => window.setCategoria('')); await esp(300); assert.equal(await seccion(page), true, 'setCategoria(\'\'): reaparece');
+    // otras categorías: ninguna la muestra
+    const cats = await page.evaluate(() => [...document.querySelectorAll('.cat-pill')].map((b) => b.dataset.cat).filter(Boolean)); assert.ok(cats.length >= 2, 'hay categorías: ' + cats);
+    for (const c of cats) { await page.evaluate((x) => window.setCategoria(x), c); await esp(250); assert.equal(await seccion(page), false, `categoría ${c}: NO se ve`); assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('ofertas-section')).display), 'none'); }
+    await page.click('.cat-pill[data-cat=""]'); await esp(300); assert.equal(await seccion(page), true, 'pill "Todas": reaparece');
+    // pasar de una categoría a la vista de ofertas y de ahí a la portada
+    await page.evaluate((c) => window.setCategoria(c), cats[0]); await esp(200); await page.evaluate(() => window.verOfertas()); await esp(300); assert.equal(await seccion(page), false);
+    await page.evaluate(() => window.setCategoria('')); await esp(300); assert.equal(await seccion(page), true); await ctx.close();
+  });
+  await t('SIN DUPLICADO (celular): menú lateral → vista de ofertas sin sección compacta; volver con el logo la muestra; también cargando directo #cat=ofertas y #cat=<categoría>', async () => {
+    const { page, ctx } = await abrir({ perfil: 'iphone' });
+    assert.equal(await visible(page, 'ofertas-section'), true);
+    await page.click('#btn-menu'); await esp(600); await page.click('#menu-ofertas-fila'); await esp(1000);
+    assert.equal(await page.evaluate(() => location.hash), '#cat=ofertas'); assert.equal(await visible(page, 'ofertas-section'), false, 'menú → vista de ofertas: NO se ve');
+    await page.click('#hdr-logo'); await esp(600); assert.equal(await visible(page, 'ofertas-section'), true, 'logo → portada: se ve'); await ctx.close();
+    const a = await abrir({ url: '/index.html#cat=ofertas', perfil: 'iphone' }); await esp(500);
+    assert.equal(await a.page.evaluate(() => document.querySelectorAll('#grid > .card').length), OFERTAS.length); assert.equal(await visible(a.page, 'ofertas-section'), false, 'carga directa #cat=ofertas: NO se ve'); await a.ctx.close();
+    const b = await abrir({ url: '/index.html#cat=camisetas', perfil: 'iphone' }); await esp(500);
+    assert.equal(await visible(b.page, 'ofertas-section'), false, 'carga directa #cat=camisetas: NO se ve'); await b.ctx.close();
+  });
+  await t('SIN DUPLICADO + FICHA: la ficha tapa toda la pantalla (la sección queda detrás, sin verse) y abrirla/cerrarla no cambia nada: desde la portada la sección sigue; desde una categoría o la vista de ofertas sigue oculta', async () => {
+    const { page, ctx } = await abrir({ perfil: 'iphone' });
+    await abrirFicha(page, OFERTAS[0].id);
+    const cubre = await page.evaluate(() => { const o = document.getElementById('detalle-overlay'); const r = o.getBoundingClientRect(); const cs = getComputedStyle(o); return { fijo: cs.position, abierta: o.classList.contains('open'), ancho: Math.round(r.width) === innerWidth, alto: Math.round(r.height) === innerHeight }; });
+    assert.deepEqual(cubre, { fijo: 'fixed', abierta: true, ancho: true, alto: true }, 'la ficha es una capa que cubre toda la pantalla');
+    await page.evaluate(() => window.cerrarDetalle()); await esp(400); assert.equal(await visible(page, 'ofertas-section'), true, 'portada → ficha → cerrar: la sección sigue');
+    await page.evaluate(() => window.verOfertas()); await esp(300); await abrirFicha(page, OFERTAS[1].id); await page.evaluate(() => window.cerrarDetalle()); await esp(400);
+    assert.equal(await visible(page, 'ofertas-section'), false, 'vista de ofertas → ficha → cerrar: sigue oculta');
+    await page.evaluate(() => window.setCategoria('camisetas')); await esp(200); await abrirFicha(page, CON[0].id); await page.evaluate(() => window.cerrarDetalle()); await esp(400);
+    assert.equal(await visible(page, 'ofertas-section'), false, 'categoría → ficha → cerrar: sigue oculta'); await ctx.close();
+    const l = await abrir({ url: '/index.html?p=' + encodeURIComponent(OFERTAS[0].id), perfil: 'iphone', mock: { catalogoDemora: 400 } }); await esp(500);
+    assert.equal(await l.page.evaluate(() => document.getElementById('detalle-overlay').classList.contains('open')), true); await l.page.evaluate(() => window.cerrarDetalle()); await esp(500);
+    assert.equal(await visible(l.page, 'ofertas-section'), true, 'link ?p=ID: al cerrar la ficha se ve la portada con la sección'); await l.ctx.close();
+  });
   await t('ninguna prueba salió a internet real (solo el doble y el servidor local)', () => assert.deepEqual(pedidosReales.filter((u) => !/google-analytics|googletagmanager|fonts\.g/.test(u)), []));
   await browser.close(); servidor.close();
 }
