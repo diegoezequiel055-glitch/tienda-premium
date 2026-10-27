@@ -8,7 +8,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-export const ORIGEN = ['style.css', 'promo-bar.css', 'hero-rotativo.css', 'header-menu.css', 'envio-ficha.css', 'compartir.css', 'seleccion-talle.css', 'visor-imagen.css', 'relacionados.css', 'precios.css', 'ofertas.css', 'deshacer-eliminar.css', 'esqueletos.css', 'paginacion.css', 'buscador-localidades.css', 'capa-localidades.css', 'menu-desplegable.css', 'mantenimiento.css'];
+export const ORIGEN = ['style.css', 'promo-bar.css', 'hero-rotativo.css', 'header-menu.css', 'envio-ficha.css', 'compartir.css', 'seleccion-talle.css', 'visor-imagen.css', 'relacionados.css', 'precios.css', 'ofertas.css', 'videos-tiktok.css', 'deshacer-eliminar.css', 'esqueletos.css', 'paginacion.css', 'buscador-localidades.css', 'capa-localidades.css', 'menu-desplegable.css', 'mantenimiento.css'];
 const aqui = dirname(fileURLToPath(import.meta.url));
 const norm = (s) => s.replace(/^﻿/, '').replace(/\r\n/g, '\n').replace(/\s+$/, '') + '\n';
 

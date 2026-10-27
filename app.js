@@ -114,6 +114,8 @@ function aplicarConfigSitio(cfg) {
   const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
   const flotante = $('whatsapp-float');
   if (flotante) flotante.href = `https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`;
+  window.__videosTiktok = Array.isArray(cfg.videosTiktok) ? cfg.videosTiktok : []; // videos-tiktok-ui.js (sin lecturas extra: viene en la config que ya se lee)
+  document.dispatchEvent(new CustomEvent('videos-tiktok-actualizados', { detail: window.__videosTiktok }));
   heroFotosManual = cfg.heroFotos || null;
   pintarHeroTriptico();
   document.dispatchEvent(new CustomEvent('config-sitio-aplicada')); // hero-rotativo.js copia título y subtítulo
