@@ -13,7 +13,6 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 
 let disponibles = [];
 let claveActiva = '';
-let hashPendiente = true; // el link #cat=... se aplica cuando llega el catálogo
 
 // ── menú lateral ──
 const drawer = document.createElement('div');
@@ -58,10 +57,6 @@ function cerrarMenu() {
   $('btn-menu').setAttribute('aria-expanded', 'false');
 }
 
-function irAlCatalogo() {
-  $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 const fichaAbierta = () => $('detalle-overlay').classList.contains('open');
 
 drawer.addEventListener('click', (e) => {
@@ -69,9 +64,7 @@ drawer.addEventListener('click', (e) => {
   const btn = e.target.closest('.menu-cat');
   if (btn) {
     cerrarMenu();
-    if (fichaAbierta()) window.cerrarDetalle();
-    window.setCategoria(btn.dataset.clave);
-    irAlCatalogo();
+    window.setCategoria(btn.dataset.clave); // abre la vista (Todo el catálogo / una categoría); si hay una ficha abierta, app.js la cierra antes
     return;
   }
   if (e.target.closest('.menu-links a')) cerrarMenu();
@@ -96,56 +89,28 @@ barraHdr.addEventListener('click', (e) => {
   if (e.target.closest('#btn-cart') && fichaAbierta()) window.cerrarDetalle();
 }, true);
 
-// Logo = volver al inicio: cierra ficha y carrito, limpia búsqueda y categoría, sube y deja la URL en la raíz.
+// Logo = volver al inicio: cierra el carrito y limpia la búsqueda; desde una vista de catálogo vuelve a la portada (restaura su scroll, app.js › irAPortada);
+// si ya está en la portada, sube y deja la URL en la raíz.
 function irAlInicio(e) {
   if (e) e.preventDefault();
   if ($('carrito-overlay').classList.contains('open')) window.cerrarCarrito();
-  if (fichaAbierta()) window.cerrarDetalle();
   if (window.reiniciarBusqueda) window.reiniciarBusqueda();
-  window.setCategoria('');
-  window.scrollTo({ top: 0, behavior: 'instant' });
-  // cerrar la ficha puede volver atrás en el historial (asíncrono): se deja la URL limpia después también
-  const limpiarUrl = () => { try { history.replaceState(null, '', location.pathname); } catch {} };
-  limpiarUrl();
-  setTimeout(() => { limpiarUrl(); window.scrollTo({ top: 0, behavior: 'instant' }); }, 120);
-  setTimeout(limpiarUrl, 400);
+  window.irAPortada();
 }
 $('hdr-logo').addEventListener('click', irAlInicio);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && drawer.classList.contains('open')) cerrarMenu();
 });
 
-// ── sincronización con app.js y con el link (#cat=camisetas) ──
-function actualizarHash(clave) {
-  try { history.replaceState(null, '', clave ? `#cat=${clave}` : location.pathname + location.search); } catch {}
-}
-function valorDelHash() {
-  const m = location.hash.match(/^#cat=(.+)$/);
-  return m ? m[1] : '';
-}
-function aplicarHash() {
-  const v = valorDelHash();
-  if (!v || !disponibles.length) return;
-  const clave = resolverClave(v, disponibles);
-  if (!clave) return;
-  window.setCategoria(clave);
-  setTimeout(irAlCatalogo, 50); // un tick después, con la grilla ya pintada
-}
-
+// ── sincronización con app.js ──
+// La vista y la URL (#cat=...) las maneja app.js (setCategoria, Atrás/Adelante); acá solo se marca cuál está activa en el menú.
 document.addEventListener('catalogo-actualizado', (e) => {
   disponibles = categoriasDisponibles(e.detail);
   pintarCategorias();
-  if (hashPendiente) { hashPendiente = false; aplicarHash(); }
 });
 document.addEventListener('categoria-cambiada', (e) => {
   claveActiva = e.detail;
   pintarCategorias();
-  actualizarHash(claveActiva);
-});
-window.addEventListener('hashchange', () => {
-  if (!valorDelHash()) return;
-  if (!disponibles.length) { hashPendiente = true; return; }
-  aplicarHash();
 });
 
 pintarLinks();

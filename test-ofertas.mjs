@@ -161,7 +161,7 @@ if (!process.env.SOLO_PURAS) {
     await page.addInitScript((m) => { window.__MOCK = m; window.__abiertos = []; window.__ev = []; window.open = (u) => { window.__abiertos.push(u); return null; };
       for (const n of ['carrito-agregado', 'pedido-iniciado', 'detalle-pintado']) document.addEventListener(n, (e) => window.__ev.push([n, JSON.parse(JSON.stringify(e.detail))])); }, { config: null, catalogoDemora: 250 /* Firestore real tarda cientos de ms: con 20 ms el catálogo llega antes de que carguen los módulos del final (relacionados, compartir) */, ...(catalogo ? { catalogo } : {}), ...mock });
     await page.goto(BASE + url, { waitUntil: 'load' });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForSelector('html[data-catalogo-listo]', { timeout: 8000 }); // (la grilla del catálogo ya no está en la portada: se abre con la vista "Todo el catálogo")
     await esp(250);
     return { page, ctx, errores };
   }
@@ -181,15 +181,15 @@ if (!process.env.SOLO_PURAS) {
   await t('catálogo viejo (sin ningún campo de oferta): todo se ve como siempre', async () => {
     const viejo = productosPrueba(24).map(({ precioOferta, precioOfertaTarjeta, stockBajo, ...r }) => r);
     const { page, ctx } = await abrir({ catalogo: viejo }); assert.equal(await visible(page, 'ofertas-section'), false);
-    assert.match(await txt(page, '#grid .card .card-precio'), /\$\d/); await ctx.close();
+    assert.match(await txt(page, '.card .card-precio'), /\$\d/); await ctx.close();
   });
-  await t('CON ofertas: la sección "Ofertas" está AL FINAL (después de "Ver más productos" y de Nuevos ingresos/Destacados/catálogo, arriba del footer) y NO entre el hero y "Nuevos ingresos"', async () => {
+  await t('CON ofertas: la sección "Ofertas" está al final de la portada (después de Nuevos ingresos y Destacados, antes de Nuestros videos, del botón "Ver todo el catálogo" y del texto) y NO entre el hero y "Nuevos ingresos"', async () => {
     const { page, ctx } = await abrir({ perfil: 'pc' });
-    const pos = await page.evaluate(() => { const y = (el) => el.getBoundingClientRect().top + scrollY; const b = (el) => el.getBoundingClientRect().bottom + scrollY; const f = document.querySelector('footer, .footer, #footer');
-      return { hero: b(document.getElementById('hero-rot')), nuevos: y(document.getElementById('nuevos-section')), destacados: y(document.getElementById('destacados-section')), grid: b(document.getElementById('grid')), vermas: y(document.getElementById('ver-mas-caja')), ofertas: y(document.getElementById('ofertas-section')), footer: f ? y(f) : null, alto: document.documentElement.scrollHeight }; });
-    assert.ok(pos.ofertas > pos.nuevos && pos.ofertas > pos.destacados, 'después de Nuevos ingresos y Destacados'); assert.ok(pos.ofertas > pos.grid - 2, 'debajo de todos los productos del catálogo'); assert.ok(pos.ofertas >= pos.vermas, 'después del botón "Ver más productos"');
+    const pos = await page.evaluate(() => { const y = (el) => el.getBoundingClientRect().top + scrollY; const b = (el) => el.getBoundingClientRect().bottom + scrollY; const f = document.querySelector('footer, .footer, #footer, #pie-root');
+      return { hero: b(document.getElementById('hero-rot')), nuevos: y(document.getElementById('nuevos-section')), destacados: y(document.getElementById('destacados-section')), ofertas: y(document.getElementById('ofertas-section')), videos: y(document.getElementById('videos-section')), boton: y(document.getElementById('ver-todo-caja')), inicio: y(document.querySelector('.inicio-texto')), footer: f ? y(f) : null, alto: document.documentElement.scrollHeight }; });
+    assert.ok(pos.ofertas > pos.nuevos && pos.ofertas > pos.destacados, 'después de Nuevos ingresos y Destacados'); assert.ok(pos.ofertas < pos.boton && pos.boton < pos.inicio, 'antes del botón "Ver todo el catálogo" y del texto de la portada');
     if (pos.footer) assert.ok(pos.ofertas < pos.footer, 'arriba del footer'); else assert.ok(pos.ofertas < pos.alto);
-    assert.ok(pos.nuevos - pos.hero < 120, 'Nuevos ingresos sigue pegado al hero (sin sección Ofertas en el medio): ' + (pos.nuevos - pos.hero));
+    assert.ok(pos.nuevos - pos.hero < 120, 'Nuevos ingresos sigue pegado al hero (solo la fila de categorías en el medio): ' + (pos.nuevos - pos.hero));
     assert.equal((await txt(page, '#ofertas-section .section-title')).trim().toUpperCase(), 'OFERTAS'); assert.match(await txt(page, '.ofertas-ver'), /Ver todas →/);
     const f = await page.evaluate(() => ({ of: parseFloat(getComputedStyle(document.querySelector('#ofertas-section .section-title')).fontSize), otro: parseFloat(getComputedStyle(document.querySelector('#nuevos-section .section-title')).fontSize), anton: getComputedStyle(document.querySelector('#ofertas-section .section-title')).fontFamily.includes('Anton') }));
     assert.ok(f.of <= f.otro, `título más chico o igual que el de las otras secciones (${f.of} vs ${f.otro})`); assert.ok(f.anton);
@@ -241,13 +241,13 @@ if (!process.env.SOLO_PURAS) {
     assert.equal(v.n, OFERTAS.length); assert.ok(v.todas); assert.equal(v.titulo, 'Ofertas'); assert.equal(v.hash, '#cat=ofertas');
     await ctx.close();
   });
-  await t('"Ver todas →": vista con TODAS las ofertas (mismo mecanismo que una categoría: filtro, título y #cat=ofertas); el logo vuelve al catálogo completo', async () => {
+  await t('"Ver todas →": vista con TODAS las ofertas (mismo mecanismo que una categoría: filtro, título y #cat=ofertas); el logo vuelve a la portada', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone' });
     await page.click('.ofertas-ver'); await esp(700);
     const v = await page.evaluate(() => ({ n: document.querySelectorAll('#grid > .card').length, todas: [...document.querySelectorAll('#grid > .card')].every((c) => c.querySelector('.badge-oferta')), titulo: document.getElementById('grid-titulo').textContent, hash: location.hash }));
     assert.equal(v.n, OFERTAS.length); assert.ok(v.todas); assert.equal(v.titulo, 'Ofertas'); assert.equal(v.hash, '#cat=ofertas');
     await page.click('#hdr-logo'); await esp(500);
-    const w = await page.evaluate(() => ({ n: document.querySelectorAll('#grid > .card').length, titulo: document.getElementById('grid-titulo').textContent })); assert.equal(w.n, 24); assert.equal(w.titulo, 'Catálogo completo'); await ctx.close();
+    assert.equal(await page.evaluate(() => location.hash), ''); assert.equal(await visible(page, 'ofertas-section'), true, 'portada con la sección'); assert.equal(await page.evaluate(() => document.querySelectorAll('#grid > .card').length), 0, 'la portada no tiene la grilla'); await ctx.close();
   });
   await t('el link #cat=ofertas abre la vista de ofertas; con una categoría común sigue andando', async () => {
     const a = await abrir({ url: '/index.html#cat=ofertas', mock: { catalogoDemora: 300 } }); await esp(500);
@@ -264,7 +264,7 @@ if (!process.env.SOLO_PURAS) {
     assert.ok(await page.evaluate(() => document.querySelectorAll('#grid > .card').length) > 0); await ctx.close();
   });
   await t('la etiqueta y el precio tachado también están en el CATÁLOGO, el BUSCADOR y NUEVOS INGRESOS (los productos sin oferta no llevan nada)', async () => {
-    const { page, ctx } = await abrir({ perfil: 'iphone' });
+    const { page, ctx } = await abrir({ perfil: 'iphone' }); await page.evaluate(() => window.setCategoria('todos')); await esp(300);
     const enGrid = await page.evaluate(() => [...document.querySelectorAll('#grid > .card')].map((c) => ({ n: c.querySelector('.card-nombre').textContent, b: !!c.querySelector('.badge-oferta'), a: !!c.querySelector('.card-precio-ant') })));
     assert.ok(enGrid.some((x) => x.b && x.a)); assert.ok(enGrid.every((x) => x.b === x.a)); assert.ok(enGrid.some((x) => !x.b));
     const nombreOferta = OFERTAS[0].nombre; await page.evaluate((n) => window.setBusqueda(n), nombreOferta); await esp(200);
@@ -318,7 +318,7 @@ if (!process.env.SOLO_PURAS) {
     assert.equal(await visible(page, 'ofertas-section'), true); assert.equal(await visible(page, 'nav-ofertas'), true);
     await page.evaluate(() => window.verOfertas()); await esp(300); assert.equal(await page.evaluate(() => document.querySelectorAll('#grid > .card').length), OFERTAS.length);
     await page.evaluate((items) => window.__SERVIDOR.publicarCatalogo(items), SIN_OFERTAS()); await esp(500);
-    assert.equal(await visible(page, 'ofertas-section'), false); assert.equal(await visible(page, 'nav-ofertas'), false); assert.equal(await page.evaluate(() => document.querySelectorAll('#grid > .card').length), 24); assert.equal(await page.evaluate(() => document.getElementById('grid-titulo').textContent), 'Catálogo completo');
+    assert.equal(await visible(page, 'ofertas-section'), false); assert.equal(await visible(page, 'nav-ofertas'), false); assert.equal(await page.evaluate(() => document.querySelectorAll('#grid > .card').length), 24); assert.equal(await page.evaluate(() => document.getElementById('grid-titulo').textContent), 'Todo el catálogo');
     await ctx.close();
   });
   await t('EN VIVO: si la oferta termina con el producto en el carrito, el carrito vuelve al precio normal', async () => {
@@ -349,7 +349,7 @@ if (!process.env.SOLO_PURAS) {
       await page.addInitScript(guion(24, 152));
       await page.addInitScript(({ sinOfertas }) => { window.__MOCK = { config: null, catalogoDemora: 700, ...(sinOfertas ? { catalogo: window.__PRODUCTOS_DEF.map(({ precioOferta, precioOfertaTarjeta, ...r }) => r) } : {}) }; window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); }, { sinOfertas });
       await page.goto(BASE + '/index.html', { waitUntil: 'load' });
-      await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 }); await esp(900);
+      await page.waitForSelector('html[data-catalogo-listo]', { timeout: 8000 }); await esp(900);
       const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       assert.ok(d <= 1, perfil + ' desborde ' + d); assert.equal(errores.length, 0, errores.join(' | '));
       const v = await page.evaluate(() => window.__cls); if (process.env.DEBUG) console.log(`   ${perfil} ${sinOfertas ? 'sin' : 'con'} ofertas: CLS ${v.toFixed(3)}`);
@@ -379,76 +379,25 @@ if (!process.env.SOLO_PURAS) {
       }
     });
   }
-  await t('SIN DUPLICADO: la sección compacta se ve solo en la portada normal; en la vista de ofertas (#cat=ofertas, menú, barra, "Ver todas") y en las otras categorías NO; al volver a la portada reaparece sin recargar', async () => {
-    const seccion = (page) => visible(page, 'ofertas-section');
-    const { page, ctx } = await abrir({ perfil: 'pc' });
-    assert.equal(await seccion(page), true, 'portada: se ve');
-    assert.equal(await page.evaluate(() => document.querySelectorAll('#ofertas-strip .of-card').length), OFERTAS.length);
-    // "Ver todas →"
-    await page.click('.ofertas-ver'); await esp(700);
-    assert.equal(await page.evaluate(() => location.hash), '#cat=ofertas'); assert.equal(await seccion(page), false, 'vista de ofertas (Ver todas): NO se ve');
-    assert.equal(await page.evaluate(() => document.querySelectorAll('#grid > .card').length), OFERTAS.length);
-    // volver a la portada sin recargar (logo)
-    await page.evaluate(() => { window.__marca = 'sin recargar'; }); await page.click('#hdr-logo'); await esp(600);
-    assert.equal(await seccion(page), true, 'al volver a la portada reaparece'); assert.equal(await page.evaluate(() => window.__marca), 'sin recargar'); assert.equal(await page.evaluate(() => document.getElementById('grid-titulo').textContent), 'Catálogo completo');
-    // barra de PC
-    await page.click('#nav-ofertas'); await esp(700); assert.equal(await seccion(page), false, 'vista de ofertas (barra): NO se ve');
-    await page.evaluate(() => window.setCategoria('')); await esp(300); assert.equal(await seccion(page), true, 'setCategoria(\'\'): reaparece');
-    // otras categorías: ninguna la muestra
-    const cats = await page.evaluate(() => [...document.querySelectorAll('.cat-pill')].map((b) => b.dataset.cat).filter(Boolean)); assert.ok(cats.length >= 2, 'hay categorías: ' + cats);
-    for (const c of cats) { await page.evaluate((x) => window.setCategoria(x), c); await esp(250); assert.equal(await seccion(page), false, `categoría ${c}: NO se ve`); assert.equal(await page.evaluate(() => getComputedStyle(document.getElementById('ofertas-section')).display), 'none'); }
-    await page.click('.cat-pill[data-cat=""]'); await esp(300); assert.equal(await seccion(page), true, 'pill "Todas": reaparece');
-    // pasar de una categoría a la vista de ofertas y de ahí a la portada
-    await page.evaluate((c) => window.setCategoria(c), cats[0]); await esp(200); await page.evaluate(() => window.verOfertas()); await esp(300); assert.equal(await seccion(page), false);
-    await page.evaluate(() => window.setCategoria('')); await esp(300); assert.equal(await seccion(page), true); await ctx.close();
-  });
-  await t('SIN DUPLICADO (celular): menú lateral → vista de ofertas sin sección compacta; volver con el logo la muestra; también cargando directo #cat=ofertas y #cat=<categoría>', async () => {
-    const { page, ctx } = await abrir({ perfil: 'iphone' });
-    assert.equal(await visible(page, 'ofertas-section'), true);
-    await page.click('#btn-menu'); await esp(600); await page.click('#menu-ofertas-fila'); await esp(1000);
-    assert.equal(await page.evaluate(() => location.hash), '#cat=ofertas'); assert.equal(await visible(page, 'ofertas-section'), false, 'menú → vista de ofertas: NO se ve');
-    await page.click('#hdr-logo'); await esp(600); assert.equal(await visible(page, 'ofertas-section'), true, 'logo → portada: se ve'); await ctx.close();
-    const a = await abrir({ url: '/index.html#cat=ofertas', perfil: 'iphone' }); await esp(500);
-    assert.equal(await a.page.evaluate(() => document.querySelectorAll('#grid > .card').length), OFERTAS.length); assert.equal(await visible(a.page, 'ofertas-section'), false, 'carga directa #cat=ofertas: NO se ve'); await a.ctx.close();
-    const b = await abrir({ url: '/index.html#cat=camisetas', perfil: 'iphone' }); await esp(500);
-    assert.equal(await visible(b.page, 'ofertas-section'), false, 'carga directa #cat=camisetas: NO se ve'); await b.ctx.close();
-  });
-  await t('SIN DUPLICADO + FICHA: la ficha tapa toda la pantalla (la sección queda detrás, sin verse) y abrirla/cerrarla no cambia nada: desde la portada la sección sigue; desde una categoría o la vista de ofertas sigue oculta', async () => {
-    const { page, ctx } = await abrir({ perfil: 'iphone' });
-    await abrirFicha(page, OFERTAS[0].id);
-    const cubre = await page.evaluate(() => { const o = document.getElementById('detalle-overlay'); const r = o.getBoundingClientRect(); const cs = getComputedStyle(o); return { fijo: cs.position, abierta: o.classList.contains('open'), ancho: Math.round(r.width) === innerWidth, alto: Math.round(r.height) === innerHeight }; });
-    assert.deepEqual(cubre, { fijo: 'fixed', abierta: true, ancho: true, alto: true }, 'la ficha es una capa que cubre toda la pantalla');
-    await page.evaluate(() => window.cerrarDetalle()); await esp(400); assert.equal(await visible(page, 'ofertas-section'), true, 'portada → ficha → cerrar: la sección sigue');
-    await page.evaluate(() => window.verOfertas()); await esp(300); await abrirFicha(page, OFERTAS[1].id); await page.evaluate(() => window.cerrarDetalle()); await esp(400);
-    assert.equal(await visible(page, 'ofertas-section'), false, 'vista de ofertas → ficha → cerrar: sigue oculta');
-    await page.evaluate(() => window.setCategoria('camisetas')); await esp(200); await abrirFicha(page, CON[0].id); await page.evaluate(() => window.cerrarDetalle()); await esp(400);
-    assert.equal(await visible(page, 'ofertas-section'), false, 'categoría → ficha → cerrar: sigue oculta'); await ctx.close();
-    const l = await abrir({ url: '/index.html?p=' + encodeURIComponent(OFERTAS[0].id), perfil: 'iphone', mock: { catalogoDemora: 400 } }); await esp(500);
-    assert.equal(await l.page.evaluate(() => document.getElementById('detalle-overlay').classList.contains('open')), true); await l.page.evaluate(() => window.cerrarDetalle()); await esp(500);
-    assert.equal(await visible(l.page, 'ofertas-section'), true, 'link ?p=ID: al cerrar la ficha se ve la portada con la sección'); await l.ctx.close();
-  });
-  await t('SIN BÚSQUEDA: con una búsqueda por texto activa la sección compacta NO se ve (ni con resultados ni sin ellos); al borrar la búsqueda o tocar el logo reaparece sin recargar', async () => {
+  await t('SOLO EN LA PORTADA: la sección compacta se ve en la portada y NO en "Todo el catálogo", en una categoría, en la vista de ofertas ("Ver todas", menú, barra) ni al buscar; reaparece al volver a la portada (logo o Atrás) sin recargar', async () => {
     for (const perfil of ['iphone', 'pc']) {
-      const { page, ctx } = await abrir({ perfil });
-      const vis = () => visible(page, 'ofertas-section'); assert.equal(await vis(), true, perfil + ': portada: se ve');
-      await page.click('#btn-lupa'); await esp(300);
-      await page.fill('#hdr-search-input', 'boca'); await esp(700);
-      assert.equal(await vis(), false, perfil + ': buscando "boca": NO se ve'); assert.ok(await page.evaluate(() => document.querySelectorAll('#grid > .card').length) > 0, 'hay resultados');
-      await page.fill('#hdr-search-input', 'zzzz sin resultados'); await esp(700); assert.equal(await vis(), false, perfil + ': búsqueda sin resultados: NO se ve');
-      await page.fill('#hdr-search-input', ''); await esp(700); assert.equal(await vis(), true, perfil + ': al borrar el texto reaparece');
-      await page.fill('#hdr-search-input', 'real'); await esp(700); assert.equal(await vis(), false);
-      await page.evaluate(() => { window.__marca = 'sin recargar'; }); await page.click('#hdr-logo'); await esp(800);
-      assert.equal(await vis(), true, perfil + ': el logo limpia la búsqueda y reaparece'); assert.equal(await page.evaluate(() => window.__marca), 'sin recargar');
-      // desde una categoría: buscar limpia la categoría y oculta; borrar vuelve a la portada con la sección
-      await page.evaluate(() => window.setCategoria('camisetas')); await esp(250); assert.equal(await vis(), false);
-      await page.evaluate(() => window.setBusqueda('boca')); await esp(300); assert.equal(await vis(), false, perfil + ': categoría + búsqueda: oculta');
-      await page.evaluate(() => window.setBusqueda('')); await esp(300); assert.equal(await vis(), true, perfil + ': sin categoría y sin búsqueda: se ve'); await ctx.close();
+      const { page, ctx } = await abrir({ perfil }); const vis = () => visible(page, 'ofertas-section'); assert.equal(await vis(), true, perfil + ': portada');
+      await page.evaluate(() => { window.__marca = 'sin recargar'; });
+      for (const ir of [() => page.evaluate(() => window.setCategoria('todos')), () => page.evaluate(() => window.setCategoria('camisetas')), () => page.evaluate(() => window.verOfertas()), () => page.click('.ofertas-ver')]) {
+        if (!(await vis())) await page.click('#hdr-logo'), await esp(500);
+        await ir(); await esp(400); assert.equal(await vis(), false, perfil + ': en la vista ' + (await page.evaluate(() => location.hash)));
+        await page.click('#hdr-logo'); await esp(700); assert.equal(await vis(), true, perfil + ': al volver con el logo');
+      }
+      await page.click('#btn-lupa'); await esp(250); await page.fill('#hdr-search-input', 'boca'); await esp(700); assert.equal(await vis(), false, perfil + ': buscando'); assert.ok(await page.evaluate(() => document.querySelectorAll('#grid > .card').length) > 0, 'hay resultados');
+      await page.goBack(); await esp(800); assert.equal(await vis(), true, perfil + ': Atrás vuelve a la portada con la sección'); assert.equal(await page.evaluate(() => window.__marca), 'sin recargar'); await ctx.close();
     }
   });
-  await t('SIN BÚSQUEDA: en la vista de ofertas la sección no se ve; al buscar y borrar la búsqueda se vuelve a la portada (buscar limpia la categoría) con la sección, sin estado de búsqueda pegado', async () => {
-    const { page, ctx } = await abrir({ perfil: 'iphone', url: '/index.html#cat=ofertas', mock: { catalogoDemora: 300 } }); await esp(500);
-    assert.equal(await visible(page, 'ofertas-section'), false); await page.evaluate(() => window.setBusqueda('boca')); await esp(300); await page.evaluate(() => window.setBusqueda('')); await esp(300);
-    assert.equal(await page.evaluate(() => window.__buscando), false); assert.equal(await visible(page, 'ofertas-section'), true, 'al borrar la búsqueda se vuelve a la portada (setBusqueda limpia la categoría al buscar)'); await ctx.close();
+  await t('SOLO EN LA PORTADA (links y ficha): cargando directo #cat=ofertas / #cat=camisetas / #cat=todos la sección no se ve; la ficha es una capa que tapa toda la pantalla y abrirla/cerrarla no cambia la vista', async () => {
+    for (const url of ['/index.html#cat=ofertas', '/index.html#cat=camisetas', '/index.html#cat=todos']) { const a = await abrir({ url, perfil: 'iphone', mock: { catalogoDemora: 300 } }); await esp(400); assert.equal(await visible(a.page, 'ofertas-section'), false, url); await a.ctx.close(); }
+    const { page, ctx } = await abrir({ perfil: 'iphone' }); await abrirFicha(page, OFERTAS[0].id);
+    assert.deepEqual(await page.evaluate(() => { const o = document.getElementById('detalle-overlay'); const r = o.getBoundingClientRect(); return { fijo: getComputedStyle(o).position, abierta: o.classList.contains('open'), ancho: Math.round(r.width) === innerWidth, alto: Math.round(r.height) === innerHeight }; }), { fijo: 'fixed', abierta: true, ancho: true, alto: true });
+    await page.evaluate(() => window.cerrarDetalle()); await esp(400); assert.equal(await visible(page, 'ofertas-section'), true, 'portada → ficha → cerrar: sigue');
+    await page.evaluate(() => window.verOfertas()); await esp(300); await abrirFicha(page, OFERTAS[1].id); await page.evaluate(() => window.cerrarDetalle()); await esp(700); assert.equal(await visible(page, 'ofertas-section'), false, 'vista de ofertas → ficha → cerrar: sigue la vista'); assert.equal(await page.evaluate(() => location.hash), '#cat=ofertas'); await ctx.close();
   });
   await t('ninguna prueba salió a internet real (solo el doble y el servidor local)', () => assert.deepEqual(pedidosReales.filter((u) => !/google-analytics|googletagmanager|fonts\.g/.test(u)), []));
   await browser.close(); servidor.close();

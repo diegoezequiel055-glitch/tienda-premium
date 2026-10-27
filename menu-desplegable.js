@@ -15,10 +15,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 export const ETIQUETA_TODOS = 'Todos los productos';
 export const ETIQUETA_VER_TODOS = 'Ver todos los productos';
 
-// HTML de las opciones del desplegable. disponibles: [{clave, nombre}]. claveActiva: '' = todas.
+// HTML de las opciones del desplegable. disponibles: [{clave, nombre}]. claveActiva: 'todos' = Todo el catálogo, '' = portada (ninguna marcada).
 export function itemsHtml(disponibles, claveActiva) {
   const item = (clave, nombre) => `<button type="button" class="menu-cat${clave === claveActiva ? ' active' : ''}" data-clave="${esc(clave)}"${clave === claveActiva ? ' aria-current="true"' : ''}>${esc(nombre)}</button>`;
-  return item('', ETIQUETA_VER_TODOS) + (disponibles || []).map((c) => item(c.clave, c.nombre)).join('');
+  return item('todos', ETIQUETA_VER_TODOS) + (disponibles || []).map((c) => item(c.clave, c.nombre)).join('');
 }
 
 // Crea (una sola vez) el botón y el contenedor desplegable dentro de `cont` y actualiza las opciones.

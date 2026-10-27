@@ -96,7 +96,7 @@ if (!process.env.SOLO_PURAS) {
     await page.addInitScript(guion(24, 152));
     await page.addInitScript((m) => { window.__MOCK = m; }, { config: cfg, catalogoDemora: 250, ...(catalogo ? { catalogo } : {}), ...mock });
     await page.goto(BASE + url, { waitUntil: 'load' });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForSelector('html[data-catalogo-listo]', { timeout: 8000 });
     await esp(350);
     return { page, ctx, errores, consola };
   }
@@ -106,23 +106,23 @@ if (!process.env.SOLO_PURAS) {
     for (const cfg of [{}, null, { videosTiktok: [] }, { videosTiktok: 'x' }, { videosTiktok: [{ url: 'https://vm.tiktok.com/abc', portada: PORT(1) }, { url: L1 }] }]) {
       const { page, ctx, errores } = await abrir({ cfg, perfil: 'iphone' });
       assert.equal(await visible(page, 'videos-section'), false, JSON.stringify(cfg)); assert.equal(await page.evaluate(() => document.getElementById('videos-section').getBoundingClientRect().height), 0, 'sin hueco');
-      assert.equal(await page.evaluate(() => document.querySelectorAll('.vt-card').length), 0); assert.ok(await page.evaluate(() => document.querySelectorAll('#grid > .card').length) > 0);
+      assert.equal(await page.evaluate(() => document.querySelectorAll('.vt-card').length), 0); assert.ok(await page.evaluate(() => document.querySelectorAll('.card').length) > 0, 'la tienda anda igual');
       assert.equal(errores.length, 0, errores.join(' | ')); await ctx.close();
     }
   });
-  await t('CON videos: la sección "NUESTROS VIDEOS" está AL FINAL: debajo del catálogo, de "Ver más productos" y de Ofertas, y antes del texto/datos de envío; título igual de grande que el de Ofertas', async () => {
+  await t('CON videos: la sección "NUESTROS VIDEOS" está al final de la portada: debajo de Nuevos ingresos, Destacados y Ofertas, y antes del botón "Ver todo el catálogo" y del texto/datos de envío; título igual de grande que el de Ofertas', async () => {
     const { page, ctx } = await abrir({ perfil: 'pc' });
     assert.equal(await visible(page, 'videos-section'), true);
     const p = await page.evaluate(() => { const y = (el) => el.getBoundingClientRect().top + scrollY; const sec = document.getElementById('videos-section'); const tit = sec.querySelector('.section-title'); const of = document.querySelector('#ofertas-section .section-title');
-      return { videos: y(sec), ofertas: y(document.getElementById('ofertas-section')), vermas: y(document.getElementById('ver-mas-caja')), grid: y(document.getElementById('grid')), nuevos: y(document.getElementById('nuevos-section')), inicio: y(document.querySelector('.inicio-texto')), info: y(document.querySelector('.info-franja')), titulo: tit.innerText.trim(), fs: getComputedStyle(tit).fontSize, fsOf: getComputedStyle(of).fontSize, ff: getComputedStyle(tit).fontFamily, verMas: sec.querySelector('.videos-ver-mas').innerText.trim() }; });
-    assert.ok(p.videos > p.ofertas, 'debajo de Ofertas'); assert.ok(p.videos > p.vermas && p.videos > p.grid && p.videos > p.nuevos, 'debajo del catálogo y de Nuevos ingresos'); assert.ok(p.videos < p.inicio && p.videos < p.info, 'antes del texto y los datos de envío');
+      return { videos: y(sec), ofertas: y(document.getElementById('ofertas-section')), boton: y(document.getElementById('ver-todo-caja')), destacados: y(document.getElementById('destacados-section')), nuevos: y(document.getElementById('nuevos-section')), inicio: y(document.querySelector('.inicio-texto')), info: y(document.querySelector('.info-franja')), titulo: tit.innerText.trim(), fs: getComputedStyle(tit).fontSize, fsOf: getComputedStyle(of).fontSize, ff: getComputedStyle(tit).fontFamily, verMas: sec.querySelector('.videos-ver-mas').innerText.trim() }; });
+    assert.ok(p.videos > p.ofertas, 'debajo de Ofertas'); assert.ok(p.videos > p.destacados && p.videos > p.nuevos, 'debajo de Nuevos ingresos y Destacados'); assert.ok(p.videos < p.boton, 'antes del botón "Ver todo el catálogo"'); assert.ok(p.videos < p.inicio && p.videos < p.info, 'antes del texto y los datos de envío');
     assert.equal(p.titulo.toUpperCase(), 'NUESTROS VIDEOS'); assert.equal(p.fs, p.fsOf, 'mismo tamaño que el título de Ofertas'); assert.ok(p.ff.includes('Anton')); assert.equal(p.verMas, 'Ver más en TikTok →'); await ctx.close();
   });
-  await t('sin ofertas cargadas igual queda al final (debajo de "Ver más productos") y antes del texto de la portada', async () => {
+  await t('sin ofertas cargadas igual queda al final (debajo de Destacados y antes del botón "Ver todo el catálogo" y del texto de la portada)', async () => {
     const sin = productosPrueba(24).map(({ precioOferta, precioOfertaTarjeta, ...r }) => r); const { page, ctx } = await abrir({ perfil: 'iphone', catalogo: sin });
     assert.equal(await visible(page, 'ofertas-section'), false); assert.equal(await visible(page, 'videos-section'), true);
-    const p = await page.evaluate(() => { const y = (el) => el.getBoundingClientRect().top + scrollY; return { videos: y(document.getElementById('videos-section')), vermas: y(document.getElementById('ver-mas-caja')), inicio: y(document.querySelector('.inicio-texto')) }; });
-    assert.ok(p.videos >= p.vermas && p.videos < p.inicio); await ctx.close();
+    const p = await page.evaluate(() => { const y = (el) => el.getBoundingClientRect().top + scrollY; return { videos: y(document.getElementById('videos-section')), destacados: y(document.getElementById('destacados-section')), boton: y(document.getElementById('ver-todo-caja')), inicio: y(document.querySelector('.inicio-texto')) }; });
+    assert.ok(p.videos > p.destacados && p.videos < p.boton && p.boton < p.inicio); await ctx.close();
   });
   await t('LINKS: cada tarjeta es un <a> con el link del video (limpio), target="_blank" y rel="noopener noreferrer"; el enlace "Ver más en TikTok →" va al perfil con los mismos atributos', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone', cfg: { videosTiktok: [{ url: L1 + '?is_from_webapp=1&sender_device=pc', portada: PORT(1), titulo: 'Uno' }, { url: L2, portada: PORT(2) }, { url: L3, portada: PORT(3), titulo: 'Tres' }] } });
@@ -169,20 +169,21 @@ if (!process.env.SOLO_PURAS) {
     const m = await page.evaluate(() => { const c = document.querySelector('#videos-strip .vt-card'); const p = c.querySelector('.vt-portada').getBoundingClientRect(), t = c.querySelector('.vt-titulo').getBoundingClientRect(), v = c.querySelector('.vt-ver').getBoundingClientRect(), pl = c.querySelector('.vt-play').getBoundingClientRect(), cr = c.getBoundingClientRect(); return { debajoT: t.top >= p.bottom - 1, debajoV: v.top >= t.bottom - 1, dentro: v.right <= cr.right + 1 && t.right <= cr.right + 1, lineas: Math.round(t.height / parseFloat(getComputedStyle(c.querySelector('.vt-titulo')).lineHeight)), cx: Math.abs((pl.left + pl.width / 2) - (p.left + p.width / 2)), cy: Math.abs((pl.top + pl.height / 2) - (p.top + p.height / 2)) }; });
     assert.ok(m.debajoT && m.debajoV && m.dentro); assert.ok(m.lineas <= 2, 'líneas ' + m.lineas); assert.ok(m.cx < 1.5 && m.cy < 1.5, `play centrado (${m.cx}, ${m.cy})`); await ctx.close();
   });
-  await t('SOLO EN LA PORTADA NORMAL: se oculta en categorías, en la vista de ofertas, al buscar y se ve al volver (sin recargar); la ficha es una capa que lo tapa', async () => {
+  await t('SOLO EN LA PORTADA: se ve en la portada y NO en "Todo el catálogo", en una categoría, en la vista de ofertas ni al buscar; reaparece al volver (logo o Atrás) sin recargar; la ficha es una capa que lo tapa', async () => {
     for (const perfil of ['iphone', 'pc']) {
       const { page, ctx } = await abrir({ perfil }); const vis = () => visible(page, 'videos-section'); assert.equal(await vis(), true, perfil + ': portada');
       await page.evaluate(() => { window.__marca = 'sin recargar'; });
-      await page.evaluate(() => window.setCategoria('camisetas')); await esp(250); assert.equal(await vis(), false, 'categoría');
-      await page.evaluate(() => window.setCategoria('')); await esp(250); assert.equal(await vis(), true, 'volver de la categoría');
-      await page.evaluate(() => window.verOfertas()); await esp(300); assert.equal(await vis(), false, 'vista de ofertas'); await page.click('#hdr-logo'); await esp(600); assert.equal(await vis(), true, 'logo → portada');
-      await page.click('#btn-lupa'); await esp(250); await page.fill('#hdr-search-input', 'boca'); await esp(700); assert.equal(await vis(), false, 'buscando'); await page.fill('#hdr-search-input', ''); await esp(700); assert.equal(await vis(), true, 'búsqueda borrada');
-      const id = await page.evaluate(() => document.querySelector('#grid > .card').getAttribute('onclick').match(/'([^']+)'/)[1]); await page.evaluate((i) => window.abrirDetalle(i), id); await esp(400);
+      for (const [nombre, ir] of [['Todo el catálogo', () => page.evaluate(() => document.getElementById('ver-todo-btn').click())], ['categoría', () => page.evaluate(() => document.querySelector('.chip-cat').click())], ['vista de ofertas', () => page.evaluate(() => window.verOfertas())]]) {
+        await ir(); await esp(500); assert.equal(await vis(), false, nombre); await page.click('#hdr-logo'); await esp(700); assert.equal(await vis(), true, 'logo → portada (' + nombre + ')');
+      }
+      await page.click('#btn-lupa'); await esp(250); await page.fill('#hdr-search-input', 'boca'); await esp(700); assert.equal(await vis(), false, 'buscando'); await page.goBack(); await esp(800); assert.equal(await vis(), true, 'Atrás → portada');
+      const id = await page.evaluate(() => document.querySelector('#nuevos-strip .card').getAttribute('onclick').match(/'([^']+)'/)[1]); await page.evaluate((i) => window.abrirDetalle(i), id); await esp(400);
       assert.deepEqual(await page.evaluate(() => { const o = document.getElementById('detalle-overlay'); const r = o.getBoundingClientRect(); return { fijo: getComputedStyle(o).position, ancho: Math.round(r.width) === innerWidth, alto: Math.round(r.height) === innerHeight }; }), { fijo: 'fixed', ancho: true, alto: true }, 'la ficha cubre toda la pantalla');
       await page.evaluate(() => window.cerrarDetalle()); await esp(400); assert.equal(await vis(), true, 'cerrar la ficha: sigue'); assert.equal(await page.evaluate(() => window.__marca), 'sin recargar'); await ctx.close();
     }
     const a = await abrir({ url: '/index.html#cat=ofertas', perfil: 'iphone', mock: { catalogoDemora: 300 } }); await esp(500); assert.equal(await visible(a.page, 'videos-section'), false, 'carga directa #cat=ofertas'); await a.ctx.close();
     const b = await abrir({ url: '/index.html#cat=camisetas', perfil: 'iphone', mock: { catalogoDemora: 300 } }); await esp(500); assert.equal(await visible(b.page, 'videos-section'), false, 'carga directa #cat=camisetas'); await b.ctx.close();
+    const c = await abrir({ url: '/index.html#cat=todos', perfil: 'iphone', mock: { catalogoDemora: 300 } }); await esp(500); assert.equal(await visible(c.page, 'videos-section'), false, 'carga directa #cat=todos'); await c.ctx.close();
   });
   await t('EN VIVO: StockMGR carga o saca videos con la tienda abierta → aparece / desaparece la sección sin recargar', async () => {
     const { page, ctx } = await abrir({ perfil: 'pc', cfg: {} }); assert.equal(await visible(page, 'videos-section'), false);
@@ -200,7 +201,7 @@ if (!process.env.SOLO_PURAS) {
       const page = await ctx.newPage(); const errores = []; page.on('pageerror', (e) => errores.push(e.message));
       await page.addInitScript(guion(24, 152));
       await page.addInitScript(({ conVideos, VIDEOS }) => { window.__MOCK = { config: conVideos ? { videosTiktok: VIDEOS } : {}, catalogoDemora: 700 }; window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); }, { conVideos, VIDEOS });
-      await page.goto(BASE + '/index.html', { waitUntil: 'load' }); await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 }); await esp(900);
+      await page.goto(BASE + '/index.html', { waitUntil: 'load' }); await page.waitForSelector('html[data-catalogo-listo]', { timeout: 8000 }); await esp(900);
       const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); const v = await page.evaluate(() => window.__cls);
       assert.ok(d <= 1, perfil + ' desborde ' + d); assert.equal(errores.length, 0, errores.join(' | ')); assert.ok(v <= 0.03, `${perfil} ${conVideos ? 'con' : 'sin'} videos: CLS ${v.toFixed(3)}`); await ctx.close();
     }

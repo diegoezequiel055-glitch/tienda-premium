@@ -96,7 +96,11 @@ if (!process.env.SOLO_PURAS) {
     await page.addInitScript(guion(productos, envios));
     await page.addInitScript((m) => { window.__MOCK = m; window.__abiertos = []; window.open = (u) => { window.__abiertos.push(u); return null; }; }, { config: null, ...mock });
     await page.goto(BASE + url, { waitUntil: 'load' });
-    await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    await page.waitForSelector('html[data-catalogo-listo]', { timeout: 8000 });
+    if (!/[?&]p=/.test(url)) { // el catálogo ya no está en la portada: se abre la vista "Todo el catálogo" (salvo con un link ?p=ID: ahí se prueba la ficha)
+      await page.evaluate(() => window.setCategoria('todos'));
+      await page.waitForFunction(() => document.querySelectorAll('#grid > .card').length > 0, null, { timeout: 8000 });
+    }
     await esp(250);
     return { page, ctx, errores };
   }
