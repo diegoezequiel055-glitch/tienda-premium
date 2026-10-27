@@ -295,23 +295,15 @@ window.verMasProductos = function () {
   pintarVerMas(restantes);
 };
 
-// ── ofertas (productos con "Precio en oferta" cargado en StockMGR) — se oculta (sección y ítem del menú) si no hay ninguna ──
+// ── ofertas: la lista se la pasa a ofertas-ui.js (sección compacta al final, ítems del menú y de la barra); sin ofertas no se muestra nada ──
 function renderOfertas() {
-  const sec = $('ofertas-section'), strip = $('ofertas-strip'); if (!sec || !strip) return;
   const lista = ofertasList(productos).sort((a, b) => (b.pctOferta - a.pctOferta) || a.nombre.localeCompare(b.nombre, 'es'));
-  sec.classList.remove('reservando'); sec.style.display = lista.length ? '' : 'none';
-  strip.innerHTML = lista.map(tarjetaHtml).join('');
-  try { localStorage.setItem('tpOfertas', lista.length ? '1' : '0'); } catch {} // la próxima visita reserva el lugar de la sección antes de que llegue el catálogo (sin saltos)
-  window.__cantidadOfertas = lista.length; // por si ofertas-ui.js (carga al final) todavía no estaba escuchando cuando llegó el catálogo
-  document.dispatchEvent(new CustomEvent('ofertas-actualizadas', { detail: lista.length })); // ofertas-ui.js: ítem del menú y link #cat=ofertas
+  window.__ofertas = lista; // por si ofertas-ui.js (carga al final) todavía no estaba escuchando cuando llegó el catálogo
+  document.dispatchEvent(new CustomEvent('ofertas-actualizadas', { detail: lista }));
 }
-window.irAOfertas = function (ev) {
+window.verOfertas = function (ev) { // "Ver todas →", ítem del menú y de la barra: misma vista que una categoría, filtrada por ofertas
   if (ev) ev.preventDefault();
-  const sec = $('ofertas-section');
-  (sec && sec.style.display !== 'none' ? sec : $('grid')).scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-window.verOfertas = function (ev) { // "Ver todas →": misma vista que una categoría, filtrada por ofertas
-  if (ev) ev.preventDefault();
+  if ($('detalle-overlay').classList.contains('open')) window.cerrarDetalle();
   window.setCategoria(CLAVE_OFERTAS);
   $('grid-titulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };

@@ -29,7 +29,7 @@ const TAMANOS = (RAPIDO ? [[360, 740], [414, 896], [1366, 768]] : [[360, 740], [
 const ESCENARIOS = RAPIDO ? ['lenta', 'imagenes-bloqueadas'] : ['lenta', 'imagenes-tardias', 'imagenes-bloqueadas'];
 const LIMITES = { // ancho de tarjeta permitido (px) y alto máximo
   strip: { min: 150, max: 260, altoMin: 250, altoMax: 620 },
-  ofertas: { min: 130, max: 330, altoMin: 250, altoMax: 680 }, // carrusel de Ofertas: 2 tarjetas + un pedazo en celular, ~4 en PC
+  ofertas: { min: 110, max: 230, altoMin: 150, altoMax: 420 }, // carrusel compacto de Ofertas (al final de la página): ~2,5 tarjetas en celular, ~6 en PC
   grid: { min: 140, max: 360, altoMin: 250, altoMax: 700 },
   relacionados: { min: 120, max: 260, altoMin: 200, altoMax: 620 },
 };
@@ -65,7 +65,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   const fallos = [];
   await page.route('**/firebase-config.js', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: dobleFirebase() }));
   await page.addInitScript(guion(73, 152));
-  await page.addInitScript(() => { localStorage.setItem('tpOfertas', '1'); /* visitante que ya volvió: la sección de Ofertas reserva su lugar (la primera visita con ofertas se mide en test-ofertas.mjs) */ window.__MOCK = { config: null, catalogoDemora: 1500 }; /* como Firestore real: con 20 ms el catálogo llega antes de que carguen los módulos del final */ });
+  await page.addInitScript(() => { window.__MOCK = { config: null, catalogoDemora: 1500 }; /* como Firestore real: con 20 ms el catálogo llega antes de que carguen los módulos del final */ });
   if (escenario === 'lenta' || escenario === 'imagenes-tardias') {
     const cdp = await ctx.newCDPSession(page);
     await cdp.send('Network.enable');
@@ -83,10 +83,10 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   await esp(escenario === 'imagenes-tardias' ? 9000 : 3000);
 
   const filas = await page.evaluate(() => {
-    const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto'); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
+    const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto, .of-foto'); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
     const visible = (id) => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none'; };
     return {
-      ofertas: visible('ofertas-section') ? leer('#ofertas-strip .card') : null,
+      ofertas: visible('ofertas-section') ? leer('#ofertas-strip .of-card') : null,
       nuevos: visible('nuevos-section') ? leer('#nuevos-strip .card') : null,
       destacados: visible('destacados-section') ? leer('#destacados-strip .card') : null,
       grid: leer('#grid > .card'),

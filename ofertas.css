@@ -14,36 +14,35 @@
 .detalle-oferta:empty{display:none}
 .detalle-oferta .badge-oferta{position:static;pointer-events:auto;font-size:.8rem;padding:5px 10px;box-shadow:none}
 .detalle-precio-ant{font-size:1rem;color:#8a8a8a}
-/* Sección "OFERTAS" (debajo del hero, arriba de Nuevos ingresos). */
+/* Sección "Ofertas" COMPACTA al final de la página (debajo de "Ver más productos", arriba del footer). */
+.ofertas-fin{padding:28px 0 8px;display:flex;flex-direction:column;gap:12px}
 .ofertas-cab{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 20px}
-.ofertas-cab .section-title{padding:0}
-.ofertas-ver{font-size:.82rem;font-weight:600;color:var(--ink);white-space:nowrap;min-height:24px}
+.ofertas-cab .section-title{padding:0;font-size:1.1rem}
+.ofertas-ver{font-size:.8rem;font-weight:600;color:var(--ink);white-space:nowrap;min-height:24px}
 .ofertas-ver:hover{text-decoration:underline}
-/* Carrusel: en celular se ven 2 tarjetas y un pedazo de la tercera; en PC ~4 y un pedazo de la quinta. */
-.ofertas-strip{gap:12px}
-.ofertas-strip .card{flex:0 0 clamp(140px,calc((100vw - 44px) / 2.35),230px);width:clamp(140px,calc((100vw - 44px) / 2.35),230px)}
+/* Carrusel de tarjetas chicas: ~2,5 por pantalla en celular, ~6 en PC (scroll-snap). */
+.ofertas-carril{display:flex;gap:10px;overflow-x:auto;padding:2px 20px 10px;scroll-snap-type:x mandatory;scroll-padding-left:20px;scrollbar-width:none}
+.ofertas-carril::-webkit-scrollbar{display:none}
+.of-card{flex:0 0 clamp(120px,calc((100vw - 40px) / 2.5),200px);width:clamp(120px,calc((100vw - 40px) / 2.5),200px);scroll-snap-align:start;display:flex;flex-direction:column;gap:5px;padding:0;border:none;background:none;text-align:left;cursor:pointer;color:inherit;font-family:inherit;min-width:0}
+.of-foto{position:relative;display:block;width:100%;aspect-ratio:4/5;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.of-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.of-foto .badge-oferta{top:6px;left:6px;font-size:.66rem;padding:4px 7px}
+.of-card:hover .of-foto{opacity:.92}
+.of-card:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:var(--radius)}
+.of-nombre{font-size:.74rem;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
+.of-precios{display:flex;flex-direction:column;gap:0;position:relative}
+.of-ant{font-size:.7rem;line-height:1.2;color:#8a8a8a;position:relative}
+.of-ant s{text-decoration-thickness:1px}
+.of-precio{font-family:'Anton',sans-serif;font-size:.95rem;line-height:1.25;color:var(--ink)}
 @media(min-width:700px){
   .ofertas-cab{padding:0 32px}
-  .ofertas-strip{gap:16px}
-  .ofertas-strip .card{flex-basis:clamp(150px,calc((100vw - 80px) / 4.35),320px);width:clamp(150px,calc((100vw - 80px) / 4.35),320px)}
+  .ofertas-carril{gap:12px;padding:2px 32px 10px;scroll-padding-left:32px}
+  .of-card{flex-basis:clamp(130px,calc((100vw - 96px) / 6.4),220px);width:clamp(130px,calc((100vw - 96px) / 6.4),220px)}
 }
-/* Sin saltos: SOLO si la última visita tuvo ofertas (tpOfertas=1) el lugar de la sección se reserva antes de que llegue el catálogo; si no hay ofertas conocidas no se reserva nada (sin hueco), el lugar de la sección se reserva (index.html + esqueletos.css) con su alto real medido (~530 px celular, 580–720 px PC). */
-section.destacados.ofertas-section.reservando{min-height:530px}
-section.destacados.ofertas-section.reservando .ofertas-strip:empty{min-height:430px;background:
-  linear-gradient(var(--surface2),var(--surface2)) 20px 2px/calc((100vw - 44px) / 2.35) 184px no-repeat,
-  linear-gradient(var(--surface2),var(--surface2)) calc(32px + (100vw - 44px) / 2.35) 2px/calc((100vw - 44px) / 2.35) 184px no-repeat}
-@media(min-width:700px){
-  section.destacados.ofertas-section.reservando{min-height:clamp(580px,calc(42vw + 110px),720px)}
-  section.destacados.ofertas-section.reservando .ofertas-strip:empty{min-height:480px;background:
-    linear-gradient(var(--surface2),var(--surface2)) 32px 2px/clamp(150px,calc((100vw - 80px) / 4.35),320px) 300px no-repeat,
-    linear-gradient(var(--surface2),var(--surface2)) calc(48px + clamp(150px,calc((100vw - 80px) / 4.35),320px)) 2px/clamp(150px,calc((100vw - 80px) / 4.35),320px) 300px no-repeat}
-}
-/* Ítem "Ofertas" de la barra (PC): píldora roja (margen negativo: no agranda la barra, así no empuja nada al aparecer). */
-.hdr-nav a.nav-ofertas{background:#e5252a;color:#fff;font-weight:700;padding:6px 14px;margin:-7px 0;border-radius:999px;letter-spacing:.3px;line-height:1.2}
-.hdr-nav a.nav-ofertas:hover{background:#c91e23}
-/* Ítem "Ofertas" del menú lateral (celular): píldora roja a todo el ancho útil, área táctil de 44 px. */
-.menu-ofertas{padding:12px 20px 4px}
+/* "Ofertas" en la barra (PC): solo texto rojo, mismo tamaño que los otros ítems. */
+.hdr-nav a.nav-ofertas{color:#e5252a}
+.hdr-nav a.nav-ofertas:hover{color:#c91e23}
+/* Fila "Ofertas" del menú lateral (celular): mismo estilo que "Todos los productos" (.menu-toggle), texto rojo en negrita y flecha ›. */
 .menu-ofertas[hidden]{display:none}
-.menu-ofertas-btn{display:flex;align-items:center;justify-content:center;min-height:44px;background:#e5252a;color:#fff;font-weight:700;font-size:.92rem;letter-spacing:.3px;border-radius:999px;padding:0 20px}
-.menu-ofertas.activa .menu-ofertas-btn{box-shadow:0 0 0 3px rgba(229,37,42,.25)}
-
+.menu-toggle.menu-ofertas-fila{color:#e5252a;font-weight:700}
+.menu-toggle.menu-ofertas-fila.con-activa{background:var(--surface2)}

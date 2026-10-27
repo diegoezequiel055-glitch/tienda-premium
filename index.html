@@ -38,7 +38,7 @@
 <header class="hdr">
   <a class="hdr-logo" id="hdr-logo" href="./">TIENDAPREMIUM.OK</a>
   <nav class="hdr-nav">
-    <a href="#" class="nav-ofertas" id="nav-ofertas" onclick="irAOfertas(event)" style="display:none">Ofertas</a>
+    <a href="#" class="nav-ofertas" id="nav-ofertas" onclick="verOfertas(event)" style="display:none">Ofertas</a>
     <a href="#" onclick="irANuevos(event)">Nuevos ingresos</a>
     <a href="#" onclick="irADestacados(event)">Destacados</a>
     <a href="#" class="btn-mayorista" target="_blank" rel="noopener" style="display:none">Mayorista</a>
@@ -73,12 +73,6 @@
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
 </div>
 
-<section class="destacados ofertas-section" id="ofertas-section" style="display:none">
-  <div class="ofertas-cab"><h2 class="section-title">Ofertas</h2><a href="#" class="ofertas-ver" onclick="verOfertas(event)">Ver todas →</a></div>
-  <div class="destacados-strip ofertas-strip" id="ofertas-strip"></div>
-</section>
-<script>try{if(localStorage.getItem('tpOfertas')==='1'){var s=document.getElementById('ofertas-section');s.style.display='';s.classList.add('reservando')}}catch(e){}</script>
-
 <section class="destacados reservando" id="nuevos-section">
   <h2 class="section-title">Nuevos ingresos</h2>
   <div class="destacados-strip" id="nuevos-strip"></div>
@@ -104,6 +98,11 @@
 <div class="ver-mas-caja" id="ver-mas-caja" hidden>
   <button type="button" class="ver-mas-btn" id="ver-mas-btn" onclick="verMasProductos()">Ver más productos</button>
 </div>
+
+<section class="ofertas-fin" id="ofertas-section" style="display:none" aria-label="Ofertas">
+  <div class="ofertas-cab"><h2 class="section-title">Ofertas</h2><a href="#" class="ofertas-ver" onclick="verOfertas(event)">Ver todas →</a></div>
+  <div class="ofertas-carril" id="ofertas-strip"></div>
+</section>
 
 <section class="inicio-texto">
   <h1 id="hero-titulo">Indumentaria deportiva, al mejor precio</h1>
