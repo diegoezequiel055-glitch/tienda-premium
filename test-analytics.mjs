@@ -52,6 +52,12 @@ assert.deepEqual(eventos.share({ id: 'x', metodo: 'copy_link' }), { method: 'cop
 assert.deepEqual(eventos.search('  Arsenal  '), { search_term: 'arsenal' });
 assert.equal(eventos.search('x'.repeat(300)).search_term.length, 100);
 ok('click_whatsapp, share (web_share / copy_link) y search (minúsculas, máx. 100 caracteres)');
+assert.deepEqual(eventos.click_tiktok({ ubicacion: 'tarjeta', posicion: '3' }), { ubicacion: 'tarjeta', posicion: 3 });
+assert.deepEqual(eventos.click_tiktok({ ubicacion: 'ver_mas' }), { ubicacion: 'ver_mas' });
+assert.deepEqual(eventos.click_tiktok({ ubicacion: 'cualquier cosa', posicion: '99' }), { ubicacion: 'tarjeta' });
+assert.deepEqual(eventos.click_tiktok(), { ubicacion: 'tarjeta' });
+assert.deepEqual(Object.keys(eventos.click_tiktok({ ubicacion: 'tarjeta', posicion: 2, url: 'https://x', nombre: 'Juan' })).sort(), ['posicion', 'ubicacion']);
+ok('click_tiktok: solo ubicación (tarjeta / ver_mas) y posición 1–6; nada más');
 
 console.log('\nBúsquedas: no se envía el término si parece un dato personal');
 for (const t of ['1155551234', '123456', 'pedido 987654 ok', '11 5555-1234', '+54 9 11 5555 1234', '(011) 4555-1234', '011-4555-1234', 'juan@gmail.com', 'a@b', 'mi mail es x@y.com', '11.5555.1234', '4000 5000 600'])
