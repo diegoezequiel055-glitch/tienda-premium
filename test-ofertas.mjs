@@ -427,6 +427,29 @@ if (!process.env.SOLO_PURAS) {
     assert.equal(await l.page.evaluate(() => document.getElementById('detalle-overlay').classList.contains('open')), true); await l.page.evaluate(() => window.cerrarDetalle()); await esp(500);
     assert.equal(await visible(l.page, 'ofertas-section'), true, 'link ?p=ID: al cerrar la ficha se ve la portada con la sección'); await l.ctx.close();
   });
+  await t('SIN BÚSQUEDA: con una búsqueda por texto activa la sección compacta NO se ve (ni con resultados ni sin ellos); al borrar la búsqueda o tocar el logo reaparece sin recargar', async () => {
+    for (const perfil of ['iphone', 'pc']) {
+      const { page, ctx } = await abrir({ perfil });
+      const vis = () => visible(page, 'ofertas-section'); assert.equal(await vis(), true, perfil + ': portada: se ve');
+      await page.click('#btn-lupa'); await esp(300);
+      await page.fill('#hdr-search-input', 'boca'); await esp(700);
+      assert.equal(await vis(), false, perfil + ': buscando "boca": NO se ve'); assert.ok(await page.evaluate(() => document.querySelectorAll('#grid > .card').length) > 0, 'hay resultados');
+      await page.fill('#hdr-search-input', 'zzzz sin resultados'); await esp(700); assert.equal(await vis(), false, perfil + ': búsqueda sin resultados: NO se ve');
+      await page.fill('#hdr-search-input', ''); await esp(700); assert.equal(await vis(), true, perfil + ': al borrar el texto reaparece');
+      await page.fill('#hdr-search-input', 'real'); await esp(700); assert.equal(await vis(), false);
+      await page.evaluate(() => { window.__marca = 'sin recargar'; }); await page.click('#hdr-logo'); await esp(800);
+      assert.equal(await vis(), true, perfil + ': el logo limpia la búsqueda y reaparece'); assert.equal(await page.evaluate(() => window.__marca), 'sin recargar');
+      // desde una categoría: buscar limpia la categoría y oculta; borrar vuelve a la portada con la sección
+      await page.evaluate(() => window.setCategoria('camisetas')); await esp(250); assert.equal(await vis(), false);
+      await page.evaluate(() => window.setBusqueda('boca')); await esp(300); assert.equal(await vis(), false, perfil + ': categoría + búsqueda: oculta');
+      await page.evaluate(() => window.setBusqueda('')); await esp(300); assert.equal(await vis(), true, perfil + ': sin categoría y sin búsqueda: se ve'); await ctx.close();
+    }
+  });
+  await t('SIN BÚSQUEDA: en la vista de ofertas la sección no se ve; al buscar y borrar la búsqueda se vuelve a la portada (buscar limpia la categoría) con la sección, sin estado de búsqueda pegado', async () => {
+    const { page, ctx } = await abrir({ perfil: 'iphone', url: '/index.html#cat=ofertas', mock: { catalogoDemora: 300 } }); await esp(500);
+    assert.equal(await visible(page, 'ofertas-section'), false); await page.evaluate(() => window.setBusqueda('boca')); await esp(300); await page.evaluate(() => window.setBusqueda('')); await esp(300);
+    assert.equal(await page.evaluate(() => window.__buscando), false); assert.equal(await visible(page, 'ofertas-section'), true, 'al borrar la búsqueda se vuelve a la portada (setBusqueda limpia la categoría al buscar)'); await ctx.close();
+  });
   await t('ninguna prueba salió a internet real (solo el doble y el servidor local)', () => assert.deepEqual(pedidosReales.filter((u) => !/google-analytics|googletagmanager|fonts\.g/.test(u)), []));
   await browser.close(); servidor.close();
 }
