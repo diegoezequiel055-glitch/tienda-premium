@@ -29,12 +29,17 @@ if (cats && cats.parentNode) {
 }
 
 let hashPendiente = true; // #cat=ofertas se aplica cuando llega el catálogo
+let hayOfertas = false;
+let categoriaActual = window.__categoriaActual || ''; // '' = portada normal
+// La sección compacta se ve SOLO en la portada normal (sin categoría): en la vista de ofertas sería un duplicado y en las otras categorías no corresponde.
+function mostrarSeccion() { const sec = $('ofertas-section'); if (sec) sec.style.display = hayOfertas && categoriaActual === '' ? '' : 'none'; }
 function alCambiarOfertas(lista) {
   const hay = lista.length > 0;
-  const sec = $('ofertas-section'), carril = $('ofertas-strip');
-  if (sec && carril) {
+  hayOfertas = hay;
+  const carril = $('ofertas-strip');
+  if (carril) {
     carril.innerHTML = lista.map((p) => tarjetaCompactaHtml(p, (p.fotos || [])[0] ? fotoCloudinary(p.fotos[0], 'tarjeta') : '')).join('');
-    sec.style.display = hay ? '' : 'none';
+    mostrarSeccion();
   }
   const barra = $('nav-ofertas'); if (barra) barra.style.display = hay ? '' : 'none';
   const menu = $('menu-ofertas'); if (menu) menu.hidden = !hay;
@@ -52,6 +57,7 @@ if (carrilOfertas) carrilOfertas.addEventListener('click', (e) => { const c = e.
 
 document.addEventListener('categoria-cambiada', (e) => {
   const activa = e.detail === CLAVE_OFERTAS;
+  categoriaActual = e.detail || ''; mostrarSeccion();
   const t = $('grid-titulo'); if (t) t.textContent = activa ? 'Ofertas' : TITULO_NORMAL;
   const fila = $('menu-ofertas-fila'); if (fila) { fila.classList.toggle('con-activa', activa); if (activa) fila.setAttribute('aria-current', 'true'); else fila.removeAttribute('aria-current'); }
 });

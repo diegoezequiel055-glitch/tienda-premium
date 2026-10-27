@@ -206,7 +206,7 @@ window.setBusqueda = function (v) {
   busqueda = v;
   // Al buscar se busca en todo el catálogo: se limpia el filtro de categoría.
   if (palabrasDe(v).length && categoria) {
-    categoria = '';
+    categoria = ''; window.__categoriaActual = '';
     marcarPill();
     document.dispatchEvent(new CustomEvent('categoria-cambiada', { detail: '' }));
   }
@@ -214,7 +214,7 @@ window.setBusqueda = function (v) {
   renderGrid();
 };
 window.setCategoria = function (v) {
-  categoria = v;
+  categoria = v; window.__categoriaActual = v; // ofertas-ui.js: la sección compacta solo se ve en la portada normal (sin categoría)
   mostrados = TAMANO_PAGINA;
   marcarPill();
   renderGrid();
