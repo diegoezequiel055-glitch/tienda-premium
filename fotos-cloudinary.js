@@ -9,6 +9,7 @@
 export const TAMANOS_FOTO = {
   carrito: { w: 160, q: 'eco' },   // miniatura del carrito y de la ficha (48-52 px en pantalla)
   tarjeta: { w: 400, q: 'eco' },   // tarjetas de la grilla y tira del inicio (~178 px, ×2 para pantallas retina)
+  categoria: { w: 720, q: 'eco' }, // tarjetas de "Comprar por categoría" (4:5, ~310 px en celular ×2 retina, ~310-420 px en PC): 720 px alcanza
   heroMovil: { w: 750, q: 'eco' }, // hero del inicio en celular y tablet (< 900 px): ocupa como mucho 460 px de ancho
   ficha: { w: 900, q: 'good' },    // foto grande de la ficha (más calidad: el cliente mira el detalle)
   visor: { w: 2000, q: 'good' },   // visor con zoom (se pide solo al abrirlo). c_limit no agranda: una original de 1200 px sale de 1200

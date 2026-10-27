@@ -29,6 +29,7 @@ const TAMANOS = (RAPIDO ? [[360, 740], [414, 896], [1366, 768]] : [[360, 740], [
 const ESCENARIOS = RAPIDO ? ['lenta', 'imagenes-bloqueadas'] : ['lenta', 'imagenes-tardias', 'imagenes-bloqueadas'];
 const LIMITES = { // ancho de tarjeta permitido (px) y alto máximo
   strip: { min: 150, max: 260, altoMin: 250, altoMax: 620 },
+  categorias: { min: 200, max: 440, altoMin: 250, altoMax: 560 }, // tarjetas de "Comprar por categoría" (4:5): ~80 % del ancho en celular, 3-4 a la vez en PC
   videos: { min: 100, max: 220, altoMin: 200, altoMax: 520 }, // carrusel de Nuestros videos (al final): tarjetas 9:16, ~2,5 en celular y ~6 en PC
   ofertas: { min: 110, max: 230, altoMin: 150, altoMax: 420 }, // carrusel compacto de Ofertas (al final de la página): ~2,5 tarjetas en celular, ~6 en PC
   grid: { min: 140, max: 360, altoMin: 250, altoMax: 700 },
@@ -84,14 +85,14 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   await esp(escenario === 'imagenes-tardias' ? 9000 : 3000);
 
   const filas = await page.evaluate(() => {
-    const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto, .of-foto, .vt-portada'); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
+    const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto, .of-foto, .vt-portada') || (c.classList.contains('cat-card') ? c : null); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
     const visible = (id) => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none'; };
     return {
       ofertas: visible('ofertas-section') ? leer('#ofertas-strip .of-card') : null,
       videos: visible('videos-section') ? leer('#videos-strip .vt-card') : null,
       nuevos: visible('nuevos-section') ? leer('#nuevos-strip .card') : null,
       destacados: visible('destacados-section') ? leer('#destacados-strip .card') : null,
-      chips: (() => { const f = document.getElementById('chips-cat'); const c = [...f.querySelectorAll('.chip-cat')]; const r = f.getBoundingClientRect(); return { n: c.length, alto: r.height, altoChip: c[0] ? c[0].getBoundingClientRect().height : 0 }; })(),
+      categorias: visible('categorias-section') ? leer('#categorias-carril .cat-card') : null,
       boton: (() => { const b = document.getElementById('ver-todo-btn'); const r = b.getBoundingClientRect(); return { ancho: r.width, alto: r.height, texto: b.textContent.trim(), grid: document.querySelectorAll('#grid > .card').length }; })(),
       desborde: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       cls: window.__cls,
@@ -137,7 +138,8 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   chequeo('Nuevos ingresos', filas.nuevos, LIMITES.strip);
   chequeo('Destacados', filas.destacados, LIMITES.strip);
   chequeo('Catálogo (vista Todo el catálogo)', filas.grid, LIMITES.grid);
-  if (!filas.chips.n || filas.chips.alto > 64 || filas.chips.altoChip > 40) fallos.push(`fila de categorías: ${filas.chips.n} chips, alto ${filas.chips.alto}/${filas.chips.altoChip} (máx. 64/40)`);
+  if (!filas.categorias || filas.categorias.length < 2) fallos.push('"Comprar por categoría": faltan las tarjetas de categoría con foto');
+  chequeo('Comprar por categoría', filas.categorias, LIMITES.categorias);
   if (filas.boton.grid !== 0) fallos.push('la portada tiene tarjetas de la grilla del catálogo: ' + filas.boton.grid);
   if (!/^Ver todo el catálogo \(\d+ productos\)$/.test(filas.boton.texto)) fallos.push('texto del botón: ' + filas.boton.texto);
   if (filas.desbordeVista > 1) fallos.push('desborde horizontal en la vista de catálogo: ' + filas.desbordeVista + ' px');
@@ -145,7 +147,7 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   if (rel) { chequeo('Relacionados (cuadrícula)', rel.grid, LIMITES.relacionados); chequeo('Relacionados (Completá tu look)', rel.carril, LIMITES.relacionados); }
   if (filas.desborde > 1) fallos.push(`desborde horizontal de la página: ${filas.desborde} px`);
   if (filas.cls > CLS_MAX) fallos.push(`CLS alto: ${filas.cls.toFixed(3)} (máximo ${CLS_MAX})`);
-  return { w, escenario, fallos, resumen: `videos=${filas.videos ? filas.videos.length : '-'} ofertas=${filas.ofertas ? filas.ofertas.length : '-'} nuevos=${filas.nuevos ? filas.nuevos.length : '-'} destacados=${filas.destacados ? filas.destacados.length : '-'} catálogo=${filas.grid.length} cls=${filas.cls.toFixed(3)}` };
+  return { w, escenario, fallos, resumen: `categorias=${filas.categorias ? filas.categorias.length : '-'} videos=${filas.videos ? filas.videos.length : '-'} ofertas=${filas.ofertas ? filas.ofertas.length : '-'} nuevos=${filas.nuevos ? filas.nuevos.length : '-'} destacados=${filas.destacados ? filas.destacados.length : '-'} catálogo=${filas.grid.length} cls=${filas.cls.toFixed(3)}` };
 }
 
 const { chromium, devices } = await cargarPlaywright();

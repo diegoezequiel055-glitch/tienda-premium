@@ -81,7 +81,6 @@ escucharPublico({
     liberarReservas();
     document.querySelectorAll('.reservando').forEach((s) => { s.style.display = 'none'; });
     $('grid').innerHTML = `<div class="empty"><p>El catálogo todavía no está disponible.<br>Volvé a intentar en un rato.</p></div>`;
-    const ch = $('chips-cat'); if (ch) ch.hidden = true;
     document.documentElement.dataset.catalogoListo = '1'; // (también sin catálogo: el texto y el footer no quedan ocultos)
   },
 });
@@ -95,8 +94,8 @@ function procesarCatalogo(snap) {
   if (rc.cambio) { carrito = rc.carrito; guardarCarrito(); renderCarrito(); }
   if (categoria !== '') { const n = normalizarClave(categoria); if (n !== categoria) window.setCategoria(n); } // vista que ya no existe (o link viejo) → Todo el catálogo
   renderCatPills();
-  renderChips();
   renderBotonCatalogo();
+  window.__catalogo = productos; // categorias-portada-ui.js (carga al final: puede llegar después que el catálogo)
   document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
   renderGrid();
   if (categoria !== '') anunciarVista(); // título, pills y menú según la vista (también al entrar directo por un link)
@@ -127,6 +126,8 @@ function aplicarConfigSitio(cfg) {
   const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
   const flotante = $('whatsapp-float');
   if (flotante) flotante.href = `https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`;
+  window.__categoriasPortada = cfg.categoriasPortada && typeof cfg.categoriasPortada === 'object' ? cfg.categoriasPortada : null; // categorias-portada-ui.js: foto y frase de cada categoría que cargó Diego (sin lecturas extra: viene en la config que ya se lee)
+  document.dispatchEvent(new CustomEvent('categorias-portada-actualizadas', { detail: window.__categoriasPortada }));
   window.__videosTiktok = Array.isArray(cfg.videosTiktok) ? cfg.videosTiktok : []; // videos-tiktok-ui.js (sin lecturas extra: viene en la config que ya se lee)
   document.dispatchEvent(new CustomEvent('videos-tiktok-actualizados', { detail: window.__videosTiktok }));
   heroFotosManual = cfg.heroFotos || null;
@@ -342,15 +343,7 @@ function tarjetaHtml(p) {
     </div>`;
 }
 
-// ── portada: fila de categorías (chips) y botón "Ver todo el catálogo (N productos)" ──
-function renderChips() {
-  const cont = $('chips-cat'); if (!cont) return;
-  const cats = categoriasDisponibles(productos);
-  cont.innerHTML = cats.map((c) => `<button type="button" class="chip-cat" data-clave="${esc(c.clave)}">${esc(c.nombre)}</button>`).join('');
-  cont.hidden = !cats.length;
-}
-const chipsCont = $('chips-cat');
-if (chipsCont) chipsCont.addEventListener('click', (e) => { const b = e.target.closest('.chip-cat'); if (b) window.setCategoria(b.dataset.clave); });
+// ── portada: botón "Ver todo el catálogo (N productos)" (las categorías con foto: categorias-portada-ui.js) ──
 function renderBotonCatalogo() {
   const caja = $('ver-todo-caja'), btn = $('ver-todo-btn'); if (!caja || !btn) return;
   const texto = textoBotonCatalogo(productos.length);

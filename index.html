@@ -74,11 +74,19 @@
   <div class="htr-ph"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 3 4 6l1.5 3L8 8v12h8V8l2.5 1L20 6l-4-3-1 2H9z"/></svg></div>
 </div>
 
-<nav class="chips-cat portada-solo" id="chips-cat" aria-label="Categorías"></nav>
-
 <section class="destacados reservando portada-solo" id="nuevos-section">
   <h2 class="section-title">Nuevos ingresos</h2>
   <div class="destacados-strip" id="nuevos-strip"></div>
+</section>
+
+<section class="cat-port portada-solo" id="categorias-section" hidden aria-label="Comprar por categoría">
+  <h2 class="section-title">Comprar por categoría</h2>
+  <div class="cat-car-caja">
+    <button type="button" class="cat-flecha cat-flecha-prev" id="categorias-prev" aria-label="Categorías anteriores" hidden>‹</button>
+    <div class="cat-car" id="categorias-carril" role="list"></div>
+    <button type="button" class="cat-flecha cat-flecha-next" id="categorias-next" aria-label="Más categorías" hidden>›</button>
+  </div>
+  <div class="cat-puntos" id="categorias-puntos" hidden></div>
 </section>
 
 <section class="destacados reservando portada-solo" id="destacados-section">
@@ -225,6 +233,7 @@
 <script type="module" src="ficha-foto.js"></script>
 <script type="module" src="relacionados.js"></script>
 <script type="module" src="ofertas-ui.js"></script>
+<script type="module" src="categorias-portada-ui.js"></script>
 <script type="module" src="videos-tiktok-ui.js"></script>
 <script type="module" src="deshacer-eliminar.js"></script>
 </body>
