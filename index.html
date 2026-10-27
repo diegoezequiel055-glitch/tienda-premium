@@ -79,9 +79,14 @@
   <div class="destacados-strip" id="nuevos-strip"></div>
 </section>
 
-<section class="cat-foto-sec portada-solo" id="categorias-section" hidden aria-label="Comprar por categoría">
+<section class="cat-port portada-solo" id="categorias-section" hidden aria-label="Comprar por categoría">
   <h2 class="section-title">Comprar por categoría</h2>
-  <div class="cat-foto-grid" id="categorias-grid"></div>
+  <div class="cat-car-caja">
+    <button type="button" class="cat-flecha cat-flecha-prev" id="categorias-prev" aria-label="Categorías anteriores" hidden>‹</button>
+    <div class="cat-car" id="categorias-carril" role="list"></div>
+    <button type="button" class="cat-flecha cat-flecha-next" id="categorias-next" aria-label="Más categorías" hidden>›</button>
+  </div>
+  <div class="cat-puntos" id="categorias-puntos" hidden></div>
 </section>
 
 <section class="destacados reservando portada-solo" id="destacados-section">
@@ -228,7 +233,7 @@
 <script type="module" src="ficha-foto.js"></script>
 <script type="module" src="relacionados.js"></script>
 <script type="module" src="ofertas-ui.js"></script>
-<script type="module" src="categorias-foto-ui.js"></script>
+<script type="module" src="categorias-portada-ui.js"></script>
 <script type="module" src="videos-tiktok-ui.js"></script>
 <script type="module" src="deshacer-eliminar.js"></script>
 </body>

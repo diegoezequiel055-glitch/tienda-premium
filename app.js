@@ -95,7 +95,7 @@ function procesarCatalogo(snap) {
   if (categoria !== '') { const n = normalizarClave(categoria); if (n !== categoria) window.setCategoria(n); } // vista que ya no existe (o link viejo) → Todo el catálogo
   renderCatPills();
   renderBotonCatalogo();
-  window.__catalogo = productos; // categorias-foto-ui.js (carga al final: puede llegar después que el catálogo)
+  window.__catalogo = productos; // categorias-portada-ui.js (carga al final: puede llegar después que el catálogo)
   document.dispatchEvent(new CustomEvent('catalogo-actualizado', { detail: productos }));
   renderGrid();
   if (categoria !== '') anunciarVista(); // título, pills y menú según la vista (también al entrar directo por un link)
@@ -126,8 +126,8 @@ function aplicarConfigSitio(cfg) {
   const msg = cfg.whatsappMensaje || WHATSAPP_MSG_DEFECTO;
   const flotante = $('whatsapp-float');
   if (flotante) flotante.href = `https://wa.me/${datosNegocio.whatsappNumero}?text=${encodeURIComponent(msg)}`;
-  window.__fotosCategorias = cfg.fotosCategorias && typeof cfg.fotosCategorias === 'object' ? cfg.fotosCategorias : null; // categorias-foto-ui.js: fotos que cargó Diego (sin lecturas extra: viene en la config que ya se lee)
-  document.dispatchEvent(new CustomEvent('fotos-categorias-actualizadas', { detail: window.__fotosCategorias }));
+  window.__categoriasPortada = cfg.categoriasPortada && typeof cfg.categoriasPortada === 'object' ? cfg.categoriasPortada : null; // categorias-portada-ui.js: foto y frase de cada categoría que cargó Diego (sin lecturas extra: viene en la config que ya se lee)
+  document.dispatchEvent(new CustomEvent('categorias-portada-actualizadas', { detail: window.__categoriasPortada }));
   window.__videosTiktok = Array.isArray(cfg.videosTiktok) ? cfg.videosTiktok : []; // videos-tiktok-ui.js (sin lecturas extra: viene en la config que ya se lee)
   document.dispatchEvent(new CustomEvent('videos-tiktok-actualizados', { detail: window.__videosTiktok }));
   heroFotosManual = cfg.heroFotos || null;
@@ -343,7 +343,7 @@ function tarjetaHtml(p) {
     </div>`;
 }
 
-// ── portada: botón "Ver todo el catálogo (N productos)" (las categorías con foto: categorias-foto-ui.js) ──
+// ── portada: botón "Ver todo el catálogo (N productos)" (las categorías con foto: categorias-portada-ui.js) ──
 function renderBotonCatalogo() {
   const caja = $('ver-todo-caja'), btn = $('ver-todo-btn'); if (!caja || !btn) return;
   const texto = textoBotonCatalogo(productos.length);

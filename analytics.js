@@ -8,7 +8,7 @@ import { subtotalDe, precioUnitario } from './precios.js';
 //   localStorage y desde ese navegador no se envía nada; ?interno=0 la quita.
 // - ?analytics_debug=1 (se recuerda en la pestaña): NO envía nada y muestra en la consola cada
 //   evento con sus parámetros y si se habría enviado. Sirve para probar, también en producción.
-// - Eventos: view_item, add_to_cart, begin_checkout, click_whatsapp, click_tiktok, share, search (moneda ARS).
+// - Eventos: view_item, add_to_cart, begin_checkout, click_whatsapp, click_tiktok, click_categoria, share, search (moneda ARS).
 //   search no se envía si el término parece un teléfono, un email o tiene 6+ dígitos seguidos.
 // - NUNCA se envían datos personales: ni nombre, teléfono, dirección, localidad ni el texto del
 //   mensaje de WhatsApp. Solo datos de producto (id, nombre, categoría, talle, precio), valores,
@@ -70,6 +70,8 @@ export const eventos = {
   },
   click_whatsapp() { return { ubicacion: 'boton_flotante' }; },
   // Videos de TikTok: solo dónde se tocó (tarjeta o "Ver más en TikTok") y el lugar en la fila. Nada del visitante.
+  // "Comprar por categoría": solo el nombre de la categoría tocada (dato público del catálogo). Nada del visitante.
+  click_categoria({ categoria } = {}) { return { categoria: texto(categoria, 40) }; },
   click_tiktok({ ubicacion, posicion } = {}) {
     const p = { ubicacion: ubicacion === 'ver_mas' ? 'ver_mas' : 'tarjeta' };
     const n = Number(posicion); if (Number.isInteger(n) && n >= 1 && n <= 6) p.posicion = n;
@@ -132,6 +134,7 @@ if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   document.addEventListener('pedido-iniciado', (e) => registrar('begin_checkout', eventos.begin_checkout(e.detail)));
   document.addEventListener('producto-compartido', (e) => registrar('share', eventos.share(e.detail)));
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#whatsapp-float')) registrar('click_whatsapp', eventos.click_whatsapp()); });
+  document.addEventListener('click', (e) => { const c = e.target.closest && e.target.closest('[data-click-categoria]'); if (c) registrar('click_categoria', eventos.click_categoria({ categoria: c.dataset.clickCategoria })); });
   document.addEventListener('click', (e) => { const a = e.target.closest && e.target.closest('[data-tiktok]'); if (a) registrar('click_tiktok', eventos.click_tiktok({ ubicacion: a.dataset.tiktok, posicion: a.dataset.pos })); });
 
   // Búsqueda: se envía el último término después de 1,2 s sin cambios (no cada letra) y sin repetir el mismo.

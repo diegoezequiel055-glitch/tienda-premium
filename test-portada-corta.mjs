@@ -134,11 +134,11 @@ if (!process.env.SOLO_PURAS) {
   });
   await t('CATEGORÍAS CON FOTO (reemplazan a los chips): ya no hay fila de chips; "Comprar por categoría" queda después de Nuevos ingresos; solo categorías con productos; cada tarjeta abre la vista de esa categoría (el detalle está en test-categorias-foto.mjs)', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone' });
-    const c = await page.evaluate(() => ({ chips: document.querySelectorAll('#chips-cat, .chip-cat').length, claves: [...document.querySelectorAll('#categorias-grid .cat-foto')].map((x) => x.dataset.clave), sobra: document.documentElement.scrollWidth - document.documentElement.clientWidth }));
+    const c = await page.evaluate(() => ({ chips: document.querySelectorAll('#chips-cat, .chip-cat').length, claves: [...document.querySelectorAll('#categorias-carril .cat-card')].map((x) => x.dataset.clave), sobra: document.documentElement.scrollWidth - document.documentElement.clientWidth }));
     assert.equal(c.chips, 0); assert.deepEqual(c.claves, ['camisetas', 'conjuntos', 'chombas', 'remeras'], 'solo las categorías con productos'); assert.ok(c.sobra <= 1);
-    await page.evaluate(() => document.querySelector('#categorias-grid .cat-foto[data-clave="remeras"]').click()); await esp(500); assert.equal(await hash(page), '#cat=remeras'); assert.equal(await page.evaluate(() => document.getElementById('grid-titulo').textContent), 'Remeras');
+    await page.evaluate(() => document.querySelector('#categorias-carril .cat-card[data-clave="remeras"]').click()); await esp(500); assert.equal(await hash(page), '#cat=remeras'); assert.equal(await page.evaluate(() => document.getElementById('grid-titulo').textContent), 'Remeras');
     assert.ok(await page.evaluate(() => [...document.querySelectorAll('#grid > .card .card-cat')].every((x) => /remera/i.test(x.textContent)))); for (const s of ID_PORTADA) assert.equal(await visible(page, s), false, s); await ctx.close();
-    const m = await abrir({ perfil: 'iphone', catalogo: productosPrueba(24).filter((p) => /^(camiseta|conjunto)\|/.test(p.id)) }); assert.deepEqual(await m.page.evaluate(() => [...document.querySelectorAll('#categorias-grid .cat-foto')].map((x) => x.dataset.clave)), ['camisetas', 'conjuntos'], 'sin productos de una categoría no hay tarjeta'); await m.ctx.close();
+    const m = await abrir({ perfil: 'iphone', catalogo: productosPrueba(24).filter((p) => /^(camiseta|conjunto)\|/.test(p.id)) }); assert.deepEqual(await m.page.evaluate(() => [...document.querySelectorAll('#categorias-carril .cat-card')].map((x) => x.dataset.clave)), ['camisetas', 'conjuntos'], 'sin productos de una categoría no hay tarjeta'); await m.ctx.close();
   });
   await t('ENTRAR DIRECTO por #cat=todos / #cat=<categoría> / #cat=ofertas: abre esa vista sin mostrar antes la portada; un link viejo en singular o una clave rara caen en la vista correcta', async () => {
     for (const [url, esperado, titulo] of [['/index.html#cat=todos', 'todos', 'Todo el catálogo'], ['/index.html#cat=camisetas', 'camisetas', 'Camisetas'], ['/index.html#cat=camiseta', 'camisetas', 'Camisetas'], ['/index.html#cat=ofertas', 'ofertas', 'Ofertas'], ['/index.html#cat=zzzz', 'todos', 'Todo el catálogo']]) {
@@ -152,7 +152,7 @@ if (!process.env.SOLO_PURAS) {
   });
   await t('ATRÁS: desde "Todo el catálogo", desde una categoría y desde las ofertas vuelve a la portada y RESTAURA el scroll; Adelante vuelve a la vista', async () => {
     // (los clics son por JavaScript: un clic de Playwright mueve el scroll solo para llegar al elemento y taparía lo que se prueba)
-    for (const abrirVista of [(p) => p.evaluate(() => document.getElementById('ver-todo-btn').click()), (p) => p.evaluate(() => document.querySelector('.cat-foto[data-clave="chombas"]').click()), (p) => p.evaluate(() => window.verOfertas())]) {
+    for (const abrirVista of [(p) => p.evaluate(() => document.getElementById('ver-todo-btn').click()), (p) => p.evaluate(() => document.querySelector('.cat-card[data-clave="chombas"]').click()), (p) => p.evaluate(() => window.verOfertas())]) {
       const { page, ctx } = await abrir({ perfil: 'iphone' });
       await page.evaluate(() => { const s = document.getElementById('videos-section'); window.scrollTo({ top: s.getBoundingClientRect().top + scrollY - 100, behavior: 'instant' }); }); await esp(400); const y0 = await page.evaluate(() => Math.round(scrollY)); assert.ok(y0 > 800, 'scroll de la portada: ' + y0);
       await abrirVista(page); await esp(600); assert.ok((await hash(page)).startsWith('#cat=')); assert.ok(await page.evaluate(() => scrollY) < 50, 'al entrar a la vista se ve arriba');
@@ -205,7 +205,7 @@ if (!process.env.SOLO_PURAS) {
   });
   await t('SIN LECTURAS EXTRA: portada, abrir el catálogo, categorías, tarjetas de categoría, buscar y volver siguen leyendo 3 documentos', async () => {
     const { page, ctx } = await abrir({ perfil: 'iphone' });
-    await page.click('#ver-todo-btn'); await esp(300); await page.evaluate(() => window.setCategoria('camisetas')); await esp(300); await page.goBack(); await esp(500); await page.evaluate(() => document.querySelector('.cat-foto[data-clave="remeras"]').click()); await esp(300); await page.click('#hdr-logo'); await esp(500);
+    await page.click('#ver-todo-btn'); await esp(300); await page.evaluate(() => window.setCategoria('camisetas')); await esp(300); await page.goBack(); await esp(500); await page.evaluate(() => document.querySelector('.cat-card[data-clave="remeras"]').click()); await esp(300); await page.click('#hdr-logo'); await esp(500);
     const l = await page.evaluate(() => ({ ...window.__LECT })); assert.equal(l.total, 3, JSON.stringify(l)); assert.equal(l.catalogo_col + l.envios_col, 0); await ctx.close();
   });
   await t('SIN SALTOS (CLS ≈ 0) en la portada y entrando directo a una vista; sin desborde horizontal, en iPhone, Android y PC', async () => {

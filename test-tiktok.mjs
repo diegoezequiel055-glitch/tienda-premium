@@ -173,7 +173,7 @@ if (!process.env.SOLO_PURAS) {
     for (const perfil of ['iphone', 'pc']) {
       const { page, ctx } = await abrir({ perfil }); const vis = () => visible(page, 'videos-section'); assert.equal(await vis(), true, perfil + ': portada');
       await page.evaluate(() => { window.__marca = 'sin recargar'; });
-      for (const [nombre, ir] of [['Todo el catálogo', () => page.evaluate(() => document.getElementById('ver-todo-btn').click())], ['categoría', () => page.evaluate(() => document.querySelector('.cat-foto').click())], ['vista de ofertas', () => page.evaluate(() => window.verOfertas())]]) {
+      for (const [nombre, ir] of [['Todo el catálogo', () => page.evaluate(() => document.getElementById('ver-todo-btn').click())], ['categoría', () => page.evaluate(() => document.querySelector('.cat-card').click())], ['vista de ofertas', () => page.evaluate(() => window.verOfertas())]]) {
         await ir(); await esp(500); assert.equal(await vis(), false, nombre); await page.click('#hdr-logo'); await esp(700); assert.equal(await vis(), true, 'logo → portada (' + nombre + ')');
       }
       await page.click('#btn-lupa'); await esp(250); await page.fill('#hdr-search-input', 'boca'); await esp(700); assert.equal(await vis(), false, 'buscando'); await page.goBack(); await esp(800); assert.equal(await vis(), true, 'Atrás → portada');

@@ -29,7 +29,7 @@ const TAMANOS = (RAPIDO ? [[360, 740], [414, 896], [1366, 768]] : [[360, 740], [
 const ESCENARIOS = RAPIDO ? ['lenta', 'imagenes-bloqueadas'] : ['lenta', 'imagenes-tardias', 'imagenes-bloqueadas'];
 const LIMITES = { // ancho de tarjeta permitido (px) y alto máximo
   strip: { min: 150, max: 260, altoMin: 250, altoMax: 620 },
-  categorias: { min: 140, max: 340, altoMin: 100, altoMax: 260 }, // tarjetas de "Comprar por categoría" (4:3): 2 columnas en celular, 4 en PC
+  categorias: { min: 200, max: 440, altoMin: 250, altoMax: 560 }, // tarjetas de "Comprar por categoría" (4:5): ~80 % del ancho en celular, 3-4 a la vez en PC
   videos: { min: 100, max: 220, altoMin: 200, altoMax: 520 }, // carrusel de Nuestros videos (al final): tarjetas 9:16, ~2,5 en celular y ~6 en PC
   ofertas: { min: 110, max: 230, altoMin: 150, altoMax: 420 }, // carrusel compacto de Ofertas (al final de la página): ~2,5 tarjetas en celular, ~6 en PC
   grid: { min: 140, max: 360, altoMin: 250, altoMax: 700 },
@@ -85,14 +85,14 @@ async function medirEscenario(browser, devices, base, [w, h], escenario) {
   await esp(escenario === 'imagenes-tardias' ? 9000 : 3000);
 
   const filas = await page.evaluate(() => {
-    const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto, .of-foto, .vt-portada') || (c.classList.contains('cat-foto') ? c : null); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
+    const leer = (sel) => [...document.querySelectorAll(sel)].map((c) => { const r = c.getBoundingClientRect(), f = c.querySelector('.card-foto, .rel-foto, .of-foto, .vt-portada') || (c.classList.contains('cat-card') ? c : null); const fr = f ? f.getBoundingClientRect() : { width: 0, height: 0 }; return { w: r.width, h: r.height, fw: fr.width, fh: fr.height }; });
     const visible = (id) => { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none'; };
     return {
       ofertas: visible('ofertas-section') ? leer('#ofertas-strip .of-card') : null,
       videos: visible('videos-section') ? leer('#videos-strip .vt-card') : null,
       nuevos: visible('nuevos-section') ? leer('#nuevos-strip .card') : null,
       destacados: visible('destacados-section') ? leer('#destacados-strip .card') : null,
-      categorias: visible('categorias-section') ? leer('#categorias-grid .cat-foto') : null,
+      categorias: visible('categorias-section') ? leer('#categorias-carril .cat-card') : null,
       boton: (() => { const b = document.getElementById('ver-todo-btn'); const r = b.getBoundingClientRect(); return { ancho: r.width, alto: r.height, texto: b.textContent.trim(), grid: document.querySelectorAll('#grid > .card').length }; })(),
       desborde: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       cls: window.__cls,
